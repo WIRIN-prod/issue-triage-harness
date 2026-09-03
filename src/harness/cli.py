@@ -11,7 +11,7 @@ from graph import vocab as V
 from graph.build import LITELLM, EXPECTED_GRAPH_SHA256
 from graph.retrieve import GraphIndex
 from triage.config import TriageConfig
-from triage.configs import LABELLER, TIERS
+from triage.configs import CONFIGS, LABELLER, TIERS
 
 from . import github, labelling
 from .dataset import Dataset
@@ -59,7 +59,28 @@ def cmd_estimate(args):
     print(f"stage 2 gold      {GOLD_CONFIG.model}")
     print(f"  {gold['issues']} issues · {gold['est_tokens_in']:,} in / "
           f"{gold['est_tokens_out']:,} out · ${gold['est_usd']}")
-    print(f"\ntotal estimate: ${round(stratify['est_usd'] + gold['est_usd'], 4)}")
+    label_total = stratify["est_usd"] + gold["est_usd"]
+    print(f"\nlabelling subtotal: ${round(label_total, 4)}")
+
+    # eval sweep: every named config over the gold set, repeated to measure
+    # run-to-run variance (SPEC.md §5.5)
+    price = {m: (pin, pout) for m, pin, pout in TIERS.values()}
+    per_issue_in = gold["est_tokens_in"] / max(len(sample), 1)
+    print(f"\neval sweep — {len(CONFIGS)} configs x {args.n} issues x {args.repeats} repeats")
+    sweep = 0.0
+    for name, cfg in sorted(CONFIGS.items()):
+        pin, pout = price.get(cfg.model, (0.1, 0.4))
+        tin = per_issue_in * args.n * args.repeats
+        if cfg.context == "none":
+            tin *= 0.55                      # context is roughly 45% of the prompt
+        if cfg.prompt_version == "v1_terse":
+            tin *= 0.75
+        tout = {"pre": 230, "post": 120, "off": 20}[cfg.rationale_mode] * args.n * args.repeats
+        usd = tin / 1e6 * pin + tout / 1e6 * pout
+        sweep += usd
+        print(f"  {name:<15}{cfg.model:<30}${usd:>8.4f}")
+    print(f"  {'':<45}${sweep:>8.4f}")
+    print(f"\nTOTAL (labelling + one full sweep): ${round(label_total + sweep, 4)}")
 
 
 def cmd_label(args):
@@ -117,6 +138,7 @@ def main(argv=None):
 
     e = sub.add_parser("estimate", help="dry-run cost, no API calls that spend")
     e.add_argument("-n", type=int, default=100)
+    e.add_argument("--repeats", type=int, default=3, help="repeats per config, for variance")
     e.set_defaults(func=cmd_estimate)
 
     l = sub.add_parser("label", help="two-stage labelling -> frozen dataset")

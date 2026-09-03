@@ -348,10 +348,12 @@ useful question for triage is whether a *cheap* model suffices, not whether the 
 | cheap | mistralai/mistral-nemo | 0.019 | 0.030 |
 | small | google/gemini-2.5-flash-lite | 0.100 | 0.400 |
 | mid | google/gemini-2.5-flash | 0.300 | 2.500 |
-| strong | anthropic/claude-haiku-4.5 | 1.000 | 5.000 |
 
-A ~50x input and ~170x output spread, which is what makes the accuracy-vs-cost question sharp
-rather than academic. Every model honours temperature (D19) and supports structured output.
+Capped at `gemini-2.5-flash`; `claude-haiku-4.5` was dropped to keep spend inside the budget.
+Holding the cheapest rung keeps the spread open at **15.8x on input and 83x on output**. Output
+is both the dearer side and the side `rationale_mode` moves, so the axis that matters most stays
+wide despite the lower ceiling. Every model honours temperature (D19) and supports structured
+output.
 
 **First live signal, n=1, on one issue** — recorded as orientation, not evidence:
 `rationale-off` produced 13 output tokens against `rationale-pre`'s 224 for the same decision;

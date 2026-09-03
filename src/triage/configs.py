@@ -19,11 +19,14 @@ LABELLER = "anthropic/claude-sonnet-5"
 
 # Price per million tokens at time of selection, for orientation only — actual cost
 # comes from the gateway per call and is never estimated from this table.
+#
+# Capped at gemini-2.5-flash rather than reaching for claude-haiku-4.5, keeping the
+# cheapest rung to hold the spread open: 15.8x on input, 83x on output. Output is the
+# dearer side and the one rationale_mode moves, so the axis that matters stays wide.
 TIERS = {
-    "cheap":  ("mistralai/mistral-nemo",       0.019, 0.030),
-    "small":  ("google/gemini-2.5-flash-lite", 0.100, 0.400),
-    "mid":    ("google/gemini-2.5-flash",      0.300, 2.500),
-    "strong": ("anthropic/claude-haiku-4.5",   1.000, 5.000),
+    "cheap": ("mistralai/mistral-nemo",       0.019, 0.030),
+    "small": ("google/gemini-2.5-flash-lite", 0.100, 0.400),
+    "mid":   ("google/gemini-2.5-flash",      0.300, 2.500),
 }
 
 BASELINE = TriageConfig(
