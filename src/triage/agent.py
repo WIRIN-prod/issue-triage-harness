@@ -32,11 +32,15 @@ RETRYABLE = ("connection", "timeout", "timed out", "429", "500", "502", "503", "
              "overloaded", "rate limit")
 MAX_ATTEMPTS = 5
 
-# A 429 from OpenRouter is a *per-minute* cap ("new-account-rpm/..."), so the ordinary
-# exponential ramp — which tops out around 12s — just retries into the same window
-# alongside every other worker. Rate limits get a backoff sized to the window they
-# police; everything else keeps the fast ramp.
-RATE_LIMIT_BACKOFF = 25.0
+# Rate limits get the same exponential ramp as everything else, with a higher ceiling.
+#
+# An earlier version waited a flat 25s on every 429, on the theory that a
+# "new-account-rpm" cap polices a 60-second window. Measurement disagreed: the account
+# sustains ~60 req/min single-worker and ~97/min at 6 workers, and 429s clear in about
+# a second. The flat wait turned a mild throttle into a sweep that would have taken 17
+# hours — most items burning their whole retry budget at 25s a go. Backing off *longer*
+# than the limit requires is not the safe direction; it is just slower.
+RATE_LIMIT_CAP = 20.0
 
 
 def _is_rate_limit(exc: Exception) -> bool:
@@ -45,9 +49,8 @@ def _is_rate_limit(exc: Exception) -> bool:
 
 
 def _backoff(exc: Exception, attempt: int) -> float:
-    if _is_rate_limit(exc):
-        return RATE_LIMIT_BACKOFF * (0.75 + random.random() * 0.5)
-    return min(2 ** attempt, 16) * (0.5 + random.random())
+    ceiling = RATE_LIMIT_CAP if _is_rate_limit(exc) else 16.0
+    return min(2 ** attempt, ceiling) * (0.5 + random.random())
 
 
 def _is_retryable(exc: Exception) -> bool:

@@ -184,6 +184,58 @@ def cmd_compare(args):
         raise SystemExit(2)
 
 
+def _existing_runs(split: str) -> set[tuple[str, int]]:
+    """(config_hash, repeat) pairs already on disk for this split."""
+    out = set()
+    for f in RUNS.glob("*.json"):
+        try:
+            r = RunRecord.load(f)
+        except Exception:
+            continue
+        if r.split == split:
+            out.add((r.config_hash, r.repeat))
+    return out
+
+
+def cmd_sweep(args):
+    """Run every named config over the dataset.
+
+    Eval runs are deliberately *not* cached: repeats exist to measure run-to-run
+    variance, and serving a cached answer would report that variance as zero. What is
+    skipped is a (config, repeat) pair that already has a run record, so an
+    interrupted sweep resumes instead of starting over.
+    """
+    from triage.configs import CONFIGS
+
+    ds = Dataset.load(DATASET)
+    _, index, voc = _load_env()
+    done = _existing_runs(args.split)
+    names = args.configs or sorted(CONFIGS)
+
+    planned = [(n, r) for n in names for r in range(args.repeats)
+               if (CONFIGS[n].config_hash, r) not in done]
+    print(f"dataset {ds.content_hash()} · split {args.split} · "
+          f"{len(planned)} runs to do, {len(names) * args.repeats - len(planned)} already done",
+          file=sys.stderr)
+
+    results, spend = [], 0.0
+    for name, rep in planned:
+        cfg = CONFIGS[name]
+        def show(n, total, name=name, rep=rep):
+            if n % 10 == 0 or n == total:
+                print(f"\r  {name} r{rep}: {n}/{total}", end="", file=sys.stderr, flush=True)
+        rec = run_config(ds, cfg, index, voc, split=args.split, repeat=rep,
+                         workers=args.workers, on_progress=show)
+        path = rec.save(RUNS)
+        spend += rec.total_cost
+        results.append({"config": name, "repeat": rep, "path": str(path),
+                        "cost": round(rec.total_cost, 5), "failed": rec.failures})
+        print(f"\n  {name} r{rep} · ${rec.total_cost:.4f} · {rec.failures} failed",
+              file=sys.stderr)
+
+    print(json.dumps({"runs": results, "spend_usd": round(spend, 4)}, indent=1))
+
+
 def cmd_baselines(args):
     ds = Dataset.load(DATASET)
     split = None if args.split == "all" else args.split
@@ -234,6 +286,13 @@ def main(argv=None):
     c.add_argument("--repeats-of-a", nargs="*", default=[],
                    help="other runs of config A, to measure run-to-run noise")
     c.set_defaults(func=cmd_compare)
+
+    sw = sub.add_parser("sweep", help="run every config over the dataset, resumable")
+    sw.add_argument("--split", default="dev", choices=["dev", "holdout", "all"])
+    sw.add_argument("--repeats", type=int, default=1)
+    sw.add_argument("--workers", type=int, default=4)
+    sw.add_argument("--configs", nargs="*", help="subset of config names")
+    sw.set_defaults(func=cmd_sweep)
 
     bl = sub.add_parser("baselines", help="score degenerate strategies — the floor to beat")
     bl.add_argument("--split", default="all", choices=["dev", "holdout", "all"])

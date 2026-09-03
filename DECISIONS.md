@@ -491,6 +491,49 @@ would look weaker on the true pool distribution.
 `harness baselines` reports this for free on any split, and it belongs in the results section
 before any config numbers, or a mediocre result reads as a good one.
 
+### D25 — Batch inference: right at scale, wrong here
+**Considered** running the eval sweep through OpenRouter's batch endpoints — 50% cheaper and
+immune to the rate limits that had been hurting.
+
+**Rejected for this project, on four grounds:**
+
+1. **Latency stops being measurable.** Per-call p50/p95 is one of the three reported axes.
+   Batch turnaround is hours, so the number would be meaningless — and reporting it anyway
+   would be worse than not having it.
+2. **The tier comparison breaks.** Only 66 of 424 catalogue models have a `:batch` variant, and
+   `mistralai/mistral-nemo` — the cheapest rung — is not among them. A mixed sweep would compare
+   a batched arm against a sync one: a different model id, different routing, different price
+   basis. That is the same class of asymmetry the harness already refuses for temperature (D19).
+   The alternative is dropping `tier-cheap`, collapsing the price spread from 15.8x to 3x.
+3. **The feedback loop is the product.** The harness exists to answer "did that help?" quickly.
+   With backoff fixed the sweep runs in minutes; hours of turnaround inverts the point.
+4. **Cost is not the constraint.** A full sweep is under $1. The saving is ~$0.40, against a
+   separate execution path — hand-rolled JSONL submission, polling, response matching — and the
+   loss of pydantic-ai's typed structured output on the way.
+
+**When it flips**, and this belongs in the write-up rather than the code: nightly regression
+evals over thousands of issues, CI suites, or backfilling labels for a much larger gold set.
+There the discount and rate-limit immunity dominate and nobody is measuring per-call latency.
+The harness would gain a submit/poll/collect execution mode beside the sync one, with latency
+**dropped** from the reported metrics rather than quietly misreported.
+
+### D26 — Correction: the 25s rate-limit backoff was the bottleneck, not the rate limit
+**D23 was wrong.** It diagnosed 429s as a per-minute account cap and reasoned that a backoff
+should be sized to the window it polices — a flat 25s. Plausible, and it felt like the
+conservative direction.
+
+**Measurement disagreed.** A single worker sustains ~62 req/min; six workers reach ~97/min with
+zero errors and zero retries on the real config and payload. 429s clear in about a second.
+
+**The flat wait turned a mild throttle into a projected 17-hour sweep.** The tell was a
+spend/progress mismatch: $0.11 spent against a counter showing 30 items — roughly 370 calls for
+30 results, which is only possible if nearly every item was burning its full retry budget at 25s
+a time.
+
+**Fixed** to the ordinary exponential ramp with a higher ceiling for rate limits (~1.2s, 3.8s,
+7.7s, 17.6s). **Backing off longer than a limit requires is not the safe direction — it is just
+slower**, and it hid itself as "the API is throttling us" rather than "our retry policy is."
+
 ---
 
 ## Still open
