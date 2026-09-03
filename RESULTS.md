@@ -102,11 +102,56 @@ names, so they hash identically and ran as two independent samples. Their scores
 decimal places, so run-to-run variance is ~0 at temperature 0 for this model, and observed
 differences are not noise from the service.
 
+## Label reliability — and why it matters most here
+
+A cross-model check (`harness verify cross`), 25 items stratified 5 per category, labelled
+independently by `x-ai/grok-4.6` — a different lineage from both the labeller and every config:
+
+| field | observed agreement | Cohen's kappa | reading |
+|---|---|---|---|
+| category | 0.96 | **+0.950** | strong |
+| urgency (linear-weighted) | 0.88 | **+0.694** | substantial |
+| `needs_human` | 0.80 | **+0.576** | **moderate** |
+
+**The weakest label is the one the harness leans on hardest.** `needs_human` carries the 10x
+weight, drives roughly 72% of the flagship metric, and is where every significant difference
+between configs appeared — and two frontier models agree on it only moderately. Category, which
+barely moves the flagship, is the field they agree on almost perfectly.
+
+**What this does and does not invalidate.** Random label noise **attenuates** measured
+differences toward zero, and comparisons here are paired — both configs face the same labels —
+so a result that reached significance *despite* noisy labels is still real. Noise made it harder
+to detect, not easier:
+
+- `tier-cheap` worse (nh recall 0.25 vs 0.75, Δ=0.50) — far beyond label noise. Stands.
+- `rationale-pre` worse (flagship Δ=+0.917, CI excludes zero) — stands.
+- The four inconclusive comparisons may be inconclusive *partly because* label noise attenuates
+  the effect. The "needs ~465 items" figure is therefore optimistic; with labels this noisy the
+  true requirement is higher.
+
+**What it cannot rule out is shared bias.** Pairing corrects random noise, not a blind spot both
+models share — and cross-model agreement is exactly the wrong instrument for detecting one. That
+is the argument for human verification, unchanged by this result.
+
+**A ceiling observation.** Baseline's `needs_human` recall is 0.75; two frontier models agree
+with each other 0.80 of the time on that field. The service is operating close to the level at
+which the raters themselves agree, which is the signal that further optimisation on this field
+is chasing noise rather than quality.
+
+**Cross-model agreement is weak evidence in one direction only.** Low agreement would have been
+strong evidence the labels are unreliable. High agreement is only weak evidence they are sound,
+since two models can share a blind spot a person would not. `data/verification/sample.md` holds
+the 25-item sample with gold labels withheld, awaiting a human pass.
+
 ## Caveats
 
 - **n=60 on dev.** Underpowered for anything but large effects, which is why so much is inconclusive.
 - **Nothing here has touched the holdout.** These are iteration numbers, not final ones.
-- **The gold set is model-labelled and not yet human-verified**, so κ is unknown and every number
-  inherits whatever bias `claude-sonnet-5` has.
+- **The gold set is model-labelled and not yet human-verified.** A cross-model check gives
+  kappa 0.95 / 0.69 / 0.58 across the three fields, but that cannot detect a bias two models
+  share. Every number here inherits whatever bias `claude-sonnet-5` has.
+- **Cost reporting is not universal.** `x-ai/grok-4.6` returned no cost while the account was
+  charged $0.29 for 25 calls. Runs now record `cost_reported` and `compare` refuses a run
+  containing unpriced calls, but the gap is a property of the gateway, not of the harness.
 - **Stratification oversampled `security` and P0**, which inflates the 69% escalation rate and
   flatters escalate-everything. Not a production estimate.

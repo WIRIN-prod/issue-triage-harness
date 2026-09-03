@@ -95,6 +95,7 @@ class TriageRun(BaseModel):
     tokens_in: int
     tokens_out: int
     cost_usd: float          # reported by the gateway, not estimated from a table
+    cost_reported: bool = True   # False when the gateway returned no cost — see agent._cost
     latency_ms: int
     attempts: int = 1        # >1 means transient failures were retried
 

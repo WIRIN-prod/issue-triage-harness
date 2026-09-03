@@ -121,14 +121,22 @@ def _settings(config: TriageConfig) -> OpenAIChatModelSettings:
     return OpenAIChatModelSettings(temperature=config.temperature, extra_body=extra)
 
 
-def _cost(usage) -> float:
+def _cost(usage) -> tuple[float, bool]:
+    """Actual spend for this call, and whether the gateway actually told us.
+
+    Not every model reports cost — `x-ai/grok-4.6` returned none while the account was
+    charged $0.29 for 25 calls. Falling back to 0.0 silently made that config look free
+    in a metric denominated in dollars, which is the worst possible direction for the
+    error to run. The flag makes the gap visible so a run priced at zero is not mistaken
+    for a run that cost nothing.
+    """
     if getattr(usage, "cost", None):
-        return float(usage.cost)
+        return float(usage.cost), True
     details = getattr(usage, "details", None) or {}
     for key in ("cost", "total_cost", "upstream_inference_cost"):
         if details.get(key):
-            return float(details[key])
-    return 0.0
+            return float(details[key]), True
+    return 0.0, False
 
 
 def triage(
@@ -183,12 +191,14 @@ def triage(
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
     usage = result.usage
+    cost, reported = _cost(usage)
     return TriageRun(
         **base,
         decision=to_decision(result.output),
         tokens_in=usage.input_tokens or 0,
         tokens_out=usage.output_tokens or 0,
-        cost_usd=_cost(usage),
+        cost_usd=cost,
+        cost_reported=reported,
         latency_ms=latency_ms,
         attempts=attempts,
     )

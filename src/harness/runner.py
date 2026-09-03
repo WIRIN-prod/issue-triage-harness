@@ -32,6 +32,7 @@ class ItemResult(BaseModel):
     predicted: TriageDecision
     gold: TriageDecision
     cost_usd: float
+    cost_reported: bool = True
     tokens_in: int
     tokens_out: int
     latency_ms: int
@@ -122,7 +123,8 @@ def run_config(
         run = triage(item.issue_number, item.title, item.body, config, ctx)
         return ItemResult(
             issue_number=item.issue_number, predicted=run.decision, gold=item.gold,
-            cost_usd=run.cost_usd, tokens_in=run.tokens_in, tokens_out=run.tokens_out,
+            cost_usd=run.cost_usd, cost_reported=run.cost_reported,
+            tokens_in=run.tokens_in, tokens_out=run.tokens_out,
             latency_ms=run.latency_ms, context_empty=run.context_empty,
             context_tokens=run.context_tokens, error=run.error,
         )

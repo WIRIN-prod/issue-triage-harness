@@ -534,6 +534,45 @@ a time.
 7.7s, 17.6s). **Backing off longer than a limit requires is not the safe direction — it is just
 slower**, and it hid itself as "the API is throttling us" rather than "our retry policy is."
 
+### D27 — Cross-model verification: the weakest label is the one that matters most
+**Ran** a cross-model check rather than claiming a human pass. An agent cannot be the human in
+"human verification" — a model checking another model's labels against a rubric the same agent
+wrote is the circularity D3 exists to prevent. `harness verify sample` exports a stratified
+25-item set with **gold labels withheld** (showing them would measure compliance, not judgement),
+and `FileLabeller` ingests the human pass when it happens.
+
+**Result** (`x-ai/grok-4.6` vs `claude-sonnet-5`, n=25, 5 per category): category kappa **0.950**,
+urgency **0.694** linear-weighted, `needs_human` **0.576**.
+
+**The finding.** The harness's flagship metric is ~72% driven by `needs_human`, which is the
+field two frontier models agree on *least*. Category, which they agree on almost perfectly,
+barely moves the flagship. Every significant config difference in the sweep came from the least
+reliable label.
+
+**Correctly reading the damage.** Random label noise attenuates measured differences toward zero,
+and the comparisons are paired, so results that reached significance despite it are still real —
+`tier-cheap` (Δ=0.50 on nh recall) and `rationale-pre` both stand. What noise plausibly explains
+is some of the *inconclusive* results, which means the "~465 items" sample-size estimates are
+optimistic. What pairing cannot correct is a bias both models share, and cross-model agreement is
+precisely the wrong instrument for finding one — so this does not substitute for a human pass.
+
+**Two bugs found while building it.**
+- The unweighted agreement function returned 1.0 regardless of whether raters agreed, making
+  observed agreement 1.00 for every pair. Caught by asserting against known cases: identical
+  raters must give kappa 1.0, independent random raters ~0.
+- Kappa is *undefined*, not zero, when both raters use a single class. Reporting 0.0 there read
+  as "poor agreement" for two raters who agreed on everything.
+
+### D28 — Cost silently defaulting to zero
+`x-ai/grok-4.6` returned no cost field while the account was charged **$0.29** for 25 calls, and
+`_cost()` fell back to `0.0`. In a harness whose flagship metric is denominated in dollars, an
+unreported cost reading as free is the worst direction for the error to run — such a config would
+appear to dominate on price.
+
+**Fixed:** runs record `cost_reported`, and `compare` **refuses** any run containing unpriced
+calls rather than quietly averaging zeros into the flagship. All eight sweep runs report cost
+correctly, so existing results are unaffected; the guard protects future ones.
+
 ---
 
 ## Still open

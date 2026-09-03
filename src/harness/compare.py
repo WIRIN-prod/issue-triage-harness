@@ -33,7 +33,19 @@ def _aligned(a: RunRecord, b: RunRecord) -> tuple[list[ItemResult], list[ItemRes
     return [ok_a[n] for n in shared], [ok_b[n] for n in shared]
 
 
+def _unpriced(r: RunRecord) -> int:
+    return sum(1 for i in r.ok if not i.cost_reported)
+
+
 def check_comparable(a: RunRecord, b: RunRecord) -> None:
+    for r, side in ((a, "A"), (b, "B")):
+        missing = _unpriced(r)
+        if missing:
+            raise NotComparable(
+                f"{side} ({r.config_name}) has {missing}/{len(r.ok)} calls with no cost "
+                f"reported by the gateway. Those default to $0.00, which would make the "
+                f"config look free in a metric denominated in dollars."
+            )
     if a.dataset_hash != b.dataset_hash:
         raise NotComparable(
             f"different datasets: A={a.dataset_hash} B={b.dataset_hash}. These runs "

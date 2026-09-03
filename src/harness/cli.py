@@ -13,12 +13,15 @@ from graph.retrieve import GraphIndex
 from triage.config import TriageConfig
 from triage.configs import CONFIGS, LABELLER, TIERS
 
+from . import agreement as agreement_mod
 from . import baselines as baselines_mod
+from . import verify as verify_mod
 from . import github, labelling
 from .compare import NotComparable, compare
 from .dataset import Dataset
 from .metrics import ERROR_UNIT_USD
 from .runner import RunRecord, run_config
+from triage.agent import triage as triage_fn
 from .stats import Variance
 
 DATA = Path("data")
@@ -244,6 +247,57 @@ def cmd_baselines(args):
     print(baselines_mod.render(baselines_mod.evaluate(ds, split), args.unit_usd))
 
 
+def cmd_verify(args):
+    ds = Dataset.load(DATASET)
+    items = verify_mod.sample(ds, args.n)
+
+    if args.action == "sample":
+        out = verify_mod.export_for_human(
+            items, DATA / "verification" / "human-labels.jsonl",
+            DATA / "verification" / "sample.md")
+        from collections import Counter
+        print(json.dumps({**out, "categories": dict(
+            Counter(i.gold.category for i in items))}, indent=1))
+        return
+
+    if args.action == "cross":
+        from graph.retrieve import retrieve
+        from triage.config import TriageConfig
+        _, index, voc = _load_env()
+        cfg = TriageConfig(name="verifier", model=args.model,
+                           rationale_mode="pre", context="graph")
+        print(f"cross-model check: {args.model} on {len(items)} items", file=sys.stderr)
+        external, spend = {}, 0.0
+        for k, it in enumerate(items, 1):
+            ctx = retrieve(index, voc, it.title, it.body)
+            r = triage_fn(it.issue_number, it.title, it.body, cfg, ctx)
+            if not r.error:
+                external[it.issue_number] = (r.decision, False)
+            spend += r.cost_usd
+            print(f"\r  {k}/{len(items)}", end="", file=sys.stderr, flush=True)
+        print(f"\n  ${spend:.4f} · {len(external)}/{len(items)} succeeded\n", file=sys.stderr)
+        source = args.model
+    else:
+        external = verify_mod.load_external(Path(args.from_file))
+        source = "human"
+        if not external:
+            print("no filled-in labels found — fill the template first", file=sys.stderr)
+            raise SystemExit(2)
+
+    ds, agreements, diffs = verify_mod.apply_verification(ds, external, source)
+    label = ("HUMAN vs labeller" if source == "human"
+             else f"CROSS-MODEL {source} vs labeller {ds.labeller}")
+    print(agreement_mod.render(agreements, f"{label}  (n={len(external)})"))
+    print(f"\ndisagreements: {len(diffs)}/{len(external)}")
+    for d in diffs[:10]:
+        fields = ", ".join(f"{k}: {v[0]}->{v[1]}" for k, v in d["fields"].items())
+        print(f"  #{d['issue_number']:<7} {fields}")
+    if source == "human" and args.write:
+        ds.save(DATASET)
+        print(f"\ndataset updated: {ds.content_hash()} "
+              f"(hash changed — every prior run record is now stale)")
+
+
 def cmd_dataset(args):
     ds = Dataset.load(DATASET)
     print(json.dumps(ds.summary(), indent=1))
@@ -298,6 +352,15 @@ def main(argv=None):
     bl.add_argument("--split", default="all", choices=["dev", "holdout", "all"])
     bl.add_argument("--unit-usd", type=float, default=ERROR_UNIT_USD)
     bl.set_defaults(func=cmd_baselines)
+
+    vf = sub.add_parser("verify", help="second-opinion check on the gold labels")
+    vf.add_argument("action", choices=["sample", "cross", "ingest"])
+    vf.add_argument("-n", type=int, default=25)
+    vf.add_argument("--model", default=verify_mod.VERIFIER)
+    vf.add_argument("--from-file", default="data/verification/human-labels.jsonl")
+    vf.add_argument("--write", action="store_true",
+                    help="persist human verification into the dataset (changes its hash)")
+    vf.set_defaults(func=cmd_verify)
 
     d = sub.add_parser("dataset", help="summarise the frozen dataset")
     d.set_defaults(func=cmd_dataset)
