@@ -18,6 +18,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
+from threading import Lock
 from typing import Callable, Protocol
 
 from graph.retrieve import Context, GraphIndex, retrieve
@@ -28,6 +29,15 @@ from triage.models import TriageDecision
 
 from .dataset import Dataset, GoldItem, rubric_fingerprint
 from .github import Issue
+
+
+class TooManyFailures(RuntimeError):
+    """Raised rather than quietly building a dataset out of the survivors.
+
+    A labelling run that loses 80% of its calls to transient errors still produces a
+    file that hashes cleanly and looks like a dataset. That is the exact failure this
+    project exists to catch, so a thinned run is an error, not a smaller result.
+    """
 
 
 @dataclass
@@ -105,6 +115,62 @@ class FileLabeller:
         )
 
 
+class LabelCache:
+    """Append-only checkpoint of successful labels, keyed by issue and config.
+
+    Written as each call returns, not at the end. A run that fails the success-rate
+    guard once discarded 86 good frontier labels and $1.10 with them; with a
+    checkpoint, a re-run pays only for what is still missing. Failures are
+    deliberately not cached — they are exactly what a re-run should retry.
+    """
+
+    def __init__(self, path: Path, config_hash: str):
+        self.path = Path(path)
+        self.config_hash = config_hash
+        self._hits: dict[int, LabelResult] = {}
+        self._lock = Lock()
+        if self.path.is_file():
+            for line in self.path.read_text().splitlines():
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                if row.get("config_hash") != config_hash:
+                    continue          # a different config means different labels
+                self._hits[int(row["issue_number"])] = LabelResult(
+                    issue_number=int(row["issue_number"]),
+                    decision=TriageDecision(**row["decision"]),
+                    cost_usd=row.get("cost_usd", 0.0),
+                    tokens_in=row.get("tokens_in", 0),
+                    tokens_out=row.get("tokens_out", 0),
+                    context_empty=row.get("context_empty", True),
+                    context_tokens=row.get("context_tokens", 0),
+                )
+
+    def __len__(self) -> int:
+        return len(self._hits)
+
+    def get(self, issue_number: int) -> LabelResult | None:
+        return self._hits.get(issue_number)
+
+    def put(self, result: LabelResult) -> None:
+        if result.error:
+            return
+        with self._lock:
+            self._hits[result.issue_number] = result
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            with self.path.open("a") as fh:
+                fh.write(json.dumps({
+                    "config_hash": self.config_hash,
+                    "issue_number": result.issue_number,
+                    "decision": result.decision.model_dump(),
+                    "cost_usd": result.cost_usd,
+                    "tokens_in": result.tokens_in,
+                    "tokens_out": result.tokens_out,
+                    "context_empty": result.context_empty,
+                    "context_tokens": result.context_tokens,
+                }) + "\n")
+
+
 # --- passes ---------------------------------------------------------------
 
 
@@ -120,15 +186,29 @@ def run_pass(
     contexts: dict[int, Context],
     workers: int = 6,
     on_progress: Callable[[int, int], None] | None = None,
+    cache: LabelCache | None = None,
 ) -> list[LabelResult]:
-    out: list[LabelResult] = []
+    # `if cache` would be False for an empty cache, since LabelCache defines
+    # __len__ — and an empty cache is exactly the fresh run that most needs writing.
+    cached = {i.number: cache.get(i.number) for i in issues} if cache is not None else {}
+    todo = [i for i in issues if not cached.get(i.number)]
+
+    def one(issue: Issue) -> LabelResult:
+        res = labeller.label(issue, contexts.get(issue.number))
+        if cache is not None:
+            cache.put(res)
+        return res
+
+    fresh: list[LabelResult] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(labeller.label, i, contexts.get(i.number)) for i in issues]
+        futures = [pool.submit(one, i) for i in todo]
         for n, f in enumerate(futures, 1):
-            out.append(f.result())
+            fresh.append(f.result())
             if on_progress:
                 on_progress(n, len(futures))
-    return out
+
+    by_num = {r.issue_number: r for r in fresh}
+    return [cached.get(i.number) or by_num[i.number] for i in issues]
 
 
 def select_stratified(
@@ -179,6 +259,22 @@ def assign_splits(numbers: list[int], dev_frac: float = 0.6, seed: int = 2026090
             **{n: "holdout" for n in shuffled[cut:]}}
 
 
+def error_summary(results: list[LabelResult]) -> dict[str, int]:
+    """Group by class *and* HTTP status. "ModelHTTPError: 13" is not actionable;
+    knowing whether those were 429s or 402s is the whole diagnosis."""
+    import re
+
+    counts: dict[str, int] = {}
+    for r in results:
+        if not r.error:
+            continue
+        key = r.error.split(":")[0].strip() or "unknown"
+        if m := re.search(r"status_code:?\s*(\d{3})", r.error):
+            key = f"{key}/{m.group(1)}"
+        counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items(), key=lambda kv: -kv[1]))
+
+
 def build_dataset(
     issues: list[Issue],
     gold: list[LabelResult],
@@ -188,7 +284,17 @@ def build_dataset(
     graph_sha256: str,
     window: str,
     rubric_path: Path,
+    min_success_rate: float = 0.95,
 ) -> Dataset:
+    ok = [g for g in gold if not g.error]
+    rate = len(ok) / len(gold) if gold else 0.0
+    if rate < min_success_rate:
+        raise TooManyFailures(
+            f"only {len(ok)}/{len(gold)} labels succeeded ({rate:.0%}); "
+            f"minimum is {min_success_rate:.0%}. Errors: {error_summary(gold)}. "
+            f"Building a dataset from the survivors would produce a file that hashes "
+            f"cleanly and is silently a fifth of the intended size."
+        )
     by_num = {i.number: i for i in issues}
     splits = assign_splits([g.issue_number for g in gold if not g.error])
     version, digest = rubric_fingerprint(rubric_path)

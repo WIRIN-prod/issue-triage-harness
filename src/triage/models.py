@@ -96,5 +96,6 @@ class TriageRun(BaseModel):
     tokens_out: int
     cost_usd: float          # reported by the gateway, not estimated from a table
     latency_ms: int
+    attempts: int = 1        # >1 means transient failures were retried
 
     error: str = ""          # set when the call or validation failed

@@ -26,6 +26,7 @@ GRAPH = DATA / "graphs" / "litellm-raw.json"
 REPO_DIR = DATA / "repos" / "litellm"
 DATASET = DATA / "dataset" / "gold.json"
 RUNS = Path("runs")
+CACHE = DATA / "cache"
 RUBRIC = Path("docs/rubric.md")
 
 STRATIFY_CONFIG = TriageConfig(
@@ -100,11 +101,16 @@ def cmd_label(args):
 
     print(f"stage 1 — stratifying {len(issues)} issues with {STRATIFY_CONFIG.model}",
           file=sys.stderr)
+    c1 = labelling.LabelCache(CACHE / "stratify.jsonl", STRATIFY_CONFIG.config_hash)
+    if len(c1):
+        print(f"  resuming: {len(c1)} already labelled", file=sys.stderr)
     coarse = labelling.run_pass(issues, labelling.ModelLabeller(STRATIFY_CONFIG), ctx,
-                                workers=args.workers, on_progress=progress("stratify"))
+                                workers=args.workers, on_progress=progress("stratify"),
+                                cache=c1)
     spent = sum(r.cost_usd for r in coarse)
     failed = sum(1 for r in coarse if r.error)
-    print(f"\n  done · ${spent:.4f} · {failed} failed", file=sys.stderr)
+    print(f"\n  done · ${spent:.4f} · {failed}/{len(coarse)} failed "
+          f"{labelling.error_summary(coarse) or ''}", file=sys.stderr)
 
     chosen, cells = labelling.select_stratified(coarse, args.n)
     print(f"\nstage 1 cells (target {args.n}):", file=sys.stderr)
@@ -116,14 +122,21 @@ def cmd_label(args):
                 else labelling.ModelLabeller(GOLD_CONFIG))
     print(f"\nstage 2 — gold labels for {len(sample)} issues with {labeller.name}",
           file=sys.stderr)
-    gold = labelling.run_pass(sample, labeller, ctx, workers=args.workers,
-                              on_progress=progress("gold"))
+    c2 = labelling.LabelCache(CACHE / "gold.jsonl", GOLD_CONFIG.config_hash)
+    if len(c2):
+        print(f"  resuming: {len(c2)} already labelled", file=sys.stderr)
+    gold = labelling.run_pass(sample, labeller, ctx,
+                              workers=min(args.workers, args.gold_workers),
+                              on_progress=progress("gold"), cache=c2)
     gold_spent = sum(r.cost_usd for r in gold)
-    print(f"\n  done · ${gold_spent:.4f}", file=sys.stderr)
+    gold_failed = sum(1 for r in gold if r.error)
+    print(f"\n  done · ${gold_spent:.4f} · {gold_failed}/{len(gold)} failed "
+          f"{labelling.error_summary(gold) or ''}", file=sys.stderr)
 
     ds = labelling.build_dataset(
         sample, gold, labeller.name, LITELLM.owner_repo, LITELLM.commit,
-        EXPECTED_GRAPH_SHA256, github.WINDOW, RUBRIC)
+        EXPECTED_GRAPH_SHA256, github.WINDOW, RUBRIC,
+        min_success_rate=args.min_success)
     ds.save(DATASET)
     print(json.dumps({**ds.summary(), "spend_usd": round(spent + gold_spent, 4),
                       "path": str(DATASET)}, indent=1))
@@ -191,6 +204,10 @@ def main(argv=None):
     l.add_argument("-n", type=int, default=100, help="gold set size")
     l.add_argument("--workers", type=int, default=6)
     l.add_argument("--from-file", help="JSONL of out-of-band labels instead of the frontier model")
+    l.add_argument("--gold-workers", type=int, default=2,
+                   help="frontier labelling concurrency; low, to stay under new-account RPM caps")
+    l.add_argument("--min-success", type=float, default=0.95,
+                   help="refuse to build a dataset below this label success rate")
     l.set_defaults(func=cmd_label)
 
     v = sub.add_parser("eval", help="run one config over the dataset")

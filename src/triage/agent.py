@@ -8,6 +8,7 @@ does not measure.
 
 from __future__ import annotations
 
+import random
 import time
 import warnings
 from functools import lru_cache
@@ -22,6 +23,38 @@ from .config import TriageConfig
 from .models import OUTPUT_SCHEMAS, TriageDecision, TriageRun, to_decision
 
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
+
+# Concurrency produces transient connection failures against the gateway — 3/40 at 8
+# workers, far worse for slower models that hold connections longer. Left unhandled
+# these silently thinned a 100-issue labelling run down to 20 survivors, so they are
+# retried rather than counted as verdicts.
+RETRYABLE = ("connection", "timeout", "timed out", "429", "500", "502", "503", "504",
+             "overloaded", "rate limit")
+MAX_ATTEMPTS = 5
+
+# A 429 from OpenRouter is a *per-minute* cap ("new-account-rpm/..."), so the ordinary
+# exponential ramp — which tops out around 12s — just retries into the same window
+# alongside every other worker. Rate limits get a backoff sized to the window they
+# police; everything else keeps the fast ramp.
+RATE_LIMIT_BACKOFF = 25.0
+
+
+def _is_rate_limit(exc: Exception) -> bool:
+    text = f"{exc}".lower()
+    return "429" in text or "rate limit" in text
+
+
+def _backoff(exc: Exception, attempt: int) -> float:
+    if _is_rate_limit(exc):
+        return RATE_LIMIT_BACKOFF * (0.75 + random.random() * 0.5)
+    return min(2 ** attempt, 16) * (0.5 + random.random())
+
+
+def _is_retryable(exc: Exception) -> bool:
+    text = f"{type(exc).__name__}: {exc}".lower()
+    if any(x in text for x in ("400", "401", "402", "403", "404")):
+        return False        # bad request, auth, or funding — retrying cannot help
+    return any(x in text for x in RETRYABLE)
 
 
 def sampling_is_honoured(model_id: str) -> bool:
@@ -56,6 +89,10 @@ def _agent(config_hash: str, model_id: str, prompt: str, mode: str) -> Agent:
         OpenAIChatModel(model_id, provider=provider),
         output_type=OUTPUT_SCHEMAS[mode],
         system_prompt=prompt,
+        # pydantic-ai defaults to a single output retry, which surfaced as
+        # "Exceeded maximum output retries (1)" whenever a model fumbled the schema
+        # once. Two more attempts costs little and recovers most of them.
+        output_retries=3,
     )
 
 
@@ -118,17 +155,27 @@ def triage(
     )
 
     t0 = time.perf_counter()
-    try:
-        with warnings.catch_warnings():   # the drop is detected above and recorded, not news
-            warnings.filterwarnings("ignore", message=".*Sampling parameters.*")
-            result = agent.run_sync(prompt, model_settings=_settings(config))
-    except Exception as exc:  # network, rate limit, schema violation
+    result, last_error, attempts = None, None, 0
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        attempts = attempt
+        try:
+            with warnings.catch_warnings():   # the drop is detected above, not news
+                warnings.filterwarnings("ignore", message=".*Sampling parameters.*")
+                result = agent.run_sync(prompt, model_settings=_settings(config))
+            break
+        except Exception as exc:
+            last_error = exc
+            if attempt == MAX_ATTEMPTS or not _is_retryable(exc):
+                break
+            time.sleep(_backoff(exc, attempt))
+
+    if result is None:
         return TriageRun(
             **base,
             decision=TriageDecision(category="question", urgency="P3", needs_human=True),
             tokens_in=0, tokens_out=0, cost_usd=0.0,
-            latency_ms=int((time.perf_counter() - t0) * 1000),
-            error=f"{type(exc).__name__}: {exc}"[:300],
+            latency_ms=int((time.perf_counter() - t0) * 1000), attempts=attempts,
+            error=f"{type(last_error).__name__}: {last_error}"[:300],
         )
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
@@ -140,4 +187,5 @@ def triage(
         tokens_out=usage.output_tokens or 0,
         cost_usd=_cost(usage),
         latency_ms=latency_ms,
+        attempts=attempts,
     )

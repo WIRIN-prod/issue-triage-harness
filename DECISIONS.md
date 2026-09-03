@@ -385,6 +385,66 @@ hash no longer matches its contents**, so editing one label in place fails loudl
 silently invalidating every result already computed against it. Rationale text is excluded from
 the hash: two labellers may word an explanation differently and still mean the same label.
 
+### D22 — A silently thinned dataset; retries and a failure-rate guard
+**The first real labelling run produced a dataset that was wrong in a way nothing flagged.**
+Requested 100 gold labels; 20 survived. 254 of 991 stage-1 calls also failed. The pipeline built
+a dataset from the survivors, hashed it cleanly, printed a tidy summary, and exited 0.
+
+That is exactly the failure mode this project is supposed to catch. The artefact looked
+valid — correct schema, stable hash, plausible summary — and was a fifth of its intended size,
+missing the `docs` category entirely. Every downstream number would have been computed against
+it without complaint.
+
+**Cause (first diagnosis, incomplete).** `ModelAPIError: Connection error.` under concurrency. Sequentially both models are
+flawless (0/6 failures each); at 8 workers the cheap model loses 3/40, and the frontier model —
+which holds connections far longer per call — lost roughly 80%. Transient gateway failures, not
+rate limits, and entirely retryable.
+
+**Two fixes, and the second matters more.**
+
+1. **Retries** with exponential backoff and jitter, up to 4 attempts, on transient signals only.
+   400/401/402/403/404 are never retried — no amount of waiting fixes a malformed request or an
+   unfunded account. `TriageRun.attempts` records how many were needed, so retry pressure is
+   visible in the data rather than hidden by it.
+
+2. **A failure-rate guard.** `build_dataset` refuses below a 95% success rate and reports the
+   error taxonomy. Retries reduce failures; they cannot promise zero. The guard is what turns a
+   thinned run into an error instead of a smaller result, and it is the fix that would have
+   caught this had it existed first.
+
+**The general lesson, which belongs in the write-up:** partial failure is more dangerous than
+total failure. A pipeline that dies is obvious. A pipeline that quietly completes with a fifth of
+its data produces confident numbers about the wrong thing.
+
+### D23 — The real failure was rate limiting, and the real fix was a checkpoint
+**D22's retries helped but did not solve it.** Stage 1 improved from 254/991 failures to 18/991,
+stage 2 from ~80/100 to 14/100 — still under the 95% guard, which correctly refused to build a
+dataset. It also threw away 86 good frontier labels and the **$1.10** they cost.
+
+**The error summary was hiding the diagnosis.** It grouped by exception class, so 13 failures
+read as `ModelHTTPError` — a category, not a cause. Grouping by class *and* HTTP status
+immediately gave `ModelHTTPError/429: Rate limit exceeded: new-account-rpm/anthropic/claude-sonnet-5`.
+A summary that omits the actionable field is not a summary.
+
+**Two causes, not one:**
+- **429 on a per-minute account cap.** The generic exponential ramp tops out near 12s and simply
+  retried into the same 60-second window alongside every other worker. Rate limits now get a
+  backoff sized to the window they police (~25s), while transient connection errors keep the fast
+  ramp. Frontier labelling concurrency defaults to 2.
+- **`Exceeded maximum output retries (1)`** — pydantic-ai allows a single retry when a model
+  fumbles the output schema. Raised to 3; two more attempts cost almost nothing and recover most.
+
+**The fix that actually mattered: a checkpoint.** `LabelCache` appends each successful label as it
+returns, keyed by issue and config hash. A re-run pays only for what is missing, and failures are
+deliberately not cached because they are what a re-run should retry. Retries reduce failure rates;
+they never reach zero, so any expensive stage behind a guard must be resumable or the guard turns
+every partial failure into a total loss.
+
+**A bug the test caught that review would not have.** `LabelCache` defines `__len__`, so an empty
+cache is falsy, and `if cache:` skipped every write — meaning the cache never populated on a fresh
+run, which is precisely the run that most needs it. It would have looked like it worked: no error,
+no warning, just a cache that was always empty and a bill that never went down.
+
 ---
 
 ## Still open
