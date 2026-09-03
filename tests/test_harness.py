@@ -171,19 +171,43 @@ def test_refuses_when_temperature_was_dropped_for_only_one_arm():
         check_comparable(_run(), _run(temperature_applied=False))
 
 
-def test_refuses_when_no_issue_succeeded_in_both_runs():
+def test_refuses_when_every_call_failed():
+    """A run where nothing returned is refused on run quality, before scoring."""
     a = _run(items=[ItemResult(issue_number=1, predicted=d(), gold=d(), cost_usd=0,
                                tokens_in=0, tokens_out=0, latency_ms=0,
                                context_empty=True, context_tokens=0, error="boom")])
-    with pytest.raises(NotComparable, match="no issues"):
+    with pytest.raises(NotComparable, match="answered only 0/1"):
         compare(a, a)
 
 
+def _item(n, err=""):
+    return ItemResult(issue_number=n, predicted=d(), gold=d(), cost_usd=0.001,
+                      tokens_in=10, tokens_out=5, latency_ms=1,
+                      context_empty=True, context_tokens=0, error=err)
+
+
 def test_comparison_pairs_only_issues_both_runs_answered():
-    def item(n, err=""):
-        return ItemResult(issue_number=n, predicted=d(), gold=d(), cost_usd=0.001,
-                          tokens_in=10, tokens_out=5, latency_ms=1,
-                          context_empty=True, context_tokens=0, error=err)
-    a = _run(items=[item(1), item(2), item(3, err="failed")])
-    b = _run(items=[item(1), item(2), item(3)])
-    assert compare(a, b, n_boot=200).n_paired == 2
+    """One failure in 20 stays above the run-quality floor; only shared items pair."""
+    a = _run(items=[_item(n) for n in range(19)] + [_item(19, err="failed")])
+    b = _run(items=[_item(n) for n in range(20)])
+    assert compare(a, b, n_boot=200).n_paired == 19
+
+
+def test_refuses_a_run_that_mostly_failed():
+    """free-nvidia scored the best macro-F1 of any config on the 24 of 60 calls that returned."""
+    a = _run(items=[_item(n) for n in range(20)])
+    b = _run(items=[_item(n) for n in range(8)] + [_item(n, err="boom") for n in range(8, 20)])
+    with pytest.raises(NotComparable, match="survivorship"):
+        compare(a, b, n_boot=200)
+
+
+def test_family_wise_correction_demotes_marginal_findings():
+    """Six tests at alpha=0.05 give ~26% chance of a false positive if read alone."""
+    from harness.stats import holm_bonferroni
+
+    a, b = _noisy(60, 0.06, 31)
+    marginal = [paired_bootstrap(a, b, AVG, f"m{i}", True, n_boot=2000) for i in range(6)]
+    before = sum(1 for c in marginal if c.significant)
+    holm_bonferroni(marginal)
+    after = sum(1 for c in marginal if c.significant)
+    assert after <= before

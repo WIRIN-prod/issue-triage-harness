@@ -49,6 +49,7 @@ class Comparison:
     se: float
     n_needed: int | None = None   # items required to resolve, when inconclusive
     effect_too_small: bool = False
+    family_adjusted: bool = False  # demoted by multiple-comparison correction
 
     @property
     def significant(self) -> bool:
@@ -56,7 +57,9 @@ class Comparison:
 
     def line(self) -> str:
         arrow = "→" if self.significant else "·"
-        if self.effect_too_small:
+        if self.family_adjusted:
+            need = "  (was significant alone; not after family-wise correction)"
+        elif self.effect_too_small:
             need = "  (effect indistinguishable from zero)"
         elif self.n_needed is not None:
             need = f"  (needs ~{self.n_needed} items)"
@@ -120,6 +123,39 @@ def paired_bootstrap(
         verdict=verdict, higher_is_better=higher_is_better, n_items=n,
         n_boot=n_boot, se=se, n_needed=n_needed, effect_too_small=too_small,
     )
+
+
+def holm_bonferroni(comparisons: list[Comparison], alpha: float = 0.05) -> list[Comparison]:
+    """Adjust a family of comparisons for multiple testing, in place.
+
+    Running six tests at alpha=0.05 and reading each as if it stood alone gives roughly
+    a 26% chance of at least one false positive. A harness built to avoid over-claiming
+    should not then over-claim by arithmetic.
+
+    Holm-Bonferroni rather than plain Bonferroni: it is uniformly more powerful and
+    still controls the family-wise error rate. Significance is approximated from how far
+    the bootstrap CI sits from zero, since the bootstrap gives an interval rather than a
+    p-value: p ~ 2 * (1 - Phi(|diff| / se)).
+    """
+    from math import erf, sqrt
+
+    def p_of(c: Comparison) -> float:
+        if c.se <= 0:
+            return 0.0 if abs(c.diff) > 0 else 1.0
+        z = abs(c.diff) / c.se
+        return max(0.0, min(1.0, 2 * (1 - 0.5 * (1 + erf(z / sqrt(2))))))
+
+    ordered = sorted(comparisons, key=p_of)
+    m = len(ordered)
+    survived = True
+    for rank, c in enumerate(ordered):
+        threshold = alpha / (m - rank)
+        if not survived or p_of(c) > threshold:
+            survived = False
+            if c.verdict != INCONCLUSIVE:
+                c.verdict = INCONCLUSIVE
+                c.family_adjusted = True
+    return comparisons
 
 
 @dataclass

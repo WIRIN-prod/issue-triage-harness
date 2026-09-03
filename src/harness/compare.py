@@ -18,7 +18,8 @@ from statistics import mean
 from .metrics import (ERROR_UNIT_USD, Scored, breakeven_unit_usd, error_weight,
                       score)
 from .runner import ItemResult, RunRecord
-from .stats import Comparison, Variance, dominated_by_noise, paired_bootstrap
+from .stats import (Comparison, Variance, dominated_by_noise, holm_bonferroni,
+                    paired_bootstrap)
 
 
 class NotComparable(ValueError):
@@ -37,8 +38,38 @@ def _unpriced(r: RunRecord) -> int:
     return sum(1 for i in r.ok if not i.cost_reported)
 
 
+MIN_RUN_SUCCESS = 0.90
+
+
 def check_comparable(a: RunRecord, b: RunRecord) -> None:
+    # Identity checks first: they are cheaper and more fundamental than run quality,
+    # and an empty run should report *why* it is empty rather than failing a rate check.
+    if a.dataset_hash != b.dataset_hash:
+        raise NotComparable(
+            f"different datasets: A={a.dataset_hash} B={b.dataset_hash}. These runs "
+            f"scored against different definitions of correct and cannot be compared."
+        )
+    if a.split != b.split:
+        raise NotComparable(f"different splits: A={a.split} B={b.split}")
+    if a.temperature_applied != b.temperature_applied:
+        raise NotComparable(
+            f"temperature is honoured for one arm and dropped for the other "
+            f"(A={a.temperature_applied} B={b.temperature_applied}). The difference "
+            f"would be attributed to the config change (DECISIONS.md D19)."
+        )
+
     for r, side in ((a, "A"), (b, "B")):
+        if not r.items:
+            continue
+        rate = len(r.ok) / len(r.items)
+        if rate < MIN_RUN_SUCCESS:
+            raise NotComparable(
+                f"{side} ({r.config_name}) answered only {len(r.ok)}/{len(r.items)} items "
+                f"({rate:.0%}). Scores computed on the survivors are survivorship bias: the "
+                f"items a model fails are unlikely to be a random sample of the items it "
+                f"sees. `free-nvidia` scored the best macro-F1 of any config on the 24 of 60 "
+                f"calls that returned."
+            )
         missing = _unpriced(r)
         if missing:
             raise NotComparable(
@@ -143,6 +174,11 @@ def compare(
         if variances and dominated_by_noise(c, variances.get(name)):
             rep.noisy.append(f"{name}: Δ={c.diff:+.4f} vs run-to-run sd="
                              f"{variances[name].sd:.4f}")
+
+    # Six diagnostics tested at alpha=0.05 give ~26% chance of one false positive if
+    # each is read alone. The flagship is excluded: it is a single pre-registered
+    # question, not one of a family fished for significance.
+    holm_bonferroni(rep.comparisons)
 
     rep.breakeven = breakeven_unit_usd(rep.scored_a, rep.scored_b)
     for unit in (0.01, 0.1, 1.0, 10.0, 100.0):

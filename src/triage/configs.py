@@ -42,6 +42,18 @@ def _variant(name: str, **kw) -> TriageConfig:
     return BASELINE.model_copy(update={"name": name, **kw})
 
 
+# Free-tier models from other providers, to show the service is gateway-agnostic and
+# that the harness scores any provider identically. Only models that survived a probe
+# appear here: of eight free models with structured-output support, four failed a single
+# call (three HTTP errors, one schema violation) and latency ranged 2.2s to 47s.
+# They cost nothing in dollars and a great deal in reliability and latency — which is a
+# result about the cost axis, not a footnote to it.
+FREE_TIER = {
+    "free-minimax": "minimax/minimax-m3:free",          # 1M context, ~4.0s probe
+    "free-liquid":  "liquid/lfm-2.5-2.6b:free",         # 2.6B params, ~2.2s probe
+    "free-nvidia":  "nvidia/nemotron-3-super-120b-a12b:free",   # ~47s probe
+}
+
 CONFIGS: dict[str, TriageConfig] = {
     "baseline": BASELINE,
     # model tier — the headline cost experiment (~50x input price across the ladder)
@@ -53,6 +65,8 @@ CONFIGS: dict[str, TriageConfig] = {
     "rationale-off": _variant("rationale-off", rationale_mode="off"),
     # the one-off assumption check (SPEC.md §5.1) — not a permanent axis
     "context-none": _variant("context-none", context="none"),
+    # cross-provider, zero marginal cost
+    **{name: _variant(name, model=mid) for name, mid in FREE_TIER.items()},
 }
 
 
