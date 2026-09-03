@@ -121,6 +121,16 @@ def _settings(config: TriageConfig) -> OpenAIChatModelSettings:
     return OpenAIChatModelSettings(temperature=config.temperature, extra_body=extra)
 
 
+def is_free_model(model_id: str) -> bool:
+    """OpenRouter marks genuinely-free variants with a `:free` suffix.
+
+    This matters because "$0 because the model is free" and "$0 because the gateway
+    told us nothing" are different facts that look identical in a cost column. The
+    first is a real measurement; the second is a hole (D28).
+    """
+    return model_id.endswith(":free")
+
+
 def _cost(usage) -> tuple[float, bool]:
     """Actual spend for this call, and whether the gateway actually told us.
 
@@ -192,6 +202,8 @@ def triage(
 
     usage = result.usage
     cost, reported = _cost(usage)
+    if not reported and is_free_model(config.model):
+        cost, reported = 0.0, True      # genuinely free, not unknown
     return TriageRun(
         **base,
         decision=to_decision(result.output),

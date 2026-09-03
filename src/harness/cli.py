@@ -29,6 +29,7 @@ POOL = DATA / "issues" / "litellm-pool.json"
 GRAPH = DATA / "graphs" / "litellm-raw.json"
 REPO_DIR = DATA / "repos" / "litellm"
 DATASET = DATA / "dataset" / "gold.json"
+DATASET_ENV = "HARNESS_DATASET"
 RUNS = Path("runs")
 CACHE = DATA / "cache"
 RUBRIC = Path("docs/rubric.md")
@@ -39,6 +40,14 @@ STRATIFY_CONFIG = TriageConfig(
 GOLD_CONFIG = TriageConfig(
     name="gold", model=LABELLER, rationale_mode="pre", context="graph",
 )
+
+
+def _dataset_path(args=None) -> Path:
+    """Which frozen dataset to use. Corrections create a new version rather than
+    editing in place, so the version is an explicit choice (DECISIONS.md D21)."""
+    import os
+    override = getattr(args, "dataset", None) or os.environ.get(DATASET_ENV)
+    return Path(override) if override else DATASET
 
 
 def _load_env():
@@ -149,7 +158,7 @@ def cmd_label(args):
 def cmd_eval(args):
     from triage.configs import get as get_config
 
-    ds = Dataset.load(DATASET)
+    ds = Dataset.load(_dataset_path(args))
     _, index, voc = _load_env()
     cfg = get_config(args.config)
     print(f"{cfg.describe()}\n  dataset {ds.content_hash()} split={args.split} "
@@ -210,7 +219,7 @@ def cmd_sweep(args):
     """
     from triage.configs import CONFIGS
 
-    ds = Dataset.load(DATASET)
+    ds = Dataset.load(_dataset_path(args))
     _, index, voc = _load_env()
     done = _existing_runs(args.split)
     names = args.configs or sorted(CONFIGS)
@@ -240,7 +249,7 @@ def cmd_sweep(args):
 
 
 def cmd_baselines(args):
-    ds = Dataset.load(DATASET)
+    ds = Dataset.load(_dataset_path(args))
     split = None if args.split == "all" else args.split
     print(f"dataset {ds.content_hash()} · split {args.split} · "
           f"{len(ds.split_items(split) if split else ds.items)} items\n")
@@ -248,7 +257,7 @@ def cmd_baselines(args):
 
 
 def cmd_verify(args):
-    ds = Dataset.load(DATASET)
+    ds = Dataset.load(_dataset_path(args))
     items = verify_mod.sample(ds, args.n)
 
     if args.action == "sample":
@@ -299,7 +308,7 @@ def cmd_verify(args):
 
 
 def cmd_dataset(args):
-    ds = Dataset.load(DATASET)
+    ds = Dataset.load(_dataset_path(args))
     print(json.dumps(ds.summary(), indent=1))
     print("\ncells:")
     for k, v in ds.cells().items():
@@ -365,6 +374,8 @@ def main(argv=None):
     d = sub.add_parser("dataset", help="summarise the frozen dataset")
     d.set_defaults(func=cmd_dataset)
 
+    for sp in (e, l, v, c, sw, bl, d, vf):
+        sp.add_argument("--dataset", help="path to a frozen dataset (default data/dataset/gold.json)")
     args = p.parse_args(argv)
     args.func(args)
 
