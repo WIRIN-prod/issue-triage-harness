@@ -257,9 +257,9 @@ listing Bedrock models had put `llms/bedrock` first; with zone weighting `router
 leads and bedrock falls to third. Config blocks name providers incidentally — the title names the
 subject.
 
-**Consequence for the harness:** context fires on roughly 70% of issues. Even a large effect can
-only move the metric on the subset where retrieval engages, which dilutes the measurable effect
-size and matters for the power calculation.
+**Consequence for the harness:** context fires on **946 of 991 pool issues (95%)**. An earlier
+estimate of ~70% was extrapolated from a ten-issue sample and was too pessimistic; the context
+experiment is far less diluted than feared.
 
 ### D17 — Graph builds must run cold; the cache changes the output
 **Found while checking reproducibility**, not from a bug report.
@@ -358,6 +358,31 @@ rather than academic. Every model honours temperature (D19) and supports structu
 the rubric prompt costs ~690 input tokens over the terse one and changed the answer; repo context
 costs ~1,050 input tokens. All three are worth measuring properly.
 
+### D21 — Labelling pipeline: two backends, and why the frontier pass runs on OpenRouter
+**Proposed:** run the frontier labelling pass in the agent session rather than through
+OpenRouter, to save credits.
+
+**Measured the premise first.** `harness estimate` prices the whole pipeline at **$0.74** —
+$0.05 for the cheap stratification pass over 991 issues and **$0.69** for frontier labels on 100.
+
+**Chose:** frontier labels via OpenRouter. Saving sixty-nine cents is not worth what it costs
+methodologically. A labelling pass run inside a chat session is not reproducible — a reviewer
+cannot re-run it, it can drift across 100 issues as context is summarised, and the resulting
+labels would be the one artefact in a project built on hashing and re-runnability that nobody
+can regenerate.
+
+**Both backends exist, because they are right for different jobs.** `ModelLabeller` (OpenRouter,
+reproducible) does the bulk gold pass. `FileLabeller` reads labels from JSONL and is how
+out-of-band labels arrive — which is exactly what the human *verification* sample needs, where
+non-reproducibility is the entire point. Selecting between them is a CLI flag, not a rewrite.
+
+**Dataset identity.** The hash covers items, splits, disputed flags, the rubric digest, and the
+graph digest — because what "correct" means is a function of the rubric that produced the labels
+and the repo graph the labeller saw. `Dataset.load` recomputes and **refuses a file whose stated
+hash no longer matches its contents**, so editing one label in place fails loudly instead of
+silently invalidating every result already computed against it. Rationale text is excluded from
+the hash: two labellers may word an explanation differently and still mean the same label.
+
 ---
 
 ## Still open
@@ -367,6 +392,6 @@ costs ~1,050 input tokens. All three are worth measuring properly.
 - Whether `rationale` is prompt-visible reasoning the model generates before deciding, or a
   post-hoc explanation. Measurably different token costs, and the first may change decision
   quality. Currently unresolved — it is itself a good first experiment for the harness.
-- OpenRouter returns 402 for `google/gemini-2.5-flash` and `anthropic/claude-haiku-4.5`; the
-  account funds only the cheaper tiers. The top two rungs of the ladder are unavailable until
-  credits are added, which would flatten the cost experiment to a ~5x spread.
+- OpenRouter credits: the top two rungs of the ladder (`gemini-2.5-flash`, `claude-haiku-4.5`)
+  and the labeller (`claude-sonnet-5`) returned 402 before funding. Full pipeline estimate is
+  $0.74 for labelling plus roughly $2-3 for a complete eval sweep.
