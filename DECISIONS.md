@@ -194,9 +194,10 @@ where an instrument stops being valid is worth more than pretending it doesn't.
 `simonw/datasette` is disqualified on dataset grounds: 61–79% of its issues are the maintainer's
 own work-journal entries rather than incoming reports. `python-attrs/attrs` was the runner-up
 (19 source files, clean Bug/Feature/Documentation taxonomy) but lost on dataset quality: ~5–40%
-label coverage on external issues versus litellm's ~55–65%, and litellm carries an
+label coverage on external issues versus litellm's ~55–65%, and litellm appeared to carry an
 `awaiting: user response` label — a maintainer-generated proxy for `needs_human`, the hardest
-of the three fields to label and the one carrying the 10:1 cost weight.
+of the three fields to label. **That reason turned out to be wrong — see D18.** The choice
+stands on the remaining grounds, which D18 confirms with real numbers.
 
 **Pinned to a SHA, not a branch.** litellm's default branch is `litellm_internal_staging` and
 `main` is not among its first 100 branches. A moving ref would make the graph unreproducible and
@@ -283,6 +284,40 @@ no test would have caught — the numbers would simply have drifted.
 is pinned in code. Incremental remains available for local iteration but is never the path that
 produces a graph used in results. The graph digest joins the commit SHA as part of the identity of
 any run built on it.
+
+### D18 — Candidate pool built; the `awaiting: user response` signal does not exist in practice
+**Correction to D15.** The `awaiting: user response` label was cited as the strongest reason to
+prefer litellm — a free weak signal for `needs_human`. It is used **116 times all-time and zero
+times** in the window we sample from. The label exists in the repo's taxonomy but maintainers
+stopped applying it. D15 checked that the label existed, not that it was used; those are
+different questions and only the second one mattered.
+
+**The repo choice still stands**, on the grounds that survived contact with the data:
+
+| | Pool (991 issues, 2026-06-01..2026-09-03) |
+|---|---|
+| Distinct authors | 615 — genuine incoming reports, not one voice |
+| Label coverage | 81% |
+| Median body | 3,330 chars |
+| Bot-authored, removed | 9 |
+| Near-empty bodies (<80 chars) | 24 — real junk, and a real triage signal |
+
+**Window: three months before the pinned commit.** The graph is a snapshot at one SHA; a 2024
+issue references modules that have since moved or been deleted, so retrieval would fail on it
+for reasons unrelated to retrieval quality and would contaminate the context experiment. The
+window also matches how triage actually works — on incoming issues against today's code.
+
+**Maintainer labels cannot stratify the sample.** litellm's taxonomy is *component*-shaped, not
+*type*-shaped: `llm translation` (587), `proxy` (359), `SDK`, `claude code`, `ui-dashboard`.
+Type labels are thin — `bug` 292, `enhancement` 154, `docs` 9, `question` 2 all-time. There is
+no maintainer signal at all for three of our five categories.
+
+**Consequence — stratification needs its own cheap labelling pass.** Selecting a stratified
+sample requires approximate labels for the whole pool, but stratification is a *sampling aid*,
+not ground truth, so it does not need frontier quality. Two stages: a cheap model labels all 991
+for stratification only, then the frontier labeller produces real labels for the ~100 selected,
+and a human verifies ~25 of those. Labelling the full pool at frontier quality would cost
+roughly 10x more for labels that are thrown away after sampling.
 
 ---
 
