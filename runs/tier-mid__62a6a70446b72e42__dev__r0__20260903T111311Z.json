@@ -1,0 +1,1338 @@
+{
+ "run_id": "tier-mid__62a6a70446b72e42__dev__r0__20260903T111311Z",
+ "config_name": "tier-mid",
+ "config_hash": "62a6a70446b72e42",
+ "model": "google/gemini-2.5-flash",
+ "prompt_version": "v2_rubric",
+ "rationale_mode": "post",
+ "context_mode": "graph",
+ "temperature": 0.0,
+ "temperature_applied": true,
+ "dataset_hash": "f383db39072f4a10",
+ "split": "dev",
+ "repeat": 0,
+ "git_sha": "2b1359c",
+ "timestamp": "20260903T111311Z",
+ "items": [
+  {
+   "issue_number": 34082,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The documentation for Headroom compression pins a stale version with a known crash and describes a setup that does not achieve real compression, leading to a broken feature for users following the guide. This affects a major feature (guardrails) and has a painful workaround (figuring out the correct version and configuration)."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The docs pin a stale version and the documented default configuration doesn't actually achieve compression, but the code itself (litellm's own guardrail integration) behaves as documented - the issue is with an external dependency's version pin and undocumented config caveats in litellm's docs. This is fundamentally a documentation problem: the guide needs to be updated to reflect a version floor and explain additional config needed to avoid a silent no-op. Since the underlying root cause is upstream (headroom repo) and litellm's code isn't violating any contract, this is a docs issue, not a bug. It's narrow (affects users of one guardrail following one guide), has a clear fix (update docs), and doesn't need deep judgement to route to the docs team."
+   },
+   "cost_usd": 0.0009201,
+   "tokens_in": 2442,
+   "tokens_out": 75,
+   "latency_ms": 2777,
+   "context_empty": false,
+   "context_tokens": 664,
+   "error": ""
+  },
+  {
+   "issue_number": 34232,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a critical bug where duplicate rows are inserted into the database due to a mismatch in how `NULL` values are handled in the `where` clause and `create` payload during upserts, combined with PostgreSQL's unique constraint behavior with `NULL`s. This leads to database CPU exhaustion and incorrect spend reporting. The impact is severe (P0) as it affects core functionality (spend tracking) and can lead to performance degradation for most users. It requires human intervention (needs_human=True) due to its P0 urgency and the need for a maintainer to confirm the proposed fixes and potentially address the issue across multiple tables."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented, reproducible bug affecting the core database spend-tracking path shared by six daily-spend tables (user, team, org, end-user, agent, tag). It causes duplicate row inserts, database bloat, and CPU exhaustion in production - clear evidence of misbehaving vs expected behavior (unique constraint intent). It affects the shared core path (all six tables use the same generic upsert function), which raises severity by one level per modifiers. It's not a security issue, not a question, and code is behaving incorrectly relative to intended contract, so it's a bug, not docs. Impact is significant (CPU exhaustion, DB bloat) but affects a subset of deployments (those with high volume of NULL-valued nullable conflict columns), and a workaround likely exists (avoid NULL in provider field or backfill), though not explicitly stated by reporter as a workaround. Given the shared-core-path modifier raising it from P2 to P1, and it's a genuine correctness/performance bug with reproduction steps and clear diagnosis, it needs human judgement to decide on schema migration approach (NULLS NOT DISTINCT vs canonicalization), affecting multiple tables - a product-direction/architecture decision. Given P1 severity, needs_human is required per rules."
+   },
+   "cost_usd": 0.0014297,
+   "tokens_in": 3549,
+   "tokens_out": 146,
+   "latency_ms": 6715,
+   "context_empty": false,
+   "context_tokens": 758,
+   "error": ""
+  },
+  {
+   "issue_number": 34279,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a critical bug where the Noma v2 guardrail intermittently causes 500 errors under concurrent load due to a race condition during JSON serialization. This is a P0 because it breaks the application for most users, has no workaround, and is a regression from previously working behavior. It needs human attention to confirm the fix and ensure no other race conditions exist."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a clear, well-documented bug: a race condition causes an uncaught RuntimeError during JSON serialization of shared mutable state in a guardrail hot path, resulting in intermittent 500s for valid requests under concurrency. The code violates the expected/documented contract that guardrail failures should be handled by block_failures logic, not crash unpredictably. It's not a security vulnerability (no exploit path, just a reliability bug), not a question, and not purely a docs issue since the code itself is wrong. It affects a specific guardrail integration (Noma v2), not the shared core path broadly, and only affects users of that guardrail under concurrency. A workaround exists (disable Noma v2 guardrail concurrency or lower block_failures), but the issue is well-specified with a full reproduction, root cause, and proposed fix, so it doesn't need a maintainer's judgement call — it can be routed directly for a fix. Given it's a narrower path (single guardrail integration) with a clear reproduction and proposed fix, P2 is appropriate; it's not P1 since it doesn't affect a widely-used provider or the shared core system, just one specific guardrail. No regression modifier applies (this bug has existed since PR #26605), and no other modifiers push it further. Since the report includes clear reproduction steps, root cause analysis, and a proposed fix, it can be routed without further discussion."
+   },
+   "cost_usd": 0.001375,
+   "tokens_in": 3825,
+   "tokens_out": 91,
+   "latency_ms": 1810,
+   "context_empty": false,
+   "context_tokens": 1104,
+   "error": ""
+  },
+  {
+   "issue_number": 34661,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to add recurring access schedules for virtual keys. This is a well-specified feature request with a clear demand and proposed implementation. It affects a specific part of the proxy functionality, so it is P2. No human intervention is needed as the request is clear and actionable."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a well-specified request for new functionality that does not currently exist: recurring time-window access control for virtual keys. No existing behavior is broken; it's a proposal for a new enforcement mechanism with detailed implementation guidance. This clearly falls under 'feature'. It addresses a security-adjacent motivation (limiting key usage windows) but is not itself reporting a vulnerability - it's requesting a new access-control capability, which per the rules is explicitly classified as feature (\"Requesting an auth feature is feature\"). Urgency is P2 since it's a well-specified feature request with clear demand/motivation, but it's niche (affects only users wanting time-based restrictions) and not blocking any existing functionality - no regression, no broad impact modifier applies since this is a new capability not affecting the shared core path today. needs_human is true because this is a product-direction decision about whether to build new enforcement logic into the auth path, which requires maintainer judgement on design, security implications of fail-closed behavior, and scope."
+   },
+   "cost_usd": 0.0005944,
+   "tokens_in": 1348,
+   "tokens_out": 76,
+   "latency_ms": 1829,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 34715,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The issue is an accidentally opened by AI, so it is a question and P3. It does not need human intervention."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The issue is explicitly a mistake with no actionable content - the author states it was accidentally opened and should be ignored. There's no bug, feature, question, or documentation issue to address. This is an empty/unintelligible issue by definition of the rules, defaulting to 'question' category. No maintainer judgement is needed to route this - it's clearly identifiable as a non-issue that can be closed without discussion."
+   },
+   "cost_usd": 0.0003613,
+   "tokens_in": 871,
+   "tokens_out": 40,
+   "latency_ms": 1199,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 34727,
+   "predicted": {
+    "category": "docs",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The issue describes outdated documentation regarding REDIS_URL performance and suggests an update to reflect current behavior and a new caveat. This is a clear documentation issue with a well-defined solution."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The code behaves as intended (pooling now works correctly for REDIS_URL); the documentation is what's stale/incorrect. The performance claim in the docs no longer matches reality, and there's a genuine, different caveat (silent dropping of settings outside the URL string like REDIS_PASSWORD) that should replace it. This is a clear case of docs misdescribing current code behavior, with a well-specified suggested fix. It's narrow, well-documented with data, and doesn't require product judgement — just an update to the caching docs. No reproduction is needed since the issue itself provides full analysis and a concrete suggested replacement text."
+   },
+   "cost_usd": 0.000724,
+   "tokens_in": 1980,
+   "tokens_out": 52,
+   "latency_ms": 1438,
+   "context_empty": false,
+   "context_tokens": 442,
+   "error": ""
+  },
+  {
+   "issue_number": 34777,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a clear bug where the /cursor/chat/completions endpoint fails to correctly translate image_url content blocks, leading to schema validation errors. This affects multimodal requests and has a direct impact on users attempting to use vision-capable models through this endpoint. A workaround exists, but the core functionality is broken for a specific, important use case. The root cause is identified and a fix is suggested, making it a well-defined bug report."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The /cursor bridge endpoint fails to translate Chat-Completions-style content blocks (text, image_url) into the Responses API's expected format (input_text, input_image), causing schema validation errors for all vision/multimodal requests. This is a clear deviation from expected/documented behavior (the bridge is supposed to translate requests transparently) with a working code path (/v1/chat/completions) as proof, and a well-identified root cause with a reproduction. This qualifies as a bug. It affects a narrower path (only vision requests through the /cursor bridge specifically), and a workaround exists (use /v1 instead of /cursor), which would normally lower severity, but this is a fairly isolated feature to one endpoint, not a widely used core path — it doesn't affect most users of litellm broadly. Given the workaround, urgency starts at P2 (narrower/subset affected) and drops one level to P3 for the stated workaround. Since it's well-specified with a clear root cause, precise reproduction, and reasonable fix, it does not require additional maintainer judgement or reproduction verification — it can be routed directly to the responsible module."
+   },
+   "cost_usd": 0.0011859,
+   "tokens_in": 3053,
+   "tokens_out": 108,
+   "latency_ms": 1859,
+   "context_empty": false,
+   "context_tokens": 1167,
+   "error": ""
+  },
+  {
+   "issue_number": 34797,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The SAP provider silently drops `cache_control` markers, preventing Anthropic prompt caching from working. This impacts token cost for users routing Anthropic models through SAP. The issue affects a major feature (caching) and has a clear impact on many users, making it P1. It needs human review to confirm the fix and potential product implications."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The SAP provider's message models drop the cache_control field during transformation, meaning Anthropic prompt caching (a documented, expected feature for Anthropic models) never activates when routed through SAP. This is a feature-parity/correctness gap: the documented Anthropic prompt-caching contract is violated by the SAP integration's code (flattening content and omitting cache_control), so it's a bug rather than a docs issue or a mere feature request — the expected behavior (cache_control passthrough) is well-defined by Anthropic's API and litellm's own anthropic provider already implements it. It affects a narrower path (SAP provider users routing Anthropic models), and a workaround exists (not using SAP routing, or accepting full-price resends), so this isn't affecting most users broadly. There's no regression indicated. Given it's a single, well-scoped provider path issue with a workaround (avoid SAP routing / accept extra cost) and reproduction provided, urgency is P2. It's a clear, well-specified bug with reproduction and clear code path pointed out (SAPMessage, SAPUserMessage, TextContent lacking cache_control field), so it can be routed to the SAP provider owner without further discussion."
+   },
+   "cost_usd": 0.0009616,
+   "tokens_in": 2497,
+   "tokens_out": 85,
+   "latency_ms": 1980,
+   "context_empty": false,
+   "context_tokens": 965,
+   "error": ""
+  },
+  {
+   "issue_number": 34820,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a data integrity problem where spend rows are lost due to cancellation of a flush operation. This is a critical bug as it leads to data loss and incorrect accounting, affecting core functionality. The reporter also provides a detailed analysis of why obvious fixes don't work, indicating a complex underlying issue that requires careful consideration and potentially a significant change to the spend-writer contract. This warrants a P0 urgency due to data loss and a need for human intervention due to the complexity and potential architectural changes required."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "Spend log rows are popped from the in-memory queue before the DB write completes, and cancellation (via scheduler shutdown or an untracked monitor task) permanently loses them with no requeue or logging. This is a data-integrity bug in an existing, documented flush contract — the code does not behave as expected (rows should either commit or be recoverable). It is not attacker-controlled/security since timing is only reachable from the lifespan shutdown path, not a request path. It affects the shared spend-tracking core path used by all proxy deployments with DB spend logging enabled, and there's a clear, detailed reproduction with root cause analysis already provided (multiple file/line references, tested and rejected fixes). This is significant since it can silently lose billing-relevant spend log rows on any restart/shutdown, and even affects billing aggregates if a naive fix (requeue) were applied — that's why it also flags the risk of overcounting. It's a widely-hit path (every proxy shutdown/restart) but has bounded impact (only in-flight batch during shutdown, not constant failure), and the reporter explicitly notes there's no workaround. Given it affects the shared core spend-logging path and is essentially unavoidable on shutdown for anyone with DB logging enabled, but does not break normal operation for most users continuously, this is P1 severity with the \"shared core path\" modifier already reflected in that P1 rating (would otherwise be P2 for a narrow shutdown-only edge case, raised due to core path impact). This requires maintainer judgement because the reporter explicitly shows that naive fixes (shielding, requeue) introduce new correctness risks (double-counting billing aggregates), so a fix requires cross-module design work, not just a queued patch."
+   },
+   "cost_usd": 0.0012198,
+   "tokens_in": 3091,
+   "tokens_out": 117,
+   "latency_ms": 1790,
+   "context_empty": false,
+   "context_tokens": 728,
+   "error": ""
+  },
+  {
+   "issue_number": 34895,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue title and body are too vague to determine the exact problem. It is categorized as a question due to the lack of specific claims about misbehavior, and P3 due to the lack of information. It needs human intervention to gather more details."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue provides no meaningful information: no reproduction steps, no error messages, no description of what is failing, no context about environment or code. This is essentially an empty/unintelligible report. Per rules, an empty or unintelligible issue defaults to 'question' category, and the lack of information should be flagged via needs_human."
+   },
+   "cost_usd": 0.0004217,
+   "tokens_in": 864,
+   "tokens_out": 65,
+   "latency_ms": 1448,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 34978,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a regression where tool output is incorrectly wrapped in a list, breaking compatibility with strict API backends. A workaround exists (modifying the code), but it affects a major feature (tool use with Responses API) and many users could encounter this with strict backends. The proposed fix seems straightforward and directly addresses the problem."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "A prior fix (#17507) overcorrected: it now always wraps tool message output into a list of input_text items, even for plain-string content. This violates the documented Responses API spec (output should be a plain string for text), causing strict/spec-compliant backends to reject requests with a 400 error. This is a clear regression introduced by a previous change, behaving differently from documented/expected behavior — a bug. The reporter provides a clear reproduction and a concrete suggested fix. Because this is a regression affecting the chat-to-responses bridge (a shared core path used whenever routing chat completions through openai/responses/<model>), it affects a subset of users (those hitting strict backends) but touches the shared conversion core, and is a regression, so urgency should be raised. Base impact seems narrower (only strict backends reject it) suggesting P2, but regression modifier raises it one level to P1. There's a clear reproduction and suggested fix already provided, so a maintainer doesn't need to gather more info or make a product-direction call — this can be routed directly to the owning module for a fix, though given P1 severity per rules judgement is still needed to confirm claims before merging, so needs_human should be true per the P1 modifier guidance."
+   },
+   "cost_usd": 0.0011542,
+   "tokens_in": 3164,
+   "tokens_out": 82,
+   "latency_ms": 1713,
+   "context_empty": false,
+   "context_tokens": 1123,
+   "error": ""
+  },
+  {
+   "issue_number": 35197,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a regression where rate-limiter metadata is leaked to upstream providers, causing requests to fail. This affects a core path (`/v1/responses`) and has no workaround other than a configuration change, making it a P0. It also requires human judgment to confirm the fix and ensure no other metadata leaks exist."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "A specific internal helper (_stash_value_in_metadata_channels in parallel_request_limiter_v3.py) leaks internal rate-limit state into the provider-visible `metadata` field for native /v1/responses calls, causing upstream providers that don't support this field to reject requests with HTTP 400. This is a clear regression introduced by PR #32711 (worked before, broken now), affects any user with RPM/TPM/max-parallel limits configured on OpenAI-compatible Responses backends - a core/shared code path (rate limiter) affecting many configurations. There is a documented workaround (additional_drop_params: [metadata]) but the underlying behavior is a bug: code violates the expected contract of keeping internal state internal. Given regression (+1 level) and shared core path affected (+1 level) but also stated workaround (-1 level), starting at P2 (narrower path - only affects when rate limits configured) results in P2. Given clear reproduction steps, root cause identified, and specific code locations, this could be routed directly to the owning module without further discussion despite being a regression - but since it's a regression affecting a shared/core path (rate limiter), a maintainer should confirm the fix approach and scope of the leak given it's related to another still-open leak issue (#28146), so needs_human is true for judgement on fix scope."
+   },
+   "cost_usd": 0.0012451,
+   "tokens_in": 3467,
+   "tokens_out": 82,
+   "latency_ms": 2046,
+   "context_empty": false,
+   "context_tokens": 1106,
+   "error": ""
+  },
+  {
+   "issue_number": 35223,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The auto-router fails to consider vision capabilities when routing, leading to broken sessions when images are present in the conversation history. This affects a core feature (auto-routing) and has a significant impact on user experience, as sessions become unusable. The issue is well-described with a clear explanation of the problem and potential solutions, but requires human judgment to prioritize and design the fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue is a well-documented, code-referenced bug report: the router's pre-call checks and auto/complexity routers never consider modality (supports_vision) when selecting a deployment, and session_affinity permanently pins a session to a text-only deployment once an image is sent, causing all subsequent turns to fail. This is documented/expected behavior violation (deployments should be capable of handling the request they're routed to) — a bug, not a feature, since it's about incorrect/broken routing behavior with a clear reproduction path and code pointers. It affects any setup mixing vision and text-only deployments behind an auto/complexity router with session_affinity (default true), which is a widely-used core routing path (session affinity + auto router), causing full session breakage with only a workaround via custom pre_call_hook (proxy-side). This is a narrower path (only affects mixed vision/text deployment groups with auto-router), but it breaks the shared core routing path once triggered, and there's a stated workaround (proxy-side async_pre_call_hook), which would normally lower severity by one level, but the \"many providers or shared core path affected\" modifier (auto_router/session_affinity is core router logic affecting all providers) raises it back up. Net effect: P2. The report is detailed with exact file/line references and would need maintainer judgment on which policy (describe/placeholder/error) to implement and how to integrate without breaking prompt caching — this is a product-direction call, so needs_human=true."
+   },
+   "cost_usd": 0.0012539,
+   "tokens_in": 3413,
+   "tokens_out": 92,
+   "latency_ms": 2175,
+   "context_empty": false,
+   "context_tokens": 894,
+   "error": ""
+  },
+  {
+   "issue_number": 35303,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "A single malformed request can cause a denial of service on a proxy replica, leading to service unavailability and potential data loss. This is a critical security vulnerability with a plausible exploit path and no effective workaround."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "A malformed (non-retryable, pre-network) transformation error is misclassified as a retryable APIConnectionError, and the router's fallback graph traversal lacks cycle detection, allowing a single malicious/malformed request to trigger a CPU busy-loop that starves the event loop, floods logs, and crashes the proxy pod (exit 137). This is a genuine bug: exceptions are miscategorized and retry/fallback logic misbehaves versus documented/expected bounds (num_retries: 2). It also has a severe availability impact — an unprivileged client can take down a replica with one request, affecting all tenants on that replica, self-amplifying via traffic redistribution, with poor detectability. While it manifests as a DoS, it is a core reliability/error-handling defect rather than a classic security vulnerability (no injection/credential/auth bypass) — it's an bug in error classification/retry logic, so category=bug fits best per the taxonomy (exploit path exists but it's fundamentally a correctness/retry-logic defect, not an auth/injection issue). Given it affects the shared core router/retry path across all providers using this pattern, and can crash any replica with a single request and no workaround except restarting/manual config changes, this meets P0 criteria: broken for many users, no real workaround, data-loss-adjacent availability outage. It clearly needs human judgement: it's P0, involves multiple distinct problems (misclassification of exception, missing retry_after enforcement, cyclic fallback graph walking), and requires maintainer confirmation/reproduction before routing to the correct owning module (bedrock transformation vs router logic)."
+   },
+   "cost_usd": 0.0012617,
+   "tokens_in": 3739,
+   "tokens_out": 56,
+   "latency_ms": 1836,
+   "context_empty": false,
+   "context_tokens": 869,
+   "error": ""
+  },
+  {
+   "issue_number": 35454,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The title is a single letter and the body is empty. This provides insufficient information to categorize or prioritize, so it is a question by default and needs human attention."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue title is a single meaningless character 'd' and the body is empty. There is no information to determine what the reporter is asking about, reporting, or requesting. Per the rules, an empty or unintelligible issue defaults to 'question' category, and the lack of information means it needs human attention to clarify or close."
+   },
+   "cost_usd": 0.0003777,
+   "tokens_in": 859,
+   "tokens_out": 48,
+   "latency_ms": 1948,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 35469,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The user is asking how to use the `litellm` command in the command prompt, which is a usage question. The issue is vague and lacks specific error messages or reproduction steps, making it difficult to diagnose without further information. It is P3 because it is a usage question, and needs human because it is vague and lacks information."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The user is unclear on how to run the litellm CLI command; they don't provide details on the error shown (image not visible in text), no reproduction steps, no error message text, no version info. This is a usage/setup question rather than a demonstrated bug, and there's insufficient information to diagnose (image content unknown). This fits \"question\" category per rule 2 (asking how to do something, likely a setup/environment issue) and needs human review due to insufficient info to route."
+   },
+   "cost_usd": 0.0008832,
+   "tokens_in": 2244,
+   "tokens_out": 84,
+   "latency_ms": 2157,
+   "context_empty": false,
+   "context_tokens": 1032,
+   "error": ""
+  },
+  {
+   "issue_number": 35527,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a security vulnerability where the drain endpoint, when enabled without a token, allows unauthenticated access, leading to denial of service. This is a P0 security vulnerability with a plausible exploit path and no workaround mentioned. It requires human judgment due to its security implications and high urgency."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This report describes an authentication bypass on the /health/drain endpoint: when an operator enables the drain endpoint but omits configuring a token, the endpoint accepts unauthenticated requests, allowing any network-reachable client to trigger process shutdown/drain — a plausible denial-of-service exploit path. Per rules, any vulnerability/auth bypass with a plausible exploit path takes precedence over other categories, so this is security. It is not enabled by default, and a workaround exists (configure a token), but the impact when triggered is DoS on running workers with no fail-closed protection, and it affects the shared health/drain code path. Base severity: exploitable auth bypass but requires misconfiguration (opt-in feature) and workaround exists (set token) — lowering by one level from what would otherwise be P1 due to workaround. Security issues affecting a subset with workaround typically land at P2. Given it requires judgement (security report) and the fix design decision (fail closed vs explicit opt-in), needs_human should be true."
+   },
+   "cost_usd": 0.0007858,
+   "tokens_in": 2011,
+   "tokens_out": 73,
+   "latency_ms": 1628,
+   "context_empty": false,
+   "context_tokens": 549,
+   "error": ""
+  },
+  {
+   "issue_number": 35530,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a tenant isolation bypass where a malicious actor can access or delete another tenant's files by knowing their file ID, even when sharing provider credentials. This is a critical security vulnerability with a plausible exploit path and no workaround, making it a P0. It requires human judgment to confirm the exploit and prioritize a fix."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This report describes a cross-tenant authorization bypass: raw provider file IDs on retrieve/content/delete endpoints skip managed-file ownership checks and are forwarded to the provider using shared team/provider credentials, allowing one tenant to access or delete another tenant's files. This is a plausible exploit path involving broken tenant isolation/authorization, which takes precedence as security per the rules. Given shared provider credentials are common in multi-tenant proxy deployments and this affects the core file endpoints (retrieve, content, delete) across all providers using raw IDs, impact is broad and exploitable with just a valid API key and a file ID, with no documented workaround other than avoiding shared credentials. This warrants P0 given it's a data exposure/deletion vulnerability affecting the shared core file-handling path with no clear workaround, and security issues always require human/maintainer judgement before routing."
+   },
+   "cost_usd": 0.0010125,
+   "tokens_in": 2700,
+   "tokens_out": 81,
+   "latency_ms": 1919,
+   "context_empty": false,
+   "context_tokens": 974,
+   "error": ""
+  },
+  {
+   "issue_number": 35536,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a security vulnerability where the Responses ID security hook can be bypassed, allowing unauthorized access to other tenants' Responses API objects. This is a critical flaw as it undermines the core security guarantee of the feature. The impact is high, and there is no stated workaround, making it a P0. It requires human judgment due to the security implications and the need to confirm the proposed fixes."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This describes a security feature (Responses ID ownership security) that fails open in multiple ways: raw/ownerless IDs bypass ownership checks, and missing signing key silently disables the feature entirely while it's enabled by default. This allows a valid key from one tenant to access another tenant's Responses API objects - a plausible auth bypass/exploit path. This clearly falls under the security category which takes precedence over bug framing. Given it's an auth bypass affecting a security feature enabled by default, with no workaround for affected deployments (missing key), and impacts cross-tenant data access on the core Responses API path, this is P0. It requires human judgement per the rules for any security report and P0/P1 issues."
+   },
+   "cost_usd": 0.0010351,
+   "tokens_in": 2667,
+   "tokens_out": 94,
+   "latency_ms": 2058,
+   "context_empty": false,
+   "context_tokens": 931,
+   "error": ""
+  },
+  {
+   "issue_number": 35541,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue reports multiple CVEs with high CVSS scores and claims proof-of-concept exploits are available. This is a critical security vulnerability with no stated workaround, making it a P0. It also requires human judgment due to the nature of security reports and the severity."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue reports multiple CVEs with public exploit availability affecting litellm's core package across several versions, with no available remediation. This is a security vulnerability report with plausible exploit paths (auth bypass/session expiration issues), taking precedence per rules. High CVSS scores (up to 7.1) with PoC exploits and no workaround indicate severe impact - affecting the shared core path of the library, warranting escalation. Since it's a security report affecting many users with no patch/workaround, urgency starts high and the 'affects shared core path' modifier applies. This requires maintainer judgement to verify CVE claims, assess actual impact, and coordinate a fix release."
+   },
+   "cost_usd": 0.0006568,
+   "tokens_in": 1606,
+   "tokens_out": 70,
+   "latency_ms": 1608,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 35583,
+   "predicted": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The issue describes a discrepancy in the documentation where the wrong environment variable is displayed. This is a clear documentation bug, not affecting core functionality or user data. It's a minor issue with a clear fix, so it does not require human judgment beyond categorization."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The UI displays the wrong environment variable (PROXY_BASE_URL) instead of the intended LITELLM_UI_API_DOC_BASE_URL for MCP Servers connection info. This is a clear code defect where the behavior doesn't match the intended configuration variable - the UI should respect LITELLM_UI_API_DOC_BASE_URL when set. This is a functional bug, not just a documentation issue, since it's using the wrong variable in actual UI logic, producing incorrect displayed URLs. It affects a narrower path (MCP Servers UI feature) and a workaround likely exists (using PROXY_BASE_URL or manually constructing the URL), so this is not P0/P1. It's a well-specified bug with clear reproduction steps, affecting a specific area of the UI Dashboard, so a maintainer/developer can route it without further clarification."
+   },
+   "cost_usd": 0.0005332,
+   "tokens_in": 1219,
+   "tokens_out": 67,
+   "latency_ms": 2336,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 35597,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a clear bug where API endpoints return HTTP 500 due to a serialization error, even though the underlying database operation succeeds. This leads to non-atomic API results and can cause client-side issues. The bug affects core model management functionality (blocking/unblocking models) and has a clear reproduction path. It is a regression as it worked in previous versions. It affects the shared core path (model serialization). Needs human review due to the P1 urgency and the need to confirm the proposed fix and its implications."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The routes /model/block and /model/unblock perform a valid DB mutation but then fail during FastAPI response serialization due to a mode=\"before\" pydantic validator (check_potential_json_str) assuming dict input and calling .get() on a Prisma model instance, raising AttributeError and causing HTTP 500. This is a clear code defect: documented/expected behavior is a 2xx response with the updated row, but the code violates this contract. There's a well-defined reproduction, root cause identified, and a suggested minimal fix. This is a bug, not docs, since code misbehaves rather than being merely undocumented. Impact: affects any caller of /model/block or /model/unblock (a narrower path, not core to all users, but important for admins managing blocked models), and there's no workaround since the mutation always fails serialization — but the mutation itself succeeds so state changes leak silently, causing confusion between control planes and clients doing fail-fast retries. This isn't a regression across versions since it's present in many versions (v1.90.6 through v1.94.0), and impacts a specific pair of endpoints rather than the shared core surface or multiple providers. Therefore severity aligns with P2: narrow endpoint broken, no workaround, but limited scope (not most users, not core request path). The issue is clear, well-reproduced, with root cause and proposed fix identified, so it can be routed without further clarification — needs_human should be false since it's a well-specified bug report with clear reproduction and fix guidance, not requiring product judgement."
+   },
+   "cost_usd": 0.0013749,
+   "tokens_in": 3558,
+   "tokens_out": 123,
+   "latency_ms": 2848,
+   "context_empty": false,
+   "context_tokens": 881,
+   "error": ""
+  },
+  {
+   "issue_number": 35648,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting support for a new API endpoint for an existing provider. This is a clear feature request. The impact is P2 as it affects a specific provider and API, and a workaround (using the chat completions API) exists, though it loses some native semantics. No human intervention is needed as the request is well-defined."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a well-specified request to add new, not-yet-existing functionality: native DeepSeek Responses API support (as opposed to the existing chat/completions bridge). No existing behavior is broken; the ask is for new provider capability, model gating, streaming events, and cost accounting for a new native route. This matches the feature category definition (\"new provider or model support, new parameters or endpoints\"). It's a fairly large, well-specified feature with clear demand (referencing related issues/PRs and DeepSeek docs), affecting a specific provider path rather than the shared core, so P2 is appropriate. It doesn't need human judgement to be routed to the DeepSeek provider module — it's clear scope, but it does involve a product-direction decision on how deeply to support native Responses semantics (multiple compatibility requirements: streaming, tools, gating, cost accounting) which benefits from maintainer scoping before implementation is queued."
+   },
+   "cost_usd": 0.0011708,
+   "tokens_in": 3211,
+   "tokens_out": 83,
+   "latency_ms": 1669,
+   "context_empty": false,
+   "context_tokens": 1127,
+   "error": ""
+  },
+  {
+   "issue_number": 35765,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature: the ability to parse `x-litellm-tags` header on MCP gateway requests to enable consistent tag-based attribution across LLM and MCP traffic. This is a well-specified feature request with clear demand, affecting a subset of users who use MCP routes with an API gateway. It is not a P1 because a workaround exists (though painful) and it is not a core path that is broken for most users."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a well-specified request for new behavior: MCP gateway routes should parse and honor the x-litellm-tags header, mirroring existing LLM route behavior, for consistent tag-based usage attribution. This is functionality that does not currently exist for the MCP path (it's explicitly out of scope of prior PR #29122), so it's a feature request rather than a bug. It affects a narrower set of users (those using MCP gateway with tag-based attribution), and a workaround (using LLM routes or shared key identity) exists, though it's painful for the reporter's use case. It's clearly specified with a proposed implementation location, so it can be queued without further clarification, though it is a product-direction-ish feature addition. Given it's a clear, well-scoped feature request affecting a subset of MCP gateway users, P2 fits with needs_human false since it's routable without a conversation."
+   },
+   "cost_usd": 0.0008479,
+   "tokens_in": 1918,
+   "tokens_out": 109,
+   "latency_ms": 1701,
+   "context_empty": false,
+   "context_tokens": 352,
+   "error": ""
+  },
+  {
+   "issue_number": 36546,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes several input types that are rejected by the bedrock_mantle API, leading to a broken experience for users relying on these features. The masking of 400 errors as 500s further complicates debugging and wastes resources. This affects a major feature (Bedrock Mantle integration) and has a painful workaround (manual debugging of masked errors). The issue also mentions a regression in the form of `encrypted_function_args` breaking after an hour of use, which raises the urgency. Requires human judgment to determine the best approach for handling the unsupported input types and the error masking."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented bug: multiple Codex input-item types are rejected by Mantle's Responses API input union despite being valid/expected item types, causing failures after subagent tool calls, auto-compaction, shell tool use, or deferred tool loading are used. This is a functional regression-adjacent behavior (breaks running systems once certain item types appear in history) affecting a widely-used integration path (Codex via bedrock_mantle). Additionally, a real upstream 400 is being masked as a 500 APIConnectionError and retried, compounding the issue with wasted tokens and obscured diagnostics. Both are code-behavior bugs, not just docs or feature gaps, following the same pattern already partially fixed in a previous PR (#36530) for a sibling item type.\n\nCategory: bug — code fails to normalize/accept documented-valid input item types, and error handling incorrectly masks a deterministic 400 as a 500, both diverging from expected behavior.\n\nUrgency: This affects a specific provider path (bedrock_mantle Responses API) used by Codex integrations — not \"most users on a current release\" globally, but it is a widely-used integration (Codex agent workflows: subagents, auto-compaction, shell tool, deferred tool loading) hitting a shared code path (transform_responses_api_request / error handling) for one provider. The issue causes cascading failures once triggered (every subsequent request fails) with no workaround for ongoing sessions, though switching away from these Codex features could serve as a partial workaround. The masking of 4xx into 5xx is a broader reliability/observability problem for this provider's requests. Given it's narrowed to one provider but has severe practical impact (all subsequent requests fail, 3x retry token burn), and touches a shared error-handling path, I'll set P1 — major feature broken for a subset of users, no easy workaround once triggered, and it's a well-specified, detailed issue with reproduction steps.\n\nneeds_human: True — this is P1, and per rules, any P1 requires judgement/maintainer look. Also there are two separable problems bundled together (item schema gaps + error masking) requiring possible splitting/prioritization decisions, and confirming exact behavior requires the reporter's detailed reproduction which a maintainer should validate before routing to exact module owners."
+   },
+   "cost_usd": 0.0012227,
+   "tokens_in": 2934,
+   "tokens_out": 137,
+   "latency_ms": 2180,
+   "context_empty": false,
+   "context_tokens": 884,
+   "error": ""
+  },
+  {
+   "issue_number": 36550,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The traceback clearly indicates a `ModuleNotFoundError: No module named 'boto3'` when calling a Bedrock model. This means a required dependency is missing, which breaks a major feature (Bedrock integration) for users. This is a clear bug with a direct impact."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The bedrock integration requires boto3 as a dependency, but it's missing when installed, causing a ModuleNotFoundError crash when calling bedrock models. This is a clear bug - the code behaves incorrectly (crashes) rather than gracefully handling missing optional dependency or having it properly declared. Bedrock is a widely-used provider, so this affects many users trying to use bedrock models. There's no workaround mentioned other than manually installing boto3, and it's a broken widely-used provider integration. This is a well-defined, reproducible bug with a clear traceback, so it can be routed without further discussion."
+   },
+   "cost_usd": 0.0007996,
+   "tokens_in": 2082,
+   "tokens_out": 70,
+   "latency_ms": 1478,
+   "context_empty": false,
+   "context_tokens": 482,
+   "error": ""
+  },
+  {
+   "issue_number": 36646,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a security vulnerability where a virtual key with a hard budget can spend without limit due to a missing spend log row for OpenAI passthrough /v1/embeddings. This is a P0 because it directly impacts billing and budget enforcement, leading to potential financial losses for users. It needs human review due to the security implications and the need to verify the fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear functional defect: passthrough OpenAI embeddings calls consume real billable tokens but no spend log row is written and budgets are not enforced, due to two hardcoded gates missing an embeddings predicate. The code violates the documented/expected contract (spend tracking parity with translated /v1/embeddings and Cohere passthrough /v1/embed), so it's a bug, not docs or feature. Impact: budget under-enforcement and spend accounting failure on a shared/core cost-tracking path affecting all OpenAI passthrough embeddings users with no workaround — this is P1 by default (major path broken, no workaround), and since it affects the shared spend-tracking core path (affects other passthrough routes' pattern too), it could be raised further, but embeddings is a single provider/route so P1 is appropriate given budget bypass implications (financial/security-adjacent risk). Given budget enforcement is completely bypassed, this borders on P0-level impact (unlimited spend on a hard-budgeted key), so I'll set P1 given a moderately narrow route but severe consequence and no workaround. Needs human review because it's P1-and-above impact and requires judgement on fix scope (two independent code paths, potential broader passthrough audit)."
+   },
+   "cost_usd": 0.0012572,
+   "tokens_in": 3449,
+   "tokens_out": 89,
+   "latency_ms": 1732,
+   "context_empty": false,
+   "context_tokens": 844,
+   "error": ""
+  },
+  {
+   "issue_number": 36650,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a silent, indefinite hang with no error logging when using a specific Bedrock model with streaming and thinking budgets. This affects a major feature (streaming) and a widely-used provider (Bedrock), with no workaround for the silent hang. The issue also states that it affects an ML Ops team, indicating a significant impact on production systems. The issue also involves a regression in behavior for budgets > ~16.4k. The issue also affects the shared core path of error handling and logging. The issue requires human judgment to determine the best fix for the translation bug and the error-swallowing bug, and to prioritize the fix given the P0 urgency."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a genuine bug in LiteLLM's Bedrock streaming path: (1) an incomplete/incorrect translation of Anthropic's classic thinking budget format to Bedrock's adaptive-thinking format for budgets above ~16.4k causes upstream ValidationException, and (2) critically, that upstream 4xx error is completely swallowed on the streaming path, causing an indefinite silent hang with zero client-visible error and no server-side logging. This matches the bug category exactly (code violates the documented/expected contract of streaming responses - errors should propagate, not hang forever). It's not a docs issue since the code itself misbehaves, not just documentation. It's not a question since the reporter has clearly demonstrated broken behavior with reproduction steps. It's not classified as security since there's no vulnerability/exploit path - it's an availability/reliability bug.\n\nUrgency: this affects the shared Bedrock streaming core path for any adaptive-thinking-only model with the Anthropic-format proxy endpoint, and produces indefinite hangs when no error handling is present, causing production reliability issues for widely-used Claude Code deep-thinking flows via Bedrock (Anthropic's own models on Bedrock, likely widely used provider). No true workaround exists other than avoiding thinking budgets above 16.4k, which defeats deep-thinking functionality — that's a partial workaround at best. Given the \"silent infinite hang with no diagnostics\" being explicitly called out as a severe issue, and affecting a shared/core streaming error-handling path (any upstream validation error during streaming could theoretically hang forever), this could raise severity. The base assessment: affects a subset of users (Bedrock + adaptive-thinking-only models + large budgets) but the core issue (error swallowing during streaming setup) is a shared core path defect that could affect many streaming scenarios beyond just this one, hence \"many providers or shared core path affected\" modifier could apply, raising from P2 to P1. Given the severity and broad implication for streaming error handling in general, I will set this to P1.\n\nneeds_human: true, because this requires judgment — confirming the exact scope of the error-swallowing bug (whether it's isolated to this thinking-config case or a broader systemic issue with streaming error handling), and because it's P1 severity requiring maintainer attention to correctly scope and prioritize the fix across potentially multiple code paths."
+   },
+   "cost_usd": 0.00133,
+   "tokens_in": 3175,
+   "tokens_out": 151,
+   "latency_ms": 2353,
+   "context_empty": false,
+   "context_tokens": 900,
+   "error": ""
+  },
+  {
+   "issue_number": 36659,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The OAUTH_TOKEN_INFO_ENDPOINT is critical for OAuth2 authentication, and its absence for Microsoft Entra (a major provider) makes the feature unusable for a significant portion of users. The documentation is also insufficient. This is a core path issue for OAuth2 users."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue reports that OAUTH_TOKEN_INFO_ENDPOINT is poorly documented, and that Microsoft Entra doesn't support the introspection endpoint the code expects, causing OAuth2 setup to fail for a common provider (Azure/Microsoft). This is primarily a documentation gap (docs describe the requirement poorly) but also touches on a real functional limitation for a widely-used identity provider (MSFT/Entra) where the current implementation cannot work at all without a workaround, and the reporter also requests a feature (config-file based configuration) as a minor ask. The core complaint is about documentation being unclear/wrong about a required env var and its expected value — code behaves as coded, but docs don't explain expected values or alternatives for providers without introspection endpoints. Since this centers on documentation being missing/unclear rather than code misbehaving contrary to spec, it's best classified as docs. However, the lack of support for non-RFC-7662 compliant providers (like Entra) for a widely used auth integration effectively blocks OAuth2 setups for many users, which affects a shared core auth path significantly. Given multiple distinct asks (docs, bug-like incompatibility with major provider, feature request), this requires maintainer judgement to properly split and route."
+   },
+   "cost_usd": 0.0008228,
+   "tokens_in": 2151,
+   "tokens_out": 71,
+   "latency_ms": 1692,
+   "context_empty": false,
+   "context_tokens": 803,
+   "error": ""
+  },
+  {
+   "issue_number": 36875,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to expose per-component response cost headers. This is a well-specified feature request with clear demand, as it addresses a limitation in current cost tracking for users. It is not a P1 because a workaround exists (rebuilding the split by hand from pricing tables), albeit a painful one. It is not a P3 because it is a well-specified feature request with clear demand."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a well-specified feature request asking for new response headers exposing cost breakdown by component (input, output, cache read/write, reasoning, tool usage). The underlying data (CostBreakdown) already exists internally; this asks to surface it via new headers, which is new functionality, not a bug fix or docs issue. The request includes a clear proposal, exact function/file references, and even suggested implementation approach, making it well-specified. It affects proxy users wanting cost attribution, a narrower but real use case with clear demand (customer request, supersedes a prior stale issue). No security or misbehavior concerns. Urgency is P2: well-specified feature request with reasonable demand, not affecting core functioning for most users, and not a regression. needs_human is false since this is a clear, well-defined feature that can be queued/routed to the proxy cost-tracking module without further clarification."
+   },
+   "cost_usd": 0.0014287,
+   "tokens_in": 3929,
+   "tokens_out": 100,
+   "latency_ms": 2551,
+   "context_empty": false,
+   "context_tokens": 1163,
+   "error": ""
+  },
+  {
+   "issue_number": 36898,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a clear security vulnerability where sensitive credentials (extra_headers and aws_session_token) are exposed in plaintext via the /health endpoint. This allows any caller to bypass the proxy and directly access provider APIs. The reporter provides a clear reproduction path and explains the impact. This is a P0 because it is a security vulnerability with a plausible exploit path and no workaround mentioned."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This report describes a credential-exposure vulnerability: the /health endpoint leaks extra_headers (Authorization, Azure api-key, Google x-goog-api-key) and aws_session_token in plaintext to any caller, even unauthenticated ones when no master key is set. This is a plausible exploit path allowing a caller to obtain upstream provider credentials and bypass the proxy, directly matching the security category definition (credential exposure with plausible exploit). It takes precedence over bug framing. Since this affects the shared core health-check path used across all providers/configs and has no documented workaround, and represents a live secret leak affecting any deployment using extra_headers or aws_session_token, it is severe — no workaround exists, and it's exploitable by any network caller without auth. This qualifies as P0 given plausible exploit path and credential leakage with no workaround. Given it's a security vulnerability, judgement is required from a maintainer to assess CVE severity and coordinate a fix akin to the referenced CVE-2025-11203, so needs_human is true."
+   },
+   "cost_usd": 0.0011979,
+   "tokens_in": 3218,
+   "tokens_out": 93,
+   "latency_ms": 1788,
+   "context_empty": false,
+   "context_tokens": 723,
+   "error": ""
+  },
+  {
+   "issue_number": 36945,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "Two bugs are reported. The first is a regression in configuration propagation when `STORE_MODEL_IN_DB=True`, affecting a core feature (model discovery). The second is a `NotImplementedError` for Vertex AI model discovery, despite the documentation claiming support. This affects a major provider and requires a code change."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue describes documented behavior (check_provider_endpoint config setting, model discovery for vertex_ai) being violated by actual code behavior: the DB-overlay merge silently drops the config.yaml setting due to an incomplete allowlist, and separately VertexAIModelInfo.get_models() is a stub raising NotImplementedError that is swallowed. Both are code violating the documented/intended contract, so this is a bug (not docs, since code behavior contradicts documented model discovery support). It's a regression-like/core-path issue affecting a supported provider path and duplicates a known root cause (#36533) affecting multiple settings/providers, so it's a widely-impacting issue affecting the shared config-merge core path. There is a workaround (disable STORE_MODEL_IN_DB) but that disables persistence features, which is painful. This affects a fairly narrow feature (model discovery under DB-backed config) but touches the shared core config merge path, which could affect other settings too. Given the \"shared core path affected\" modifier and it being tied to a previously reported similar bug, urgency is P2 given a workaround exists. Needs_human because it involves two distinct problems bundled together and requires judgement on how to fix the allowlist design (product/architecture decision)."
+   },
+   "cost_usd": 0.001163,
+   "tokens_in": 3210,
+   "tokens_out": 80,
+   "latency_ms": 2074,
+   "context_empty": false,
+   "context_tokens": 806,
+   "error": ""
+  },
+  {
+   "issue_number": 36948,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to auto-detect context window for LM Studio models from its native metadata API. This is a well-specified feature request with clear demand, affecting a subset of users (LM Studio users)."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a well-specified feature request: LiteLLM does not query LM Studio's native metadata API to populate max_input_tokens/context window, and the discovery interface lacks a channel for per-model metadata. It's a clear \"does not exist yet\" ask, not a bug (nothing documented promises this behavior) and not a question. It's fairly niche (affects only LM Studio local provider users, not core/shared path, not widely-used cloud provider), with a workaround (manual config entry) available. This warrants P2/P3; given it's a narrow provider-specific enhancement with a workaround, P3 fits better, but it's a legitimate, well-specified feature with reasonable demand for self-hosted users, so P2 is more fitting per rubric (\"well-specified feature request with clear demand\"). Since it's narrow in scope (single provider) and a workaround exists, I'll settle on P3. It does not require security or urgent judgement, and is clear enough to route directly to the LM Studio provider module without discussion."
+   },
+   "cost_usd": 0.0010878,
+   "tokens_in": 3126,
+   "tokens_out": 60,
+   "latency_ms": 2040,
+   "context_empty": false,
+   "context_tokens": 472,
+   "error": ""
+  },
+  {
+   "issue_number": 36997,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The Admin UI session cookie is a non-HttpOnly JWT carrying the caller's proxy key, which is a severe security vulnerability. This allows for credential exposure and potential unauthorized access to the proxy. The issue affects the core authentication mechanism and has no effective workaround, making it a P0 security issue. It requires immediate human attention due to the severity and the need for a product-direction call on the proposed solution."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The Admin UI stores the caller's real proxy master/session key in a JWT set in a non-HttpOnly cookie, exposing a full-privilege credential to any script (XSS) on the /ui path, and the key remains valid outside the browser and after logout (no server-side revocation). This is a credential exposure / plausible exploit path (session hijacking, key theft via XSS, no revocation), so it takes precedence as a security issue over being merely a bug. It affects the core auth/session path shared across all UI users (proxy admins, SSO logins), impacting anyone using the Admin UI, with no workaround for the underlying exposure — clearing cookies client-side doesn't revoke the key. This warrants urgent maintainer attention and design judgement (the reporter even proposes an architecture change), so needs_human must be true."
+   },
+   "cost_usd": 0.000936,
+   "tokens_in": 2295,
+   "tokens_out": 99,
+   "latency_ms": 3137,
+   "context_empty": false,
+   "context_tokens": 346,
+   "error": ""
+  },
+  {
+   "issue_number": 37028,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a clear bug where the `system_instruction` field is incorrectly serialized as snake_case instead of camelCase for Gemini API requests when a custom `api_base` is used. This leads to HTTP 400 errors with Gemini-compatible proxies. A minimal reproduction is provided, and the suspected source in the code is identified. This affects a core feature (system messages) for a major provider (Gemini) when using custom API bases, making it a P1. No human judgment is needed as the problem and solution are clear."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The system message with a custom Gemini-compatible api_base fails because litellm serializes the system instruction field using the snake_case alias `system_instruction` instead of the canonical `systemInstruction` REST JSON key. This causes strict proxies to reject the request with HTTP 400. This is a clear behavioral bug (documented/expected Gemini REST API contract violated by the code), not a docs issue, since the correct behavior is well defined by the Gemini REST API itself. It affects a specific but non-trivial path (custom/native Gemini api_base users going through non-Google-SDK-tolerant proxies), and it's tied to the shared vertex_ai/gemini transformation code used broadly for Gemini requests, so it could affect many custom-api-base integrations built on this shared code path. A reproduction is provided and the source line is identified precisely, so this can be routed without further discussion — a straightforward fix (rename key or add both) resolves it."
+   },
+   "cost_usd": 0.0010775,
+   "tokens_in": 2525,
+   "tokens_out": 128,
+   "latency_ms": 2362,
+   "context_empty": false,
+   "context_tokens": 888,
+   "error": ""
+  },
+  {
+   "issue_number": 37074,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to add native OpenAI and Azure OpenAI Skills API routing to LiteLLM Proxy. This is a well-specified feature request with clear demand, as it would expand the functionality of the proxy to support more providers. The existing Anthropic Skills support suggests a precedent for this type of integration."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a well-specified request for new functionality: native OpenAI and Azure OpenAI Skills provider routing, extending existing Anthropic Skills support. No existing behavior is broken; this is net-new capability. It's a clear, well-specified feature request with clear demand (extending an existing feature to more providers), so it can be queued without further discussion. Urgency is P2 as it's a well-specified feature request affecting a subset of providers, not a regression or core-path break."
+   },
+   "cost_usd": 0.0007864,
+   "tokens_in": 1963,
+   "tokens_out": 79,
+   "latency_ms": 1813,
+   "context_empty": false,
+   "context_tokens": 814,
+   "error": ""
+  },
+  {
+   "issue_number": 37143,
+   "predicted": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The issue reports an inaccuracy in the documentation regarding a function name. The code behaves as intended, but the documentation is wrong."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The issue reports that the documentation references a variable name (litellm.turn_on_message_logging) that doesn't exist, and the correct name should be litellm.turn_off_message_logging. This is a documentation error where the docs mention an incorrect attribute name, but presumably the code behaves as intended (the correct variable exists). This is a clear docs typo/naming issue, not a code behavior bug. It's minor, cosmetic, and low urgency since it only affects documentation clarity, not functionality. It's well-specified and can be routed directly without maintainer discussion."
+   },
+   "cost_usd": 0.0004585,
+   "tokens_in": 1195,
+   "tokens_out": 40,
+   "latency_ms": 2154,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 37264,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a clear bug where LiteLLM emits an invalid OpenAI Responses API `response.completed` event when a Gemini response contains text tokens but no thinking tokens. This breaks compatibility with Codex clients, which expect `reasoning_tokens` to be present. A workaround exists (not using Gemini with Codex via LiteLLM), but it's painful as it breaks a major feature (Gemini support) for users relying on the OpenAI Responses API schema. The issue also provides a clear reproduction path and expected behavior."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The Responses API serializer omits the required `reasoning_tokens` field in `output_tokens_details` when the underlying provider (Gemini 3.7 Flash) reports no thinking tokens, producing output that violates the OpenAI Responses schema and breaks downstream clients like Codex. This is a clear regression-adjacent behavior bug (introduced/left by PR #32837) where code behavior deviates from the expected/documented schema contract. It affects any Gemini model/response without thoughtsTokenCount, breaking Responses API streaming for Codex clients specifically, though a narrower path (only when no reasoning tokens are present) — a well-understood, reproducible bug with clear expected fix (default to 0). It's a core Responses API path used across providers when reasoning is involved, but the defect only manifests in a specific edge case (no thinking tokens), not affecting most users broadly. There's a workaround-free correctness fix needed in code, so it isn't docs or a question. It doesn't have security implications. Given it's narrow (specific edge case) but part of the shared serialization path and breaks a widely-used client (Codex) integration, I place it at P2. This is a well-specified bug report with clear reproduction and expected output, so a maintainer doesn't need to make a product-direction call — it can be routed directly to the Responses API module for a fix."
+   },
+   "cost_usd": 0.0013809,
+   "tokens_in": 3603,
+   "tokens_out": 120,
+   "latency_ms": 4773,
+   "context_empty": false,
+   "context_tokens": 1215,
+   "error": ""
+  },
+  {
+   "issue_number": 37336,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a critical bug where Bedrock CountTokens requests fail with a 403 error when using OIDC/IRSA authentication. This is due to a missing permission in the session policy, making the feature unusable for a significant deployment method. The issue is a regression of a previously closed bug, indicating a failure in the fix or deployment process. This affects a core functionality (token counting) for a major provider (Bedrock) and has no workaround, making it a P0. It needs human attention to verify the regression and ensure a proper fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear bug: the documented/expected behavior is that CountTokens should work when the IAM identity policy grants bedrock:CountTokens, but the hardcoded session policy in _auth_with_web_identity_token omits this action, causing a hard 403 ceiling regardless of identity policy permissions. This is a regression/unresolved issue from a previously closed issue (#33142), affecting the shared Bedrock OIDC/IRSA auth path used by many proxy deployments (widely-used provider, shared core auth path). It's well-specified with a minimal reproduction and an exact one-line diff fix already proposed, so a maintainer doesn't need to diagnose it further - it can be routed directly. However, given it affects a shared core authentication path (OIDC/IRSA) across all Bedrock Anthropic models and is described as breaking in production at scale (1710 occurrences/24h), and is a regression of previously reported (though not officially merged) issue, urgency should be elevated significantly.\n\nCategory: bug — code violates documented/expected security-policy behavior (identity policy should govern permissions, but session policy is under-provisioned, blocking a supported feature).\nUrgency: Widely used Bedrock IRSA/OIDC path broken for CountTokens, no workaround except code patch (raises to P1), and shared core auth path affected (raise one level) but already at high P1 -> shouldn't exceed P0. Actually let's evaluate: \"major feature or widely-used provider is broken, workaround exists but painful, affects many users\" = P1. Then \"many providers or shared core path affected -> raise one level\" would push to P0. This affects the shared core Bedrock auth path (OIDC/IRSA), impacting all Bedrock models routed via this method - that's the shared core path modifier. So raise to P0? But no security exploit and no data loss - it's a functionality block for a specific auth mode (OIDC/IRSA) affecting all Bedrock CountTokens calls under this auth type. This is narrower than \"broken for most users\" since it only affects OIDC/IRSA-authenticated deployments (not all Bedrock auth types, e.g. static credentials aren't affected). So I'll keep it as P1 given widely-used provider (Bedrock) broken for a specific feature, no full workaround other than patching, and doesn't affect literally all users but a substantial subset (all OIDC/IRSA users). This fits P1 well.\n\nneeds_human: Since urgency is P1 rules say needs_human should be true (requires judgeship for P1). Also since it's a duplicate/regression claim requiring confirmation, though repro is clear via code showing missing string. I'll set true."
+   },
+   "cost_usd": 0.0012579,
+   "tokens_in": 3118,
+   "tokens_out": 129,
+   "latency_ms": 2893,
+   "context_empty": false,
+   "context_tokens": 986,
+   "error": ""
+  },
+  {
+   "issue_number": 37352,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a clear bug in the handling of output_file_id in a chained proxy setup, where the front proxy fails to correctly rewrap file IDs from the second proxy. This breaks a core feature (batch processing) for users employing a common deployment pattern (chained proxies). A workaround exists (calling the second proxy directly), but it defeats the purpose of the fronting proxy and requires additional credentials, making it painful. The issue affects a major feature and a common deployment scenario, justifying P1. It needs human attention to confirm the reproduction steps and prioritize the fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "Chained proxy managed batches: proxy A fails to rewrap output_file_id/error_file_id returned by proxy B into its own unified ids, so fetching batch output content through proxy A fails with a routing error (\"no healthy deployments\"). This is a functional defect in a documented/expected workflow (chained proxy batch retrieval) — behavior differs from what should happen given the managed files/batches feature working end-to-end per #36240. This is a bug, not a missing feature, since basic chained-proxy batch support already exists and this is a specific broken path. It affects a narrower use case (multi-proxy chaining), with a workaround (call proxy B directly), though that defeats the purpose and leaks credentials to a proxy meant to be hidden. No regression indicated beyond incomplete implementation of the recent feature. Given workaround exists, urgency stays at P2 (narrower path broken, workaround available). This has a fairly clear reproduction and specified fix location (managed batches hook, managed files hook), so it could be routed without a maintainer conversation, though it touches multiple hook and cross-proxy logic — but reproduction is clear and localized enough for routing."
+   },
+   "cost_usd": 0.0014246,
+   "tokens_in": 3657,
+   "tokens_out": 131,
+   "latency_ms": 2883,
+   "context_empty": false,
+   "context_tokens": 860,
+   "error": ""
+  },
+  {
+   "issue_number": 37358,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a critical bug where spend logs are incomplete for chained MCP calls, leading to undercounted spend and missing log entries. This affects core functionality and financial tracking, making it a P0. It also requires human judgment to confirm the reproduction and prioritize a fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented bug affecting the core logging/spend-tracking path for MCP tool chains on /responses streaming (and chat completions). The code does not behave as documented: spend logs should record every LLM round and tool call, but due to shared logging objects and duplicate request_id primary keys, only the first of each is recorded. This leads to undercounted spend and missing log rows - a functional defect, not a docs or feature issue. It affects the shared core logging path (dispatch_success_handlers, litellm_logging_obj) which is used broadly, and impacts billing accuracy - a widely-used and critical path (spend accounting), affecting many users who use MCP auto-execution with streaming responses. There's no stated workaround, and it touches the shared core path (raise one level), plus it affects billing/spend integrity which is severe. This warrants P1 given it's a major broken feature (spend accounting) for a subset of users (those using MCP tool chaining), but the core path affected modifier pushes it up from P2 to P1. It requires maintainer judgement due to the complexity of the fix (touching multiple files, primary key design, one-shot guards) and its impact on billing correctness, so needs_human should be true."
+   },
+   "cost_usd": 0.0012603,
+   "tokens_in": 3626,
+   "tokens_out": 69,
+   "latency_ms": 1706,
+   "context_empty": false,
+   "context_tokens": 1238,
+   "error": ""
+  },
+  {
+   "issue_number": 37584,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The issue reports incorrect data in a configuration file, specifically that `supports_vision` is set to `true` when it should be `false`. This is a clear bug as it misrepresents the model's capabilities. It affects a specific model entry, so it's not P0 or P1, and a workaround (manual correction) exists, making it P2."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The issue reports incorrect metadata (supports_vision: true) for the novita/openai/gpt-oss-120b entry in the model pricing/context JSON, which is factually wrong since this model doesn't support vision. The code/config behaves differently from actual model capability, causing incorrect behavior (e.g., allowing image inputs or cost/feature checks to pass incorrectly) - this is a data/config bug affecting model capability detection, not a documentation-only issue since this JSON file drives actual runtime behavior (validation, routing). It's a narrow, well-specified issue affecting a single model entry across two files, with a clear fix (flip a boolean). No security implications. Impact is narrow - affects only one model/provider combination, and there's likely no widespread breakage, so P2 severity fits. It's well-specified with clear reproduction (line reference) and an obvious one-line-style fix, so it doesn't need maintainer judgement to route."
+   },
+   "cost_usd": 0.0007919,
+   "tokens_in": 1873,
+   "tokens_out": 92,
+   "latency_ms": 2129,
+   "context_empty": false,
+   "context_tokens": 700,
+   "error": ""
+  },
+  {
+   "issue_number": 37712,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a crash (AttributeError) when a boolean value is passed to `is_thinking_enabled` instead of a dictionary, which is a regression from a previous fix. This affects a core part of the library (Completions) and has a clear reproduction path. The workaround is to not pass a bare bool, but the expected behavior is for it to work, so it's a bug."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear, reproducible bug in a shared core code path (BaseConfig.is_thinking_enabled) used across all providers' thinking/reasoning handling. It's a follow-up to a prior similar bug (#25792), indicating the fix in that issue was incomplete and the underlying class of bug (non-dict truthy values breaking .get() chain) still exists, which is a regression-adjacent, recurring issue affecting the shared core path. It affects any caller passing a bare bool for `thinking`, which is a documented shorthand (per Claude Code). Since it hits the shared/core transformation logic, the \"many providers/shared core path\" modifier applies, raising urgency by one level. Base severity would be P2 (narrow path, has workaround by using dict instead of bool), raised to P1 due to shared core impact. It has a clear reproduction and root cause identified, so no ambiguity, but since it's P1, judgement modifier for needs_human applies too. So needs_human = true given P1 modifiers, though the fix itself is straightforward and could arguably be routed without discussion. But per rules, any P1 requires human judgement."
+   },
+   "cost_usd": 0.0007506,
+   "tokens_in": 1677,
+   "tokens_out": 99,
+   "latency_ms": 2146,
+   "context_empty": false,
+   "context_tokens": 429,
+   "error": ""
+  },
+  {
+   "issue_number": 37829,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature: semantic agent discovery via a REST API and an MCP tool. This is a well-specified feature request with clear demand, as it addresses a growing problem with agent discoverability. The proposed solution is detailed and includes a reference implementation. The impact is significant for agent discoverability and orchestration patterns. The repository context shows existing modules related to search APIs, Bedrock, and A2A, indicating that this feature aligns with the library's scope."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request proposing new semantic/hybrid search capability for the A2A agent registry, exposed via both a REST endpoint and an MCP tool. No existing functionality is broken; this is entirely new behavior that doesn't exist yet, matching the 'feature' category. It's a fairly large, well-defined feature affecting the A2A agent discovery path, with clear demand rationale (orchestration patterns) and a reference implementation. It doesn't affect most users currently (A2A is a specific provider/module), so it's not P1, but it's a substantial, well-specified feature request with clear demand — P2. It touches product-direction (whether to build hybrid search backend, ACL-aware filtering, new MCP tool schema) and requires maintainer judgement on scope/architecture, so needs_human should be true."
+   },
+   "cost_usd": 0.0010663,
+   "tokens_in": 2621,
+   "tokens_out": 112,
+   "latency_ms": 3220,
+   "context_empty": false,
+   "context_tokens": 765,
+   "error": ""
+  },
+  {
+   "issue_number": 37890,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue title is just \"litellm\" and the body is empty. This provides no information to categorize or prioritize the issue, so it is treated as a question requiring human intervention to understand what the user is asking."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue has an empty body and a title that is just the name of the library, providing no information about what the user wants. This is unintelligible/near-empty and cannot be routed without more information."
+   },
+   "cost_usd": 0.0004083,
+   "tokens_in": 861,
+   "tokens_out": 60,
+   "latency_ms": 2150,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 37907,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is asking why a specific dependency is restricted and if it will be lifted. This is a question about the project's technical decisions and future plans, not a bug or feature request in the traditional sense. It does not claim misbehavior of the software."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue is a request to change a dependency version constraint (openai<3) that limits users from upgrading to newer openai SDK versions. This is not a bug in behavior, not a docs issue, and not a question - it's a request for a change in dependency management/support, which fits best as a feature/enhancement request since it requires a deliberate product decision about supporting openai v3+. It affects the shared core dependency path (openai package is central to litellm), which could affect many users trying to upgrade, but there's no indication of current breakage - it's a proactive ask about future support. This is a well-specified, narrow ask that could be queued without much back-and-forth, but it does involve a product-direction decision about whether/when to support openai v3, so a maintainer should weigh in given compatibility implications across the whole library."
+   },
+   "cost_usd": 0.0007085,
+   "tokens_in": 1795,
+   "tokens_out": 68,
+   "latency_ms": 1687,
+   "context_empty": false,
+   "context_tokens": 679,
+   "error": ""
+  },
+  {
+   "issue_number": 37923,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a critical bug where streamed requests to Vertex Anthropic models are not priced correctly, leading to a reported spend of 0. This directly impacts budget enforcement and financial tracking, making it a P0. The issue also has security implications as it allows users to bypass budget limits. It needs human review due to the severity and potential financial impact."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear cost-accounting bug: streamed Vertex Anthropic requests are logged with spend=0 while identical non-streamed requests are priced correctly, despite token counts being recorded accurately. The reporter demonstrated the cost function itself works correctly with the exact usage values, isolating the bug to the streaming logging/spend-calculation path. This affects the shared streaming cost-tracking logic (likely applies broadly across streaming for this provider), directly causing budget enforcement to fail — a real financial/security-adjacent impact (unbounded spend against budgeted keys). This matches \"bug\" category (incorrect cost accounting, matches explicit example in the rules). Given it affects the majority of real traffic (streaming is default for most clients), impacts budget enforcement (a security-adjacent consequence), and has no reasonable workaround (disabling streaming is not viable for real usage), this is high severity. It's not strictly a security vulnerability exploit path in the classic sense, but is a core-path bug with severe financial and budget-control implications, affecting most users who stream. This warrants P0/P1: it breaks cost tracking for the majority of streamed traffic on a current release, undermining budget enforcement (a data-integrity/financial control issue), qualifying as \"broken for most users on a current release\" for streaming use cases, with no workaround. I'll set P1 given it requires reproduction confirmation but is well documented already; still, given severity and scope (affects budget enforcement, financial impact), and shared core streaming path, I'll escalate to P0 review by maintainers regardless, marking needs_human true."
+   },
+   "cost_usd": 0.0013598,
+   "tokens_in": 3816,
+   "tokens_out": 86,
+   "latency_ms": 2140,
+   "context_empty": false,
+   "context_tokens": 981,
+   "error": ""
+  },
+  {
+   "issue_number": 38033,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "A non-admin user can overwrite an admin-defined credential, leading to a permanent redirection of traffic to an attacker-controlled provider account. This is a critical security vulnerability with a clear exploit steps and significant impact."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "A non-admin key holder can POST /credentials with the name of an existing config.yaml-defined (or admin-owned) credential and silently overwrite it, redirecting production models to attacker-controlled provider credentials. This is a privilege-escalation / unauthorized modification vulnerability with a clear exploit path (allowed_routes scoping to /credentials is bypassed for write access), and it persists across restarts, making it a serious security issue rather than a plain bug. It takes precedence over the bug categorization per the security-first rule. Given the plausible exploit path allowing full compromise of provider credentials used by shared models, with no workaround, and affecting the shared credential-management core path, this warrants P0 urgency and requires maintainer judgement to assess scope and design the correct authorization check (create should look up existing credential like update/delete do)."
+   },
+   "cost_usd": 0.0010753,
+   "tokens_in": 3101,
+   "tokens_out": 58,
+   "latency_ms": 1838,
+   "context_empty": false,
+   "context_tokens": 477,
+   "error": ""
+  },
+  {
+   "issue_number": 38197,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a bug where the MiniMax-M2.7 model returns empty content and zero usage tokens, despite having valid output in `reasoning_content`. This affects a major feature (chat completions) and a specific provider, making it a P1. It needs human attention to confirm the proposed solutions and ensure correct implementation."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a specific provider integration bug: MiniMax-M2.7 responses are not correctly transformed by LiteLLM's adapter. The content field isn't populated from reasoning_content, token usage parsing fails (all zeros), and no error is raised despite malformed response with finish_reason=stop. This is code behaving incorrectly relative to expected behavior (accurate content/usage passthrough), not missing docs or a feature request - the adapter exists but mishandles this model's newer response schema. This qualifies as a bug per the definition: 'incorrect cost or token accounting', 'misbehaving integrations'. It affects a specific provider/model integration (MiniMax M2.7), not the shared core path broadly, so no blanket escalation for many providers. However, it causes silent data loss (empty content returned as success) which could cause significant downstream issues for users of this specific model - a narrower path affected, workaround may not be documented, but it's provider-specific rather than affecting most users broadly. This lands as P1 due to a widely believed workaround-less silent failure mode for a specific major provider integration, but since it's narrow (single model family) rather than a widely-used provider outage, P2 is more fitting - a narrower path is broken, need reproduction to confirm exact upstream schema, requiring judgement from maintainers who know MiniMax's evolving API schemas."
+   },
+   "cost_usd": 0.0006557,
+   "tokens_in": 1494,
+   "tokens_out": 83,
+   "latency_ms": 2253,
+   "context_empty": false,
+   "context_tokens": 259,
+   "error": ""
+  },
+  {
+   "issue_number": 38505,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request to add native support for xAI's x_search. It requires significant changes to integrate with the existing search API and cost accounting, so it needs human review to determine product direction and implementation details. The user is an ML Ops team, indicating a clear demand for this feature."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a well-specified request to add native Search API support for xAI's x_search (Live Search), including detailed design notes on response translation and cost handling. No existing functionality is broken; this is net-new behavior (new provider support within Search API), which matches the feature category per the rules (\"Provider X is not supported\" is a feature). It's a narrower, single-provider integration request with clear technical detail but affects only xAI users, and no workaround exists today except bypassing LiteLLM's Search API entirely (which is a reasonable workaround). Given the complexity (new cost accounting path, new response shape mapping) this requires product/architecture judgement from a maintainer on how to model x_search within BaseSearchConfig, so needs_human should be true despite being well-specified, since it requires a design decision about extending the abstraction."
+   },
+   "cost_usd": 0.0010562,
+   "tokens_in": 2854,
+   "tokens_out": 80,
+   "latency_ms": 2237,
+   "context_empty": false,
+   "context_tokens": 1212,
+   "error": ""
+  },
+  {
+   "issue_number": 38549,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a significant performance degradation (2 seconds per request) for a specific authentication method in Bedrock, affecting users who deploy LiteLLM in certain environments. A workaround exists, but the core problem of redundant credential resolution and inefficient caching remains. The issue is well-described with clear reproduction steps and a suggested fix, but the impact on a widely used provider (Bedrock) and the potential for widespread performance issues warrant a P1 urgency. It also requires human judgment to confirm the suggested fix and its implications."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a clear performance/correctness bug: credential resolution is performed and discarded on the bearer-token auth path, and a falsy cache result is never cached, causing a ~2s IMDS timeout tax on every single request for affected Bedrock deployments. The reporter provides detailed reproduction, logs, and measurements confirming the behavior is unintended (docs/expected behavior is that bearer-token auth shouldn't need AWS SigV4 credentials at all). This affects a widely-used provider (Bedrock) integration path, specifically bearer-token auth deployments, adding significant latency (2s per request) with no crash but a major performance regression-like impact. It doesn't fit \"security\" (no vulnerability), not \"question\" (claims misbehavior), not \"docs\" (code violates intended contract of not needing AWS creds for bearer token auth), so it's \"bug\".\n\nFor urgency: this isn't a full regression across all providers, but it's a significant latency bug affecting all requests for a specific auth configuration (bearer-token Bedrock), which is a widely used provider. A workaround exists (setting AWS_EC2_METADATA_DISABLered=true env var), which would normally lower severity one level. Base severity: this affects \"a narrower path\" (bearer-token specific auth users) → P2, but doubling the cost per request for every single call is quite severe for those affected. Given workaround exists, apply lower-one-level modifier: would take P2->P3, but the core issue affects shared credential-caching logic in base_aws_llm.py which many Bedrock auth methods could route through (shared core path affected → raise one level). This could offset the workaround downgrade. Given the significant performance impact (doubling response time under baseline) but bounded by a workaround, I settle on P2.\n\nNeeds human: This is a well-specified bug with clear reproduction and clear code pointers to the exact lines causing the issue, plus a suggested fix. It could be routed directly to the owning module (bedrock auth) without further discussion. Not P0/P1, not security, so default judgement suggests false. However there's an unexplained inconsistency mentioned by the reporter (two other deployments with identical config don't hit this path) which adds some uncertainty requiring maintainer investigation to confirm the exact root cause across scenarios. Given the well-specified nature with precise code references and suggested straightforward fix, I'll set needs_human to false."
+   },
+   "cost_usd": 0.0012278,
+   "tokens_in": 3101,
+   "tokens_out": 119,
+   "latency_ms": 2027,
+   "context_empty": false,
+   "context_tokens": 761,
+   "error": ""
+  },
+  {
+   "issue_number": 38802,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a clear bug where DeepInfra costs are under-reported due to LiteLLM not consuming `usage.estimated_cost` and `service_tier` from the DeepInfra response. This affects a major feature (cost tracking) for users employing the `priority` tier, and a workaround (manually adjusting budgets) is painful. The reporter also offers to open a PR, which suggests a clear path to resolution, but the issue is P1 and requires human review before routing."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "DeepInfra's response includes usage.estimated_cost and service_tier, both of which LiteLLM ignores, causing systematic 1.5x under-reporting of cost for priority-tier traffic. This is a clear cost accounting bug (documented category example: \"Provider X returns the wrong price\" is a bug), not a feature request, since the correct behavior (respecting provider-reported cost/tier) is expected and analogous to existing OpenRouter handling. It's well-reproduced with clear before/after data and a concrete code path identified, so no reproduction ambiguity remains. Impact: affects only DeepInfra priority-tier users specifically (a narrower path, not most users or core path), with no stated workaround, but it's a well-scoped, well-understood single-provider issue. This warrants P2 - narrower path affected, clear specification, not a regression, not affecting many providers (only DeepInfra). needs_human=false since this is a clear, well-specified bug report with reproduction and a suggested fix; it can be routed to the DeepInfra module owner without further clarification."
+   },
+   "cost_usd": 0.0011634,
+   "tokens_in": 2903,
+   "tokens_out": 117,
+   "latency_ms": 1998,
+   "context_empty": false,
+   "context_tokens": 668,
+   "error": ""
+  },
+  {
+   "issue_number": 38889,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The user is reporting a high-impact vulnerability that has not been triaged for over 30 days. This is a critical security issue requiring immediate human attention."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This is a follow-up report on an already-submitted private security vulnerability disclosure via GitHub Security Advisories, with a PoC demonstrating a full attack chain, that has gone unaddressed for 30+ days. Per the rules, security reports take precedence over everything else. The lack of response on a high-impact vulnerability with a working exploit represents a critical unaddressed risk, and this requires urgent maintainer/security team judgement and action - it cannot be routed automatically. This clearly needs human triage from the security team."
+   },
+   "cost_usd": 0.0005598,
+   "tokens_in": 1466,
+   "tokens_out": 48,
+   "latency_ms": 1750,
+   "context_empty": false,
+   "context_tokens": 337,
+   "error": ""
+  },
+  {
+   "issue_number": 38922,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The user is asking how to get the LiteLLM URL, which is a question about how to use the software. The issue is vague and lacks information, so it needs human intervention to understand what the user is trying to achieve."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue is extremely vague, providing no reproduction steps, error messages, or context about what the user is trying to achieve or what specifically fails. It could be a question about configuration, a bug, or something else entirely - there's not enough information to categorize it confidently. Per the rules, an unintelligible/empty issue defaults to 'question' category, with the signal routed to needs_human due to insufficient information."
+   },
+   "cost_usd": 0.0004139,
+   "tokens_in": 863,
+   "tokens_out": 62,
+   "latency_ms": 1808,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 38965,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new way to install the CLI, which is a feature. It affects a subset of users (Mac users) and has a workaround (manual installation), so it is P2. No human intervention is needed as the request is clear."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue reports that a documented/mentioned Homebrew packaging setup is incomplete because the referenced homebrew-litellm repo doesn't exist yet. This is essentially a feature/setup that hasn't been finished - the CLI install via Homebrew doesn't work as implied. This is a request for completing unfinished functionality (packaging/distribution), not a code bug in the core library, and not documentation-only since the actual repo/tap is missing. It's best classified as a feature request (finalizing homebrew distribution) rather than a bug, since the feature was never fully shipped. It's a narrow, non-critical improvement affecting mac users' setup experience, with alternative install methods (pip) available as a workaround. This requires a product-direction decision on whether/when to finalize the homebrew tap, so a maintainer should look at it, but it's not urgent enough to be P0/P1."
+   },
+   "cost_usd": 0.0005671,
+   "tokens_in": 1332,
+   "tokens_out": 67,
+   "latency_ms": 2128,
+   "context_empty": false,
+   "context_tokens": 337,
+   "error": ""
+  },
+  {
+   "issue_number": 38996,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes an authorization bypass vulnerability where a virtual key with restricted agent permissions can still access unauthorized agents via the OpenAI-compatible chat completions endpoint. This is a security vulnerability with a clear exploit path and no stated workaround, making it P0. It requires human review due to its security implications."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This is an authorization bypass: a virtual key scoped to a specific agent via object_permission.agents can access a different, unauthorized agent through the OpenAI-compatible /v1/chat/completions endpoint, even though the same check correctly blocks it on the native /a2a/* endpoint. This is a real access-control bypass with a plausible exploit path (unauthorized agent invocation), so it takes precedence as security over bug. It affects the shared core routing path (llm_router) used by all OpenAI-compatible chat completions calls to a2a models, which raises severity. No workaround is mentioned (native endpoint works but that's not a workaround for chat completions clients), so this is widely impactful for any deployment using a2a with scoped permissions - P0/P1 territory. Given it's an auth bypass affecting the core router path, I'll set P0. Security issues and P0/P1 issues always require human judgement to confirm reproduction and assess fix approach."
+   },
+   "cost_usd": 0.0010493,
+   "tokens_in": 2881,
+   "tokens_out": 74,
+   "latency_ms": 1808,
+   "context_empty": false,
+   "context_tokens": 929,
+   "error": ""
+  },
+  {
+   "issue_number": 39322,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This issue describes three distinct bugs in the `least-busy` routing strategy, leading to severe traffic imbalance and potential starvation of deployments. The first bug, where cache hits decrement the counter without a corresponding increment, is a deterministic flaw. The second bug, a biased tie-breaking mechanism, exacerbates the problem. The third bug, concerning the lack of cross-worker counter sharing despite Redis caching, undermines the intended behavior in multi-worker environments. The issue provides clear reproduction steps and detailed explanations of the root causes. Given that `least-busy` is a core routing strategy and these bugs lead to significant operational problems (traffic dropping to zero for some deployments), it warrants a P1 urgency. It needs human attention due to the complexity of the interaction between caching, routing, and multi-worker setups, and the need to coordinate fixes for three distinct but related problems."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented, reproducible bug report identifying three concrete root causes in the least-busy routing strategy: (1) cache hits triggering a decrement without a matching increment causing counters to drift negative and never recover, (2) strict tie-breaking always favoring the first deployment even when counters are clamped, and (3) the in-memory TTL cache preventing proper cross-worker coordination via Redis. The behavior clearly violates the documented/expected contract of least-busy routing (even distribution across healthy deployments), and a full reproduction script with clear before/after evidence is provided. This is a regression-adjacent, core-routing-path defect affecting a widely-used strategy (least-busy) combined with a widely-used feature (caching) and multi-worker deployments — this is a shared core path affecting many users, not a narrow edge case. It causes real production traffic imbalance/starvation with no viable workaround (cache must be disabled to avoid it, defeating the purpose of caching). Given the \"many providers or shared core path affected\" modifier, urgency should be raised one level from what might otherwise be P2 to P1. It is not a security issue, not a docs-only issue (docs correctly describe intended behavior, but code violates it), and it's not a feature request — it's behavior violating the documented contract, so it's bug. Given the severity (P1) and that it bundles three distinct defects requiring judgement on how to prioritize/fix, this needs human maintainer attention to confirm scope and coordinate the three fixes together as noted by the reporter."
+   },
+   "cost_usd": 0.0016597,
+   "tokens_in": 3949,
+   "tokens_out": 190,
+   "latency_ms": 4182,
+   "context_empty": false,
+   "context_tokens": 1049,
+   "error": ""
+  },
+  {
+   "issue_number": 39368,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The system silently misinterprets an empty string for budget_duration, leading to unintended daily resets and data loss for users who expect no reset. This affects a core feature (budget management) and has a significant impact on data integrity. A workaround exists (don"
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The code violates the intended contract: an unparseable budget_duration (\"\") should not silently produce a daily reset schedule. This causes real data loss (spend wiped every 24 hours) with no error, affecting team/user/key budget tracking across the shared core duration_parser path used by multiple endpoints (team, user, key, scheduler). This is a clear bug (docs/contract violated by code), not just a docs issue, since it causes silent data loss. It affects the shared core path (duration_parser + reset job), which is used broadly, and there's no workaround for the affected row once created except manual intervention. This warrants raising urgency due to core path impact and data loss potential, but it's a narrower trigger (only affects rows with budget_duration=\"\") so not P0. It requires a judgement call on whether to reject at API level vs. treat as null, so a maintainer should decide the correct fix approach."
+   },
+   "cost_usd": 0.0014266,
+   "tokens_in": 3497,
+   "tokens_out": 151,
+   "latency_ms": 23700,
+   "context_empty": false,
+   "context_tokens": 1013,
+   "error": ""
+  },
+  {
+   "issue_number": 39486,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue title \"llm\" is too vague to determine the user's intent. The body is empty, providing no further context. Therefore, it is categorized as a question due to lack of information and requires human intervention to clarify the user's needs."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue has an empty body and a completely uninformative title (\"llm\"), providing no information about what the reporter wants to convey - whether a bug, question, or feature request. This is unintelligible/near-empty content, so per the rules it defaults to 'question' category. Since there's insufficient information to route this issue in any meaningful way, a maintainer must look at it to determine what the reporter actually needs."
+   },
+   "cost_usd": 0.000428,
+   "tokens_in": 860,
+   "tokens_out": 68,
+   "latency_ms": 1857,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 39514,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a critical bug where a single request can block the event loop for an extended period (up to 900 seconds), leading to a denial of service for all other users and causing the proxy to be killed. This is a P0 as it breaks the system for most users with no workaround, and a regression as it worked in a recent release. The issue also affects multiple providers (ChatGPT and GitHub Copilot) and the shared core path, which raises the urgency level. It needs human attention due to the severity and the need for a product-direction call on how to handle the device code flow in an async environment."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The synchronous device-code auth flow blocks the async event loop for up to 900 seconds, causing the entire proxy worker to become unresponsive, failing health checks and causing the container to be killed. This affects all requests across all providers/users on the same worker, not just chatgpt users — a single malicious or unaware user with a valid key can take down the whole proxy for everyone. This is a clear violation of expected behavior (async handlers should not block the event loop), matching the bug category. It affects the shared core request-handling path (event loop blocking impacts all providers, not just chatgpt), which per modifiers raises severity by one level. There's no reasonable workaround short of avoiding the chatgpt provider entirely, and the impact is a full outage for all users on that worker — this is P0-level (broken for most users on a release, no real workaround, akin to a DoS vector). Even without formally being a security CVE, it is effectively an unauthenticated-by-any-valid-key denial-of-service vector affecting the whole service; however per rules, since it's framed and diagnosed as a bug (blocking sync call in async handler) rather than an exploit of an auth bypass or injection, it fits best as 'bug' rather than 'security', though the severity should be treated with urgency and needs_human due to the systemic impact. Given the severity (worker-killing, no workaround, affects all users on same worker, potential DoS), this warrants P0 urgency and needs_human=true for maintainer judgement on the architectural fix (thread offload vs. disabling interactive flow)."
+   },
+   "cost_usd": 0.0013923,
+   "tokens_in": 3441,
+   "tokens_out": 144,
+   "latency_ms": 2000,
+   "context_empty": false,
+   "context_tokens": 799,
+   "error": ""
+  }
+ ]
+}
