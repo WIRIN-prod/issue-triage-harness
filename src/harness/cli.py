@@ -13,6 +13,7 @@ from graph.retrieve import GraphIndex
 from triage.config import TriageConfig
 from triage.configs import CONFIGS, LABELLER, TIERS
 
+from . import baselines as baselines_mod
 from . import github, labelling
 from .compare import NotComparable, compare
 from .dataset import Dataset
@@ -183,6 +184,14 @@ def cmd_compare(args):
         raise SystemExit(2)
 
 
+def cmd_baselines(args):
+    ds = Dataset.load(DATASET)
+    split = None if args.split == "all" else args.split
+    print(f"dataset {ds.content_hash()} · split {args.split} · "
+          f"{len(ds.split_items(split) if split else ds.items)} items\n")
+    print(baselines_mod.render(baselines_mod.evaluate(ds, split), args.unit_usd))
+
+
 def cmd_dataset(args):
     ds = Dataset.load(DATASET)
     print(json.dumps(ds.summary(), indent=1))
@@ -225,6 +234,11 @@ def main(argv=None):
     c.add_argument("--repeats-of-a", nargs="*", default=[],
                    help="other runs of config A, to measure run-to-run noise")
     c.set_defaults(func=cmd_compare)
+
+    bl = sub.add_parser("baselines", help="score degenerate strategies — the floor to beat")
+    bl.add_argument("--split", default="all", choices=["dev", "holdout", "all"])
+    bl.add_argument("--unit-usd", type=float, default=ERROR_UNIT_USD)
+    bl.set_defaults(func=cmd_baselines)
 
     d = sub.add_parser("dataset", help="summarise the frozen dataset")
     d.set_defaults(func=cmd_dataset)

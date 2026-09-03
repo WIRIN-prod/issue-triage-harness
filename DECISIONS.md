@@ -445,6 +445,52 @@ cache is falsy, and `if cache:` skipped every write — meaning the cache never 
 run, which is precisely the run that most needs it. It would have looked like it worked: no error,
 no warning, just a cache that was always empty and a bill that never went down.
 
+### D24 — Dataset built (100 items), and the floor a config has to beat
+**Frozen at `f383db39072f4a10`** — 100 items, 60 dev / 40 holdout, labelled by
+`anthropic/claude-sonnet-5` against rubric v1, zero failures.
+
+| | P0 | P1 | P2 | P3 | total |
+|---|---|---|---|---|---|
+| bug | 4 | 26 | 19 | 1 | **50** |
+| feature | 0 | 0 | 12 | 2 | **14** |
+| docs | 0 | 0 | 1 | 6 | **7** |
+| question | 0 | 0 | 1 | 14 | **15** |
+| security | 9 | 4 | 1 | 0 | **14** |
+
+`needs_human` is true for 69. Context fires on 86 of 100. 75 carry maintainer labels.
+
+**Stratification only half-worked.** Stage 1 selected near-balanced cells (roughly 15 per
+category) but the frontier labeller disagreed with the cheap stratifier often enough that gold
+categories came out at 50% `bug`. Stratifying on labels from a weak model biases toward *what
+the weak model thinks*, not toward the truth. It still helped — `security` at 14 and `docs` at 7
+are far above their natural rate — but the balance target was not met, and cells like `bug/P3`
+and `question/P2` hold a single item and cannot move a metric.
+
+**The floor is higher than intuition suggests.** Scoring degenerate strategies against the gold
+labels before running any real config:
+
+| baseline | macro-F1 | accuracy | err weight/issue |
+|---|---|---|---|
+| majority-per-field | 0.133 | 0.50 | **2.27** |
+| escalate-everything | 0.133 | 0.50 | **2.27** |
+| never-escalate | 0.133 | 0.50 | 8.60 |
+| random | 0.197 | 0.20 | 6.87 |
+
+Two things fall out. **macro-F1 earns its place**: always answering `bug` scores 0.50 accuracy
+and 0.133 macro-F1, exactly the divergence that made accuracy unusable. And **escalating
+everything is near-optimal on `needs_human`** — 69% of items are positive and a missed
+escalation costs 10x an unnecessary one, so a blanket escalation policy takes recall 1.00 and
+pays only 0.31/issue in over-escalation. That is the cost model being honest, not a defect, but
+it sets the bar: **any config scoring worse than 2.27 error weight has earned nothing**, and the
+value a real config adds has to come from `category` and `urgency`.
+
+**Caveat to carry into the write-up.** The 69% positive rate is partly a stratification artefact
+— oversampling P0 and security pulled in issues that always need a human. Escalate-everything
+would look weaker on the true pool distribution.
+
+`harness baselines` reports this for free on any split, and it belongs in the results section
+before any config numbers, or a mediocre result reads as a good one.
+
 ---
 
 ## Still open
