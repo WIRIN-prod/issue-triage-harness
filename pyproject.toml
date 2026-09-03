@@ -5,6 +5,7 @@ description = "LLM issue triage service and the evaluation harness that measures
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.9",
+    "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
