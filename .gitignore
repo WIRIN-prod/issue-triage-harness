@@ -219,7 +219,8 @@ __marimo__/
 
 # working data — cloned repos, built graphs, run artefacts
 data/repos/
-data/graphs/
+data/graphs/*.json
+!data/graphs/*.json.gz
 graphify-out/
 .cache/
 data/cache/

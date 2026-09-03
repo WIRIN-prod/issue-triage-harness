@@ -9,6 +9,7 @@ than none — it misleads the model and charges tokens to do it.
 
 from __future__ import annotations
 
+import gzip
 import json
 import re
 from collections import defaultdict
@@ -49,7 +50,17 @@ class GraphIndex:
     """
 
     def __init__(self, graph_path: Path, repo_root: str = ""):
-        g = json.loads(Path(graph_path).read_text())
+        # The graph is committed gzipped (36MB -> 1.7MB) so the harness runs without
+        # cloning 93MB of target repo first. It is also byte-identically rebuildable
+        # from the pinned SHA via `graph.build`, so this is convenience, not the
+        # source of truth.
+        path = Path(graph_path)
+        if not path.exists() and path.with_suffix(path.suffix + ".gz").exists():
+            path = path.with_suffix(path.suffix + ".gz")
+        if path.suffix == ".gz":
+            g = json.loads(gzip.decompress(path.read_bytes()))
+        else:
+            g = json.loads(path.read_text())
         self.repo_root = repo_root.rstrip("/") + "/" if repo_root else ""
 
         by_id = {n["id"]: n for n in g["nodes"]}

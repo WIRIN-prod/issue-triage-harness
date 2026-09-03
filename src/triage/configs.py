@@ -65,6 +65,12 @@ CONFIGS: dict[str, TriageConfig] = {
     "rationale-off": _variant("rationale-off", rationale_mode="off"),
     # the one-off assumption check (SPEC.md §5.1) — not a permanent axis
     "context-none": _variant("context-none", context="none"),
+    # A deliberate regression, used to demonstrate that the harness catches one.
+    # The prompt reads like an improvement — "maintainer attention is the scarcest
+    # resource, over-escalation makes a queue useless, be selective" — which is exactly
+    # the change a well-meaning engineer ships to reduce reviewer noise. It should gut
+    # escalation recall, and the flagship weights a missed escalation 10x.
+    "regress-lean": _variant("regress-lean", prompt_version="v3_lean_escalation"),
     # cross-provider, zero marginal cost
     **{name: _variant(name, model=mid) for name, mid in FREE_TIER.items()},
 }
