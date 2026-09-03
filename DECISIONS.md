@@ -319,6 +319,45 @@ for stratification only, then the frontier labeller produces real labels for the
 and a human verifies ~25 of those. Labelling the full pool at frontier quality would cost
 roughly 10x more for labels that are thrown away after sampling.
 
+### D19 — `temperature` is silently dropped for `openai/*` models; detect and record it
+**Found by reading a warning rather than ignoring it.** pydantic-ai drops sampling parameters for
+models whose profile says reasoning is on by default, and it matches profiles on the id prefix.
+Every OpenRouter id beginning `openai/` is therefore treated as a reasoning model — `gpt-4o-mini`
+included, which is not one. Other prefixes (`anthropic/`, `google/`, `meta-llama/`, `mistralai/`)
+pass temperature through normally.
+
+**Why this is not cosmetic.** The headline experiment is model tier. Mixed handling would run one
+arm at `temperature=0` and the other at the provider's default, and the resulting difference would
+be attributed to the model. A config knob that silently does nothing is precisely the failure the
+config-addressability rule exists to prevent — and it arrived from a library heuristic, not from
+our own code, which is why it needed a test rather than a convention.
+
+**Chose:** `sampling_is_honoured()` detects it from the profile, `TriageRun.temperature_applied`
+records it per run, and a test asserts no named config uses an affected model. The config ladder
+avoids `openai/*` entirely.
+
+### D20 — Model ladder and the labeller
+**Labeller: `anthropic/claude-sonnet-5`**, and therefore barred from the config space (D3). The
+loss is that we cannot ask "is the frontier model worth it as the service" — accepted, because the
+useful question for triage is whether a *cheap* model suffices, not whether the dearest one is best.
+
+**Ladder** (per million tokens at selection; actual cost always comes from the gateway):
+
+| Tier | Model | $/M in | $/M out |
+|---|---|---|---|
+| cheap | mistralai/mistral-nemo | 0.019 | 0.030 |
+| small | google/gemini-2.5-flash-lite | 0.100 | 0.400 |
+| mid | google/gemini-2.5-flash | 0.300 | 2.500 |
+| strong | anthropic/claude-haiku-4.5 | 1.000 | 5.000 |
+
+A ~50x input and ~170x output spread, which is what makes the accuracy-vs-cost question sharp
+rather than academic. Every model honours temperature (D19) and supports structured output.
+
+**First live signal, n=1, on one issue** — recorded as orientation, not evidence:
+`rationale-off` produced 13 output tokens against `rationale-pre`'s 224 for the same decision;
+the rubric prompt costs ~690 input tokens over the terse one and changed the answer; repo context
+costs ~1,050 input tokens. All three are worth measuring properly.
+
 ---
 
 ## Still open
@@ -328,5 +367,6 @@ roughly 10x more for labels that are thrown away after sampling.
 - Whether `rationale` is prompt-visible reasoning the model generates before deciding, or a
   post-hoc explanation. Measurably different token costs, and the first may change decision
   quality. Currently unresolved — it is itself a good first experiment for the harness.
-- Which frontier model labels the gold set, and therefore which model is excluded from the
-  config space under D3.
+- OpenRouter returns 402 for `google/gemini-2.5-flash` and `anthropic/claude-haiku-4.5`; the
+  account funds only the cheaper tiers. The top two rungs of the ladder are unavailable until
+  credits are added, which would flatten the cost experiment to a ~5x spread.
