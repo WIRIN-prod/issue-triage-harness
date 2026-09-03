@@ -6,6 +6,12 @@ requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.9",
     "python-dotenv>=1.0",
+    # Typed model calls with structured output. `-slim` plus the openai extra is all we
+    # need: OpenRouter is OpenAI-compatible, so no other provider package is pulled in.
+    "pydantic-ai-slim[openai]>=2.0",
+    # GenAI semantic conventions for token/cost/latency telemetry (DECISIONS.md D11).
+    "opentelemetry-api>=1.27",
+    "opentelemetry-sdk>=1.27",
 ]
 
 [project.optional-dependencies]
