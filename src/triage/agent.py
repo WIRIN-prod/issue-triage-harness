@@ -89,10 +89,10 @@ def _agent(config_hash: str, model_id: str, prompt: str, mode: str) -> Agent:
         OpenAIChatModel(model_id, provider=provider),
         output_type=OUTPUT_SCHEMAS[mode],
         system_prompt=prompt,
-        # pydantic-ai defaults to a single output retry, which surfaced as
+        # pydantic-ai allows a single retry by default, which surfaced as
         # "Exceeded maximum output retries (1)" whenever a model fumbled the schema
-        # once. Two more attempts costs little and recovers most of them.
-        output_retries=3,
+        # once. Two more attempts cost little and recover most of them.
+        retries=3,
     )
 
 
