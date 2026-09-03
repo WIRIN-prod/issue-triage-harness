@@ -143,6 +143,63 @@ strong evidence the labels are unreliable. High agreement is only weak evidence 
 since two models can share a blind spot a person would not. `data/verification/sample.md` holds
 the 25-item sample with gold labels withheld, awaiting a human pass.
 
+## Label errors found, and whether they matter
+
+Three raters reviewed the 25-item verification sample independently: `x-ai/grok-4.6`, this
+agent, and a human. **Two items were flagged by all three** and are recorded as corrections in
+`data/verification/human-labels.jsonl`:
+
+| issue | was | corrected to | reasoning |
+|---|---|---|---|
+| #35023 | `bug/P1` | `security/P0` | CJK text from concurrent requests bleeding across streams is cross-tenant information disclosure. The rubric puts `security` first *even when the report is framed as a bug*. |
+| #37459 | `feature/P2` | `feature/P3` | Single-vendor guardrail integration, one requester, no demand evidence. P2 requires "clear demand". |
+
+Independent agreement from three raters — one of them human — is much stronger evidence than any
+one of them alone, and it is the only part of this that breaks the model-checking-model
+circularity.
+
+### A systematic bias, not just two mistakes
+
+Feature urgency across the dataset is **12 x P2, 2 x P3, zero P1, zero P0**. The rubric reserves
+P2 for "clear demand" and puts "niche or speculative" at P3. In a real tracker most feature
+requests come from one person with no demand evidence, so an 86% P2 rate is implausible: **the
+labeller inflates urgency for features.**
+
+This is worse than random noise, because of how it interacts with scoring. Where gold says P2 and
+the truth is P3, a config answering P2 scores zero error while being wrong, and a config
+answering P3 is penalised while being right. **Pairing does not correct it** — random noise
+cancels across arms, systematic bias rewards whichever config best mimics the labeller.
+
+### Does it change any conclusion? No — but read why
+
+Run records keep each item's gold label beside the prediction, so corrections can be applied to
+completed work for free. Flipping all 8 dev feature items from P2 to P3 as a hypothesis:
+
+| config | error weight as-labelled | if P3 | urgency MAE as-labelled | if P3 |
+|---|---|---|---|---|
+| baseline | 2.32 | 2.28 | 0.43 | 0.40 |
+| tier-mid | 2.08 | 2.18 | 0.55 | 0.65 |
+| tier-cheap | 5.80 | 5.93 | 0.57 | 0.70 |
+| rationale-off | 2.33 | 2.43 | 0.48 | 0.58 |
+
+**All six paired verdicts are unchanged.** Nothing flips.
+
+The honest reading is less comforting than it sounds. The conclusions are robust to urgency bias
+**because the flagship metric barely measures urgency** — it is ~72% escalation error, and an
+urgency step costs 1.0 against a missed escalation's 10.0. The metric is insensitive to this bias
+because it is largely ignoring the biased field, not because the labels are sound. Anyone reading
+the urgency MAE column directly should discount it accordingly.
+
+### Dataset versions
+
+Both corrections fall in the **holdout** split, so every number above — all computed on dev —
+is unaffected. The corrected dataset is `data/dataset/gold-v2.json` (`e10c02ba117a979c`, against
+v1's `f383db39072f4a10`).
+
+Per the freeze rule, corrections create a new version rather than editing in place. v1 and v2
+results are **not comparable**, and `compare` refuses to mix them. Holdout evaluation should use
+v2; the dev results here stand against v1.
+
 ## Caveats
 
 - **n=60 on dev.** Underpowered for anything but large effects, which is why so much is inconclusive.
