@@ -234,6 +234,56 @@ vocabulary rather than to arbitrary tokens should be far higher precision.
 which is the correct place for that question, and a null result there is a publishable finding
 rather than a failure.
 
+### D16 — Vocabulary-anchored retrieval; graph builds are cold-only
+**Built** the fix D15 identified: retrieval matches only terms the repo defines, never
+arbitrary tokens.
+
+**Vocabulary sources, all derived from the checkout — none hand-written:**
+139 provider directories under `litellm/llms/`, 82 integrations, router strategies,
+top-level modules, and the shipped `model_prices_and_context_window.json` — 3,560 model ids
+mapped to 130 providers. That last file is where aliasing comes from for free: "claude-sonnet-4"
+resolves to the anthropic module without anyone encoding that claude means anthropic. 2,187
+terms after de-duplication, 2,117 resolving to a module path.
+
+**Empty context is a valid result.** When an issue names nothing the repo defines, the retriever
+returns nothing and says why, rather than the nearest-looking module. On the ten-issue sample,
+3 of 10 declined — issues titled "llm", "litellm._turn_on_debug()", and one about a third-party
+header. All three had previously drawn confident, irrelevant code.
+
+**Position weights the evidence.** A term in the title scores 3x, in prose 1x, inside a fenced
+code block 0.4x. Issue #39451 is about `/v1/models` and `auto_router`, but a pasted YAML config
+listing Bedrock models had put `llms/bedrock` first; with zone weighting `router_strategy/auto_router`
+leads and bedrock falls to third. Config blocks name providers incidentally — the title names the
+subject.
+
+**Consequence for the harness:** context fires on roughly 70% of issues. Even a large effect can
+only move the metric on the subset where retrieval engages, which dilutes the measurable effect
+size and matters for the power calculation.
+
+### D17 — Graph builds must run cold; the cache changes the output
+**Found while checking reproducibility**, not from a bug report.
+
+Three builds over an identical file list at an identical commit produced three different graphs:
+
+| Build | Edges | Deterministic? |
+|---|---|---|
+| Cold cache | 81,188 | yes — byte-identical across runs |
+| Warm/incremental | 74,223 | stable warm, but ~7,000 edges short |
+| Partially warm | 80,783 | — |
+
+Node counts matched at 31,165 every time; only cross-file reference edges differed, resolved
+differently depending on extraction order.
+
+**Why it matters:** the graph feeds both labelling and every eval run. A graph that changes
+underneath a comparison silently invalidates it, and would have broken SPEC.md §11 criterion 1
+("running the harness twice on the same config and dataset produces identical results") in a way
+no test would have caught — the numbers would simply have drifted.
+
+**Chose:** `build()` clears the cache before extraction by default, and the expected graph SHA256
+is pinned in code. Incremental remains available for local iteration but is never the path that
+produces a graph used in results. The graph digest joins the commit SHA as part of the identity of
+any run built on it.
+
 ---
 
 ## Still open
