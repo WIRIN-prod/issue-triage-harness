@@ -14,13 +14,18 @@ from triage.config import TriageConfig
 from triage.configs import CONFIGS, LABELLER, TIERS
 
 from . import github, labelling
+from .compare import NotComparable, compare
 from .dataset import Dataset
+from .metrics import ERROR_UNIT_USD
+from .runner import RunRecord, run_config
+from .stats import Variance
 
 DATA = Path("data")
 POOL = DATA / "issues" / "litellm-pool.json"
 GRAPH = DATA / "graphs" / "litellm-raw.json"
 REPO_DIR = DATA / "repos" / "litellm"
 DATASET = DATA / "dataset" / "gold.json"
+RUNS = Path("runs")
 RUBRIC = Path("docs/rubric.md")
 
 STRATIFY_CONFIG = TriageConfig(
@@ -124,6 +129,47 @@ def cmd_label(args):
                       "path": str(DATASET)}, indent=1))
 
 
+def cmd_eval(args):
+    from triage.configs import get as get_config
+
+    ds = Dataset.load(DATASET)
+    _, index, voc = _load_env()
+    cfg = get_config(args.config)
+    print(f"{cfg.describe()}\n  dataset {ds.content_hash()} split={args.split} "
+          f"repeats={args.repeats}", file=sys.stderr)
+
+    paths = []
+    for r in range(args.repeats):
+        def show(n, total, r=r):
+            if n % 20 == 0 or n == total:
+                print(f"\r  repeat {r+1}/{args.repeats}: {n}/{total}", end="",
+                      file=sys.stderr, flush=True)
+        rec = run_config(ds, cfg, index, voc, split=args.split, repeat=r,
+                         workers=args.workers, on_progress=show)
+        paths.append(str(rec.save(RUNS)))
+        print(f"\n  ${rec.total_cost:.4f} · {rec.failures} failed", file=sys.stderr)
+
+    print(json.dumps({"runs": paths}, indent=1))
+
+
+def cmd_compare(args):
+    a, b = RunRecord.load(Path(args.a)), RunRecord.load(Path(args.b))
+    variances = None
+    if args.repeats_of_a:
+        reps = [RunRecord.load(Path(p)) for p in args.repeats_of_a]
+        from .compare import METRICS, _score_items
+        variances = {
+            name: Variance(name, [fn([i for i in r.ok]) for r in reps])
+            for name, fn, _ in METRICS
+        }
+    try:
+        print(compare(a, b, unit_usd=args.unit_usd, n_boot=args.boot,
+                      variances=variances).render())
+    except NotComparable as e:
+        print(f"REFUSED: {e}", file=sys.stderr)
+        raise SystemExit(2)
+
+
 def cmd_dataset(args):
     ds = Dataset.load(DATASET)
     print(json.dumps(ds.summary(), indent=1))
@@ -146,6 +192,22 @@ def main(argv=None):
     l.add_argument("--workers", type=int, default=6)
     l.add_argument("--from-file", help="JSONL of out-of-band labels instead of the frontier model")
     l.set_defaults(func=cmd_label)
+
+    v = sub.add_parser("eval", help="run one config over the dataset")
+    v.add_argument("--config", required=True)
+    v.add_argument("--split", default="dev", choices=["dev", "holdout", "all"])
+    v.add_argument("--repeats", type=int, default=1)
+    v.add_argument("--workers", type=int, default=6)
+    v.set_defaults(func=cmd_eval)
+
+    c = sub.add_parser("compare", help="A vs B with confidence intervals")
+    c.add_argument("a"); c.add_argument("b")
+    c.add_argument("--unit-usd", type=float, default=ERROR_UNIT_USD,
+                   help="dollar value of one error weight unit")
+    c.add_argument("--boot", type=int, default=10000)
+    c.add_argument("--repeats-of-a", nargs="*", default=[],
+                   help="other runs of config A, to measure run-to-run noise")
+    c.set_defaults(func=cmd_compare)
 
     d = sub.add_parser("dataset", help="summarise the frozen dataset")
     d.set_defaults(func=cmd_dataset)
