@@ -15,8 +15,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from statistics import mean
 
-from .metrics import (ERROR_UNIT_USD, Scored, breakeven_unit_usd, error_weight,
-                      score)
+from statistics import median
+
+from .metrics import (ERROR_UNIT_USD, Scored, breakeven_escalation_weight,
+                      breakeven_unit_usd, breakeven_usd_per_second,
+                      error_components, error_weight, score)
 from .runner import ItemResult, RunRecord
 from .stats import (Comparison, Variance, dominated_by_noise, holm_bonferroni,
                     paired_bootstrap)
@@ -124,6 +127,12 @@ class Report:
     comparisons: list[Comparison] = field(default_factory=list)
     flagship: Comparison | None = None
     breakeven: float | None = None
+    breakeven_escalation: float | None = None
+    breakeven_sec_usd: float | None = None
+    components_a: dict = field(default_factory=dict)
+    components_b: dict = field(default_factory=dict)
+    p50_a: float = 0.0
+    p50_b: float = 0.0
     sensitivity: list[tuple[float, str]] = field(default_factory=list)
     noisy: list[str] = field(default_factory=list)
 
@@ -145,9 +154,28 @@ class Report:
         if self.sensitivity:
             L += ["", f"sensitivity to the error-cost anchor (default ${ERROR_UNIT_USD}/unit)"]
             L += [f"  ${u:<10.4f} {v}" for u, v in self.sensitivity]
+        if self.components_a:
+            L += ["", "where the error cost comes from ($/issue at the default anchor)"]
+            L.append(f"  {'component':<24}{'A':>10}{'B':>10}")
+            for k in ("missed_escalation", "unnecessary_escalation",
+                      "wrong_category", "urgency"):
+                L.append(f"  {k:<24}{self.components_a[k]:>10.3f}{self.components_b[k]:>10.3f}")
+
+        L.append("")
+        L.append("breakevens — the assumption values at which the verdict flips")
         if self.breakeven is not None:
-            L += ["", f"breakeven: the two configs cost the same when one weight unit "
-                      f"is worth ${self.breakeven:.4f}"]
+            L.append(f"  error-cost anchor      ${self.breakeven:.4f} per weight unit")
+        if self.breakeven_escalation is not None:
+            L.append(f"  missed-escalation wt   {self.breakeven_escalation:.2f}x "
+                     f"an unnecessary one (currently assumed 10x)")
+        else:
+            L.append("  missed-escalation wt   no flip — same miss rate, or B wins at every weight")
+        if self.breakeven_sec_usd is not None:
+            L.append(f"  value of one second    ${self.breakeven_sec_usd:.4f} "
+                     f"(p50 {self.p50_a:.0f}ms vs {self.p50_b:.0f}ms)")
+        else:
+            L.append(f"  value of one second    no flip "
+                     f"(p50 {self.p50_a:.0f}ms vs {self.p50_b:.0f}ms)")
         return "\n".join(L)
 
 
@@ -180,7 +208,16 @@ def compare(
     # question, not one of a family fished for significance.
     holm_bonferroni(rep.comparisons)
 
+    pa = [(i.predicted, i.gold) for i in ia]
+    pb = [(i.predicted, i.gold) for i in ib]
+    rep.components_a = error_components(pa)
+    rep.components_b = error_components(pb)
+    rep.p50_a = median(i.latency_ms for i in ia)
+    rep.p50_b = median(i.latency_ms for i in ib)
     rep.breakeven = breakeven_unit_usd(rep.scored_a, rep.scored_b)
+    rep.breakeven_escalation = breakeven_escalation_weight(pa, pb)
+    rep.breakeven_sec_usd = breakeven_usd_per_second(
+        rep.scored_a, rep.scored_b, rep.p50_a, rep.p50_b)
     for unit in (0.01, 0.1, 1.0, 10.0, 100.0):
         ta = rep.scored_a.total_usd_per_issue(unit)
         tb = rep.scored_b.total_usd_per_issue(unit)

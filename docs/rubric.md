@@ -1,6 +1,6 @@
 # Triage labelling rubric
 
-**Version 1** · applies to `BerriAI/litellm` @ `658f5066`
+**Version 2** · applies to `BerriAI/litellm` @ `658f5066`
 
 This document is the definition of "correct" for the dataset. It is given **verbatim and
 identically** to the frontier model that labels the pool and to the human who verifies a
@@ -84,8 +84,19 @@ endpoint is not a P0.
 |---|---|
 | **P0** | Security vulnerability with a plausible exploit path · data loss · the library is broken for most users on a current release (import fails, the core completion path is down) · **no workaround** |
 | **P1** | A major feature or widely-used provider is broken · a workaround exists but is painful or non-obvious · affects many users |
-| **P2** | A narrower path is broken · affects a subset of users · a workaround is available · or a well-specified feature request with clear demand |
-| **P3** | Cosmetic · typos · minor documentation · niche or speculative feature requests · most questions |
+| **P2** | A narrower path is broken · affects a subset of users · a workaround is available · or a feature request with **evidenced** demand (see below) |
+| **P3** | Cosmetic · typos · minor documentation · feature requests without evidenced demand · most questions |
+
+**Feature requests default to P3.** Promote to P2 only on *observable* demand — not on
+how well the request is written. Evidence that counts: more than one person asking (linked
+duplicates, "+1" from distinct accounts), a maintainer signalling intent, or the request
+covering a widely-used provider or the shared core path. Evidence that does **not** count:
+a detailed write-up, cited documentation, or a clear user flow. A single requester with no
+corroboration is P3 however well argued.
+
+*(This rule exists because v1 produced 12 P2 and 2 P3 across 14 feature requests. Most
+feature requests come from one person with no demand evidence, so an 86% P2 rate meant
+"clear demand" was being read as "clearly written".)*
 
 **Modifiers, applied after the base level:**
 

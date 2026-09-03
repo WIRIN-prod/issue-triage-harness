@@ -145,6 +145,83 @@ def score(pairs: list[tuple[TriageDecision, TriageDecision]],
     )
 
 
+def error_components(pairs: list[tuple[TriageDecision, TriageDecision]]) -> dict[str, float]:
+    """Split the error weight into its parts, per issue.
+
+    The flagship is ~72% escalation error on this dataset, which is a deliberate
+    consequence of the 10:1 weight — but it should be visible rather than inferred.
+    """
+    n = len(pairs) or 1
+    out = {"wrong_category": 0.0, "urgency": 0.0,
+           "missed_escalation": 0.0, "unnecessary_escalation": 0.0}
+    for pred, gold in pairs:
+        if pred.category != gold.category:
+            out["wrong_category"] += WEIGHTS["wrong_category"]
+        step = abs(URGENCY_RANK[pred.urgency] - URGENCY_RANK[gold.urgency])
+        if step:
+            out["urgency"] += WEIGHTS["urgency_per_step"][step]
+        if gold.needs_human and not pred.needs_human:
+            out["missed_escalation"] += WEIGHTS["missed_escalation"]
+        elif pred.needs_human and not gold.needs_human:
+            out["unnecessary_escalation"] += WEIGHTS["unnecessary_escalation"]
+    return {k: v / n for k, v in out.items()}
+
+
+def breakeven_escalation_weight(
+    a_pairs: list[tuple[TriageDecision, TriageDecision]],
+    b_pairs: list[tuple[TriageDecision, TriageDecision]],
+) -> float | None:
+    """At what missed-escalation weight do these two configs tie?
+
+    The 10:1 ratio is the single most load-bearing assumption in the project — it drives
+    ~72% of the flagship. Reporting the weight at which a conclusion flips turns that
+    assumption into a number a stakeholder can argue with: "this holds as long as a
+    missed escalation costs more than N times an unnecessary one".
+
+    Solves `rest_a + w*miss_a == rest_b + w*miss_b` for w, where `miss` is the *count*
+    of missed escalations per issue and `rest` is everything else.
+    """
+    def parts(pairs):
+        n = len(pairs) or 1
+        miss = sum(1 for p, g in pairs if g.needs_human and not p.needs_human) / n
+        rest = sum(
+            (WEIGHTS["wrong_category"] if p.category != g.category else 0.0)
+            + WEIGHTS["urgency_per_step"].get(
+                abs(URGENCY_RANK[p.urgency] - URGENCY_RANK[g.urgency]), 0.0)
+            + (WEIGHTS["unnecessary_escalation"] if p.needs_human and not g.needs_human else 0.0)
+            for p, g in pairs) / n
+        return miss, rest
+
+    miss_a, rest_a = parts(a_pairs)
+    miss_b, rest_b = parts(b_pairs)
+    denom = miss_a - miss_b
+    if abs(denom) < 1e-12:
+        return None            # same miss rate: the weight cannot flip the comparison
+    w = (rest_b - rest_a) / denom
+    return w if w > 0 else None
+
+
+def breakeven_usd_per_second(a: Scored, b: Scored,
+                             a_p50_ms: float, b_p50_ms: float) -> float | None:
+    """At what value of a second does the faster config overtake the better one?
+
+    Latency is measured but deliberately not priced into the flagship: putting a second
+    dollar guess beside the error-cost anchor would compound two assumptions instead of
+    exposing them. Reporting the breakeven keeps latency in the decision without
+    smuggling in a number nobody validated.
+
+    For asynchronous triage a second is worth ~nothing and this rarely binds; for an
+    interactive path it can dominate.
+    """
+    total_a = a.total_usd_per_issue()
+    total_b = b.total_usd_per_issue()
+    d_sec = (b_p50_ms - a_p50_ms) / 1000.0
+    if abs(d_sec) < 1e-9:
+        return None
+    v = (total_a - total_b) / d_sec
+    return v if v > 0 else None
+
+
 def breakeven_unit_usd(a: Scored, b: Scored) -> float | None:
     """At what value of a weight unit do these two configs cost the same?
 

@@ -33,9 +33,15 @@ signal belongs in `needs_human`.
   most users on a current release; no workaround.
 - **P1** — a major feature or widely-used provider is broken; workaround exists but is
   painful; affects many users.
-- **P2** — a narrower path is broken; affects a subset; workaround available; or a
-  well-specified feature request with clear demand.
-- **P3** — cosmetic, typos, minor docs, niche or speculative requests, most questions.
+- **P2** — a narrower path is broken; affects a subset; workaround available; or a feature
+  request with *evidenced* demand.
+- **P3** — cosmetic, typos, minor docs, feature requests without evidenced demand, most
+  questions.
+
+**Feature requests default to P3.** Promote to P2 only on observable demand — more than one
+person asking, a maintainer signalling intent, or a widely-used provider or the shared core
+path affected. A detailed write-up is not demand. A single requester with no corroboration
+is P3 however well argued.
 
 Then apply modifiers, never going above P0 or below P3:
 - **regression → raise one level** (worked in a recent release, now does not — this
