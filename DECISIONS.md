@@ -187,12 +187,59 @@ signals from the triage workflow, and why self-reported model confidence is not 
 **Why not build it:** a different system, and exactly the volume this project avoids. Knowing
 where an instrument stops being valid is worth more than pretending it doesn't.
 
+### D15 — Repo choice: BerriAI/litellm. Graph spike run before committing to it
+**Chose:** `BerriAI/litellm`, pinned at commit `658f5066`.
+
+**Why over the alternatives.** `pydantic/pydantic` is 440MB — too large to graph.
+`simonw/datasette` is disqualified on dataset grounds: 61–79% of its issues are the maintainer's
+own work-journal entries rather than incoming reports. `python-attrs/attrs` was the runner-up
+(19 source files, clean Bug/Feature/Documentation taxonomy) but lost on dataset quality: ~5–40%
+label coverage on external issues versus litellm's ~55–65%, and litellm carries an
+`awaiting: user response` label — a maintainer-generated proxy for `needs_human`, the hardest
+of the three fields to label and the one carrying the 10:1 cost weight.
+
+**Pinned to a SHA, not a branch.** litellm's default branch is `litellm_internal_staging` and
+`main` is not among its first 100 branches. A moving ref would make the graph unreproducible and
+silently invalidate the dataset hash.
+
+**Spike results.** Run before building anything on top of it, because the graph was the largest
+remaining build risk.
+
+| Step | Result |
+|---|---|
+| Sparse blobless clone at pinned SHA | 93MB, ~1s |
+| AST extraction, 1,421 files (`litellm/` less `proxy/`) | 16.5s → 31,165 nodes, 80,783 edges |
+| Cost | Zero — extraction is AST-based, no LLM, no API key |
+| Graph content | Code nodes plus 9,228 docstring "rationale" nodes; edges are calls / references / imports / inherits / contains |
+
+**The finding that matters: naive retrieval is not good enough.** Generic token matching over
+node labels and file paths retrieves well for specific issues — "openrouter entries disagree on
+price" correctly surfaces `get_model_cost_map.py` — but returns confident-looking noise for vague
+ones. A junk issue titled "error po sa from litellm import completion" retrieved
+`model_rate_limit_check.py`; an issue about `/v1/models` retrieved an unrelated Anthropic
+pass-through module on the strength of the words "result" and "errors". Common English tokens in
+file paths dominate the score.
+
+That is worse than no context at all: irrelevant context does not merely fail to help, it
+actively misleads, and it costs tokens to do so.
+
+**Cheap fix identified.** litellm's layout is highly regular — 139 provider directories under
+`litellm/llms/`, 82 under `integrations/`, 15 router strategies. That is a ~236-term controlled
+vocabulary available free from the directory structure, and issue text names these terms
+constantly ("openrouter", "bedrock", "anthropic", "vertex"). Anchoring retrieval to that
+vocabulary rather than to arbitrary tokens should be far higher precision.
+
+**Consequence:** retrieval quality is now an explicit build task, not an assumed property of
+"having a graph." Whether the improved version beats `context: none` is left to the harness —
+which is the correct place for that question, and a null result there is a publishable finding
+rather than a failure.
+
 ---
 
 ## Still open
 
-- Which public repo to draw issues from. Small enough to graph and pull cheaply, active enough
-  to have a real spread of issue types. Not yet chosen.
+- A GitHub token is needed to build the candidate pool. Unauthenticated is 60 req/hr, and PRs
+  outnumber issues ~10:1 on litellm, so a single 100-result page yields ~10 issues.
 - Whether `rationale` is prompt-visible reasoning the model generates before deciding, or a
   post-hoc explanation. Measurably different token costs, and the first may change decision
   quality. Currently unresolved — it is itself a good first experiment for the harness.
