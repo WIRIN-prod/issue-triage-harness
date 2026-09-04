@@ -46,13 +46,6 @@ harness sweep --split dev --configs baseline tier-mid       # ~$0.12, needs OPEN
 The first four cost nothing: `baselines`, `ledger`, and `compare` read committed artefacts,
 so you can inspect every result in this README without an API key at all.
 
-```bash
-python -m harness.cli estimate            # price the whole pipeline before spending
-python -m harness.cli baselines           # what trivial strategies score — the floor
-python -m harness.cli sweep --split dev   # run every config
-python -m harness.cli compare <run-a> <run-b>
-```
-
 `pytest` runs 67 tests, none of which need network or credentials.
 
 **How the metrics were chosen and what they changed: [docs/method.md](docs/method.md).**
