@@ -65,6 +65,11 @@ CONFIGS: dict[str, TriageConfig] = {
     "rationale-off": _variant("rationale-off", rationale_mode="off"),
     # the one-off assumption check (SPEC.md §5.1) — not a permanent axis
     "context-none": _variant("context-none", context="none"),
+    # Harness-directed optimisation (D30): the ranking tracks escalation recall almost
+    # perfectly, and prompt-terse reaches 0.80 with a *worse* prompt because vagueness
+    # leaves the model cautious. v4 keeps the rubric's category/urgency precision and
+    # replaces the one-line escalation hint with seven explicit triggers.
+    "opt-escalate": _variant("opt-escalate", prompt_version="v4_rubric_escalate"),
     # A deliberate regression, used to demonstrate that the harness catches one.
     # The prompt reads like an improvement — "maintainer attention is the scarcest
     # resource, over-escalation makes a queue useless, be selective" — which is exactly

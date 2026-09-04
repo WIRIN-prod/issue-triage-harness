@@ -14,6 +14,7 @@ from triage.config import TriageConfig
 from triage.configs import CONFIGS, LABELLER, TIERS
 
 from . import agreement as agreement_mod
+from . import ledger as ledger_mod
 from . import baselines as baselines_mod
 from . import verify as verify_mod
 from . import github, labelling
@@ -307,6 +308,14 @@ def cmd_verify(args):
               f"(hash changed — every prior run record is now stale)")
 
 
+def cmd_ledger(args):
+    entries = ledger_mod.collect()
+    if not entries:
+        print("no run records found", file=sys.stderr)
+        raise SystemExit(1)
+    print(ledger_mod.render(entries))
+
+
 def cmd_dataset(args):
     ds = Dataset.load(_dataset_path(args))
     print(json.dumps(ds.summary(), indent=1))
@@ -370,6 +379,9 @@ def main(argv=None):
     vf.add_argument("--write", action="store_true",
                     help="persist human verification into the dataset (changes its hash)")
     vf.set_defaults(func=cmd_verify)
+
+    lg = sub.add_parser("ledger", help="optimisation history + how often each split was looked at")
+    lg.set_defaults(func=cmd_ledger)
 
     d = sub.add_parser("dataset", help="summarise the frozen dataset")
     d.set_defaults(func=cmd_dataset)

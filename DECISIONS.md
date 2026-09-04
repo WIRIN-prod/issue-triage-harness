@@ -573,14 +573,23 @@ appear to dominate on price.
 calls rather than quietly averaging zeros into the flagship. All eight sweep runs report cost
 correctly, so existing results are unaffected; the guard protects future ones.
 
-### D29 — The flagship metric has a degenerate optimum, and the harness found it
-**On the rubric-v2 dataset (n=118 dev), no configuration beats "escalate everything."**
+### D29 — Escalation recall is the whole ranking, and only the mid tier clears the floor
+**Corrected after the sweep completed.** An earlier version of this entry claimed *no*
+configuration beat "escalate everything". That was written on partial results, before `tier-mid`
+finished. It does beat the floor, and clearly.
 
-| | error weight/issue |
-|---|---|
-| escalate-everything (floor) | **2.16** |
-| prompt-terse (best config) | 2.90 |
-| baseline | 4.24 |
+| | error weight/issue | needs_human recall |
+|---|---|---|
+| **tier-mid** | **1.50** | 0.92 |
+| escalate-everything (floor) | 2.16 | 1.00 |
+| prompt-terse | 2.90 | 0.80 |
+| rationale-off | 3.32 | 0.64 |
+| baseline | 4.24 | 0.51 |
+| tier-cheap | 6.92 | 0.19 |
+| regress-lean | 7.19 | 0.13 |
+
+**The ranking tracks escalation recall almost perfectly.** Everything else the models do is
+swamped by it.
 
 **This is a finding about the metric, not the models.** Broken out per issue, baseline is
 **5x better on category** (0.186 vs 0.983) and **3x better on urgency** (0.314 vs 0.941) than
@@ -616,6 +625,57 @@ mostly measures a coin already weighted.
 preferred answer, which is exactly the failure the pre-registration discipline exists to prevent.
 The honest output is the breakeven, reported prominently, and the observation that the headline
 question cannot be settled without data we do not have.
+
+### D30 — A harness-directed optimisation that failed, and why the failure is useful
+**Hypothesis.** The dev ranking tracks `needs_human` recall almost perfectly, and missed
+escalations are ~88% of baseline's error. `prompt-terse` reaches 0.80 recall with a *worse*
+prompt. So: keep the rubric's category and urgency precision, and replace its one-line
+escalation hint with seven explicit triggers plus "being unsure is itself a reason to answer
+true".
+
+**Result: worse on every axis.**
+
+| | baseline | opt-escalate |
+|---|---|---|
+| needs_human recall | 0.511 | **0.456** |
+| macro-F1 | 0.900 | **0.801** |
+| error weight/issue | 4.24 | **4.94** |
+
+Recall went *down*. The flagship difference is not significant (needs ~167 items), but it is
+firmly in the wrong direction, and category regressed noticeably.
+
+**Likely mechanism, and it is the interesting part.** A seven-item checklist converts an
+uncertain judgement into a completable procedure, and "none of these apply" is an easy
+conclusion to reach. Structure manufactured confidence. That is consistent with `prompt-terse`,
+where vagueness left the model unsure and unsure defaulted to escalating — and with the original
+observation that the detailed v2 rubric produces *lower* recall than the terse v1.
+
+**For this decision, more explicit criteria reduce caution.** The lever that works is model
+capability (`tier-mid` reaches 0.92 recall), not prompt specificity.
+
+**Cost of learning this: $0.04.** Shipped on intuition it would have been a quiet regression in
+the field carrying the 10x weight — which is precisely what the harness exists to prevent, and
+what `regress-lean` demonstrates deliberately.
+
+### D31 — Run-to-run variance measured properly at last
+SPEC.md §5.5 promised "the same config runs N times; run-to-run variance is reported alongside
+the metric". Until now that rested on an accident — `baseline` and `tier-small` happening to hash
+identically. Three real repeats each, on identical items:
+
+| config | error weight sd | values |
+|---|---|---|
+| baseline (gemini-2.5-flash-lite) | **0.0000** | 4.2373, 4.2373, 4.2373 |
+| tier-cheap (mistral-nemo) | 0.0135 | 6.9237, 6.8938, 6.8966 |
+
+**Variance is not uniform across configs**, which is why both were run. The flash-lite model at
+temperature 0 is byte-identical across independent runs; mistral-nemo is not. Assuming a single
+noise figure covered every config would have been the same mistake as assuming one metric covers
+every field.
+
+**Every measured difference exceeds the noise floor** (opt-escalate +0.703, rationale-off −0.915,
+prompt-terse −1.339, tier-mid −2.742 against a baseline sd of 0.0000), so no finding here is
+noise-dominated. `dominated_by_noise` has now been exercised on real data rather than sitting
+unused since it was written.
 
 ---
 
