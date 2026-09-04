@@ -51,6 +51,11 @@ so you can inspect every result in this README without an API key at all.
 **How the metrics were chosen and what they changed: [docs/method.md](docs/method.md).**
 That is the document to read if you only read one.
 
+Also: [docs/rubric.md](docs/rubric.md) is the labelling standard the dataset was built to —
+the definition of "correct" — and [docs/what-would-change.md](docs/what-would-change.md) is
+the two-paragraph answer to "what would you change for a different task", which is the cheap
+proof that building narrowly was a decision rather than an omission.
+
 Full command list in [docs/configs.md](docs/configs.md). To rebuild from scratch:
 `python -m graph.build` (clones litellm at a pinned SHA, extracts the code graph), then
 `python -m harness.cli label` (two-stage labelling → frozen dataset).
@@ -58,8 +63,8 @@ Full command list in [docs/configs.md](docs/configs.md). To rebuild from scratch
 ## What it does
 
 **Metrics per field, because the fields differ mathematically.** Category is multi-class →
-macro-F1, since accuracy scores 0.90 on a majority-class guesser where macro-F1 scores
-0.133. Urgency is ordinal → MAE, since P0-vs-P3 must cost more than P0-vs-P1.
+macro-F1, since accuracy scores 0.51 on a majority-class guesser where macro-F1 scores
+0.135. Urgency is ordinal → MAE, since P0-vs-P3 must cost more than P0-vs-P1.
 `needs_human` is binary with asymmetric costs → recall, guarded by precision.
 
 **One flagship number, in dollars.** `total cost per issue = LLM spend + expected error
@@ -79,32 +84,38 @@ dataset hashes, runs where temperature was honoured for one arm and silently dro
 the other, runs containing calls the gateway never priced, or a run that mostly failed.
 
 **A floor to read results against.** `harness baselines` scores degenerate strategies for
-free. On this dataset "escalate everything" scores 2.27 error weight — a config that
-doesn't beat that has earned nothing.
+free. On this dataset "escalate everything" scores 2.16 error weight — a config that
+doesn't beat that has earned nothing, and only two do.
 
 ## What the evaluation showed
 
 Full numbers and caveats in [RESULTS.md](RESULTS.md).
 
-**Four of six dev comparisons were inconclusive at n=60.** Most were differences a team
-would have shipped on a vibe.
+**Three of ten dev comparisons were inconclusive, and two of three on the holdout.** Those
+are differences a team would have shipped on a vibe. (At the earlier n=60 it was four of six —
+more data resolves more comparisons, which is the sample-size argument demonstrated rather
+than asserted.)
 
 **The headline trade-off resolved, and price wasn't the deciding factor.** `tier-mid` costs
-3.4× more per issue — significant and precisely measured — and on the holdout it was
-significantly better (flagship Δ=−1.22, CI [−2.50, −0.07]), driven by escalation recall
-rising 0.76 → 0.97. But breakeven sits at **$0.0006 per error-weight unit**. Error cost
-exceeds inference cost by ~330×, so at these prices *quality dominates cost so completely
-that "3× more expensive" is a red herring.*
+5.3× more per issue — significant and precisely measured — and on the holdout it was
+significantly better (flagship Δ=−1.737, CI [−2.799, −0.712]), driven by escalation recall
+rising 0.54 → 0.86. Error cost exceeds inference cost by roughly 2,000× here, so *quality
+dominates cost so completely that "5× more expensive" is a red herring.*
 
-**A single aggregate would have hidden the most important failure.** `mistral-nemo` has the
-best macro-F1 of any paid config (0.892) and escalation recall of **0.25** — it classifies
-well and refuses to escalate. Per-field diagnostics made that one line.
+**And the assumption behind that verdict is reported, not hidden.** The escalation-weight
+breakeven is **2.28×**: `tier-mid` wins as long as a missed escalation costs more than 2.28×
+an unnecessary one, against the 10× we assumed. The conclusion survives that assumption being
+wrong by a factor of four.
 
-**Free models compete, and the cost axis isn't dollars.** `minimax-m3:free` is
-statistically indistinguishable from the paid baseline at **zero cost** — but 3× the
-latency. Of eight free models with structured output, four failed a single probe call, and
-`nemotron-3-super` failed 36 of 60 calls while posting the best macro-F1 of anything here,
-on the 24 that returned. That is survivorship bias, and the harness now refuses it.
+**A single aggregate would have hidden the most important failure.** `mistral-nemo` scores a
+respectable 0.827 macro-F1 and escalation recall of **0.19** — it classifies competently and
+refuses to escalate. Per-field diagnostics made that one line.
+
+**Free models compete, and the cost axis isn't dollars.** `minimax-m3:free` **beats the
+floor** (1.93 vs 2.16) at **zero marginal cost** — at 4× the latency. Of eight free models
+with structured output, four failed a single probe call, and `nemotron-3-super` posted the
+best macro-F1 of anything here on the 24 of 60 calls that returned. That is survivorship
+bias, and the harness now refuses runs below 90% success.
 
 **We got a prediction wrong.** Repo context was expected to help `category`. It didn't —
 `context-none` scores *better* macro-F1 and urgency MAE, and loses only on escalation
@@ -125,9 +136,15 @@ Open questions we'd normally put to a stakeholder, with the assumption taken, ar
 
 ## Known limitations
 
-- **n=60 dev / 40 holdout.** Underpowered for anything but large effects.
-- **The flagship is ~72% escalation error.** It measures the routing decision well; the
-  rest are diagnostics, not a general quality score.
+- **118 dev / 80 holdout.** Underpowered for small effects — which is why several
+  comparisons return "can't tell" alongside the sample size that would settle them.
+- **Dev has been evaluated 18 times** (`harness ledger` counts it). Those figures are
+  optimistic by an unquantified amount; the holdout was looked at once per dataset version.
+- **The flagship is ~88% escalation error**, and its optimum is degenerate: only two configs
+  beat "escalate everything", because the rubric's *"when torn, choose true"* pushes the
+  positive rate to 76% and a 10:1 penalty then rewards blanket escalation. Two of our own
+  decisions, each defensible alone, are jointly degenerate — documented in
+  [RESULTS.md §10](RESULTS.md) rather than tuned away.
 - **The gold set is model-labelled.** Cross-model κ is 0.95 / 0.69 / **0.58** — and the
   weakest field is the one the flagship leans on hardest. Two label errors were confirmed
   by three independent raters including a human; a systematic urgency inflation for

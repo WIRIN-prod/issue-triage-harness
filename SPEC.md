@@ -216,7 +216,9 @@ The hard part, and the part most eval work skips.
 **stratify sampling and seed candidate labels — never as ground truth.** They are noisy and
 leak information about outcomes the model cannot see at triage time.
 
-**Size and split.** ~100 issues, split **60 dev / 40 holdout**.
+**Size and split.** 198 issues, split **118 dev / 80 holdout**. (Originally ~100 at 60/40;
+doubled when rubric v2 required a re-label anyway, since several comparisons were returning
+"can't tell" with sample sizes that more data would resolve.)
 
 | Set | Rule |
 |---|---|
@@ -236,7 +238,7 @@ The holdout is small, so its confidence intervals are wide. Stated, not hidden.
 | Situation | Approach |
 |---|---|
 | A labelled dataset already exists | Use it |
-| No dataset exists | **Frontier model labels all ~100 items** (with repo context, per §4.4), then a human verifies a stratified sample of ~25 |
+| No dataset exists | **Frontier model labels all ~200 items** (with repo context, per §4.4), then a human verifies a stratified sample of ~25 |
 
 Human-vs-model κ is reported on the verified sample. High agreement means the labels are
 defensible with evidence rather than assertion; low agreement means the dataset is unreliable
@@ -264,7 +266,7 @@ distorts the distribution, so per-class metrics are the honest read; a productio
 requires re-weighting to the true prior.
 
 **Rubric.** Labelling rules are written down before labelling starts (`docs/rubric.md`), so
-that item #1 and item #100 are judged by the same standard, and so the frontier labeller and
+that item #1 and item #198 are judged by the same standard, and so the frontier labeller and
 the human verifier are given identical criteria. Without a shared rubric, disagreement between
 them is uninterpretable — you cannot tell whether one is wrong or they are answering different
 questions.
