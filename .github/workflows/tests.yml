@@ -13,10 +13,16 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
+      # Deliberately the same two commands the README gives a reader, into a venv.
+      # `uv pip install --system` fails on ubuntu-latest: its Python is externally
+      # managed (PEP 668) and refuses system-wide installs. Mirroring the documented
+      # path also means CI verifies the install instructions, not just the code.
       - name: Install
-        run: uv pip install --system -e ".[dev]"
+        run: |
+          uv venv --python 3.12
+          uv pip install -e ".[dev]"
 
-      # No credentials and no network: all 67 tests run offline, deliberately.
-      # Tests that would need a key or an API skip themselves.
+      # No credentials and no network: the suite is offline by design, and the few
+      # tests needing a key skip themselves.
       - name: Test
-        run: pytest -q
+        run: uv run pytest -q
