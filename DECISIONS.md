@@ -573,6 +573,50 @@ appear to dominate on price.
 calls rather than quietly averaging zeros into the flagship. All eight sweep runs report cost
 correctly, so existing results are unaffected; the guard protects future ones.
 
+### D29 — The flagship metric has a degenerate optimum, and the harness found it
+**On the rubric-v2 dataset (n=118 dev), no configuration beats "escalate everything."**
+
+| | error weight/issue |
+|---|---|
+| escalate-everything (floor) | **2.16** |
+| prompt-terse (best config) | 2.90 |
+| baseline | 4.24 |
+
+**This is a finding about the metric, not the models.** Broken out per issue, baseline is
+**5x better on category** (0.186 vs 0.983) and **3x better on urgency** (0.314 vs 0.941) than
+blanket escalation. It loses because missed escalations cost it 3.729 against the floor's zero.
+
+**Breakeven: 4.43x.** Baseline beats blanket escalation only if a missed escalation costs *less*
+than 4.43 times an unnecessary one. D4 assumed 10x, unvalidated. The verdict is decided entirely
+by that assumption — and the breakeven machinery added specifically to expose this is what made
+it visible.
+
+**Root cause is an interaction between two of my own decisions.** The rubric instructs the
+labeller "when genuinely torn, choose true" (a deliberate bias toward escalation, since a miss is
+costlier). That pushes the positive rate to **76%**. At 76% positive with a 10:1 penalty, blanket
+escalation is near-optimal by arithmetic. The rubric and the cost model were each defensible
+alone and are jointly degenerate.
+
+**What follows, and what does not.** It does not mean the service is useless — it is doing real
+work on the fields the flagship barely weighs. It means **the flagship, as specified, is a poor
+proxy for the service's value**: it weights the lowest-information field 10x. When 76% of items
+need a human, the escalation decision carries little information, and a metric dominated by it
+mostly measures a coin already weighted.
+
+**What a real team would do next**, in order:
+1. Derive the cost ratio from observed operational data — how long does an unnecessary escalation
+   actually waste, how expensive is a miss in practice — instead of asserting 10:1.
+2. Re-examine "when torn, choose true" in the rubric. It biases labels toward the majority class
+   and inflates the base rate the metric then rewards.
+3. Consider whether `needs_human` belongs in the flagship at all, or whether the service should
+   be scored on classification and routing while escalation is handled by a threshold on
+   confidence.
+
+**Left as-is deliberately.** Changing the weight now would be choosing a number to get a
+preferred answer, which is exactly the failure the pre-registration discipline exists to prevent.
+The honest output is the breakeven, reported prominently, and the observation that the headline
+question cannot be settled without data we do not have.
+
 ---
 
 ## Still open
