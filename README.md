@@ -18,10 +18,33 @@ four of six comparisons on the dev split.
 
 ## Quick start
 
+**From a release** — no clone needed to install, but you want the repo for the data:
+
 ```bash
-uv venv --python 3.12 && uv pip install -e ".[dev]"
-cp .env.example .env          # add GITHUB_TOKEN and OPENROUTER_API_KEY
+git clone https://github.com/WIRIN-prod/issue-triage-harness && cd issue-triage-harness
+uv venv --python 3.12
+uv pip install issue_triage_harness-0.1.0-py3-none-any.whl   # or: uv pip install -e ".[dev]"
+cp .env.example .env          # add your own GITHUB_TOKEN and OPENROUTER_API_KEY
 ```
+
+That gives you two commands, `triage` and `harness`.
+
+**Everything needed to reproduce the results is committed**: the frozen dataset (198
+labelled issues), the code graph (gzipped, 1.7MB), the issue pool, and all 33 run records.
+You do **not** need to clone litellm or rebuild the graph — that only matters if you want to
+regenerate it from the pinned SHA.
+
+```bash
+triage 39501                              # triage one real issue, with your keys
+harness baselines                         # the floor, free — no API calls
+harness ledger                            # what has been run, and how often each split was looked at
+harness compare runs/<a>.json runs/<b>.json --boot 6000     # free — reads committed runs
+harness estimate                          # price a full sweep before spending
+harness sweep --split dev --configs baseline tier-mid       # ~$0.12, needs OPENROUTER_API_KEY
+```
+
+The first four cost nothing: `baselines`, `ledger`, and `compare` read committed artefacts,
+so you can inspect every result in this README without an API key at all.
 
 ```bash
 python -m harness.cli estimate            # price the whole pipeline before spending
@@ -31,6 +54,9 @@ python -m harness.cli compare <run-a> <run-b>
 ```
 
 `pytest` runs 67 tests, none of which need network or credentials.
+
+**How the metrics were chosen and what they changed: [docs/method.md](docs/method.md).**
+That is the document to read if you only read one.
 
 Full command list in [docs/configs.md](docs/configs.md). To rebuild from scratch:
 `python -m graph.build` (clones litellm at a pinned SHA, extracts the code graph), then

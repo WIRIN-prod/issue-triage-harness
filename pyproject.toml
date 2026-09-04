@@ -14,6 +14,10 @@ dependencies = [
     "opentelemetry-sdk>=1.27",
 ]
 
+[project.scripts]
+triage = "triage.cli:main"
+harness = "harness.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
