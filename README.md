@@ -1,5 +1,7 @@
 # issue-triage-harness
 
+[![tests](https://github.com/WIRIN-prod/issue-triage-harness/actions/workflows/tests.yml/badge.svg)](https://github.com/WIRIN-prod/issue-triage-harness/actions/workflows/tests.yml)
+
 An evaluation harness for an LLM service, and a small triage service for it to measure.
 
 The service takes a GitHub issue and returns a structured decision: what kind of issue it
