@@ -66,6 +66,22 @@ class _Off(BaseModel):
 OUTPUT_SCHEMAS = {"pre": _Pre, "post": _Post, "off": _Off}
 
 
+HIGH_URGENCY = ("P0", "P1")
+
+
+def enforce_rubric(d: TriageDecision) -> TriageDecision:
+    """Force needs_human when the model's own urgency says it must.
+
+    The rubric given to the model lists "any P0 or P1" as an unconditional escalation
+    trigger. When the model returns P0/P1 alongside needs_human=False it is contradicting
+    the instruction it was given, which is a different failure from disagreeing with the
+    labels — and unlike that one, it has a free deterministic fix.
+    """
+    if d.urgency in HIGH_URGENCY and not d.needs_human:
+        return d.model_copy(update={"needs_human": True})
+    return d
+
+
 def to_decision(raw: BaseModel) -> TriageDecision:
     d = raw.model_dump()
     return TriageDecision(

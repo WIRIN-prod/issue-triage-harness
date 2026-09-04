@@ -70,6 +70,11 @@ CONFIGS: dict[str, TriageConfig] = {
     # leaves the model cautious. v4 keeps the rubric's category/urgency precision and
     # replaces the one-line escalation hint with seven explicit triggers.
     "opt-escalate": _variant("opt-escalate", prompt_version="v4_rubric_escalate"),
+    # Harness-directed fix (D32): enforce the model's own rubric after the fact.
+    # `harness errors` found baseline contradicting itself on 44% of its P0/P1
+    # predictions; 18 of those 20 are genuinely needs_human. Costs nothing to apply.
+    "rule-escalate": _variant("rule-escalate", enforce_rubric=True),
+    "rule-off": _variant("rule-off", rationale_mode="off", enforce_rubric=True),
     # A deliberate regression, used to demonstrate that the harness catches one.
     # The prompt reads like an improvement — "maintainer attention is the scarcest
     # resource, over-escalation makes a queue useless, be selective" — which is exactly

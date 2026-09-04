@@ -20,7 +20,8 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from graph.retrieve import Context
 
 from .config import TriageConfig
-from .models import OUTPUT_SCHEMAS, TriageDecision, TriageRun, to_decision
+from .models import (OUTPUT_SCHEMAS, TriageDecision, TriageRun,
+                     enforce_rubric, to_decision)
 
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 
@@ -200,13 +201,17 @@ def triage(
         )
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
+    decision = to_decision(result.output)
+    if config.enforce_rubric:
+        decision = enforce_rubric(decision)
+
     usage = result.usage
     cost, reported = _cost(usage)
     if not reported and is_free_model(config.model):
         cost, reported = 0.0, True      # genuinely free, not unknown
     return TriageRun(
         **base,
-        decision=to_decision(result.output),
+        decision=decision,
         tokens_in=usage.input_tokens or 0,
         tokens_out=usage.output_tokens or 0,
         cost_usd=cost,

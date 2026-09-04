@@ -14,6 +14,7 @@ from triage.config import TriageConfig
 from triage.configs import CONFIGS, LABELLER, TIERS
 
 from . import agreement as agreement_mod
+from . import errors as errors_mod
 from . import ledger as ledger_mod
 from . import baselines as baselines_mod
 from . import verify as verify_mod
@@ -308,6 +309,10 @@ def cmd_verify(args):
               f"(hash changed — every prior run record is now stale)")
 
 
+def cmd_errors(args):
+    print(errors_mod.render(RunRecord.load(Path(args.run))))
+
+
 def cmd_ledger(args):
     entries = ledger_mod.collect()
     if not entries:
@@ -379,6 +384,10 @@ def main(argv=None):
     vf.add_argument("--write", action="store_true",
                     help="persist human verification into the dataset (changes its hash)")
     vf.set_defaults(func=cmd_verify)
+
+    er = sub.add_parser("errors", help="where a run fails — free, reads a committed run record")
+    er.add_argument("run")
+    er.set_defaults(func=cmd_errors)
 
     lg = sub.add_parser("ledger", help="optimisation history + how often each split was looked at")
     lg.set_defaults(func=cmd_ledger)

@@ -677,6 +677,63 @@ prompt-terse −1.339, tier-mid −2.742 against a baseline sd of 0.0000), so no
 noise-dominated. `dominated_by_noise` has now been exercised on real data rather than sitting
 unused since it was written.
 
+### D32 — The harness found a free fix worth more than a 4x model upgrade
+**Found by `harness errors`**, a command that reads committed run records and costs nothing.
+
+**The observation.** The prompt states that any P0 or P1 must escalate. Baseline violates that
+on **44% of its own P0/P1 predictions** — 20 of 45 — and 18 of those 20 are genuinely
+`needs_human`. That is not the model disagreeing with the labels; it is the model disagreeing
+with the instruction it was given, which is a different failure and the only kind with a free
+deterministic fix.
+
+**The pattern across configs is the interesting part:**
+
+| config | self-contradiction rate |
+|---|---|
+| tier-mid | 9% |
+| prompt-terse | 12% |
+| baseline | 44% |
+| rationale-off | 44% |
+| tier-cheap | 67% |
+| opt-escalate | 67% |
+
+**Self-consistency tracks quality almost exactly.** What the expensive model was buying was
+largely the ability to follow the rubric it was handed.
+
+**The fix.** `enforce_rubric`: after the model answers, force `needs_human=True` when it
+returned P0 or P1. Pure post-processing — no extra call, no extra token, no extra latency, and
+it can only move `needs_human` toward true.
+
+**Screened for free before spending anything.** Because run records store predictions beside
+labels, the transform was applied to committed runs and rescored with no API calls. It
+predicted 4.24 -> 2.73 for baseline. The live run then matched to three decimals (2.729 both),
+with zero self-contradictions remaining — worth running, since the simulation and the service
+are separate code paths that could have diverged.
+
+**Results (dev, n=118, paired bootstrap):**
+
+| comparison | Δ flagship | verdict | cost |
+|---|---|---|---|
+| baseline → rule-escalate | **−1.508** [−2.195, −0.847] | better | $0.00033 → $0.00032 |
+| rationale-off → rule-off | **−1.339** [−2.034, −0.720] | better | unchanged |
+| **rule-off vs tier-mid** | −0.495 [−1.068, +0.052] | **cannot distinguish** | **$0.00027 vs $0.00105** |
+
+**`rule-off` scores 1.98 — it beats the "escalate everything" floor of 2.16**, which only
+`tier-mid` and one free model had managed, and it is statistically indistinguishable from
+`tier-mid` at **3.9x lower cost**.
+
+**This changes the recommendation.** D20 and the holdout said buy the better model. The honest
+answer is now: apply the rule to the cheap one. The CI on that last comparison only just
+includes zero ([−1.068, **+0.052**]), so `tier-mid` may still be genuinely better — but the
+difference is not established at n=118, and it costs four times as much.
+
+**Why this is the most useful thing the harness produced.** The brief's framing was "more
+accurate but three times the price is a real trade-off". The harness's answer is that the
+trade-off was partly avoidable: a chunk of what the expensive model sold was self-consistency,
+and self-consistency can be enforced for free once you measure that it is missing. Finding that
+required per-field diagnostics, error analysis on stored per-item outputs, and free rescoring
+of completed runs — three things built for other reasons.
+
 ---
 
 ## Still open
