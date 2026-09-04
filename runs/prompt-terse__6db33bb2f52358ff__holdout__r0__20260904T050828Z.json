@@ -1,0 +1,1858 @@
+{
+ "run_id": "prompt-terse__6db33bb2f52358ff__holdout__r0__20260904T050828Z",
+ "config_name": "prompt-terse",
+ "config_hash": "6db33bb2f52358ff",
+ "model": "google/gemini-2.5-flash-lite",
+ "prompt_version": "v1_terse",
+ "rationale_mode": "post",
+ "context_mode": "graph",
+ "temperature": 0.0,
+ "temperature_applied": true,
+ "dataset_hash": "7f44e8bd524b51b0",
+ "split": "holdout",
+ "repeat": 0,
+ "git_sha": "017abc7",
+ "timestamp": "20260904T050828Z",
+ "items": [
+  {
+   "issue_number": 34076,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to allow custom UI login authentication, which is a clear feature request. It does not require immediate human intervention as it's not a bug or security issue. The urgency is set to P3 as it's a new feature request and not critical."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request asking for a new configuration hook (`custom_ui_auth`) mirroring the existing `custom_auth` pattern, to allow custom authentication for the Admin UI login. The behavior does not currently exist, so this is a feature request, not a bug. There is no evidence of multiple users requesting this or maintainer intent signaled, so it defaults to P3 despite being a detailed write-up (a detailed write-up alone does not justify promotion per the rules). It's a single requester with a clear, well-specified ask that could be queued for the proxy auth module without further clarification needed to route it, though the decision of whether to build it is a product-direction call."
+   },
+   "cost_usd": 0.0001382,
+   "cost_reported": true,
+   "tokens_in": 1090,
+   "tokens_out": 73,
+   "latency_ms": 1263,
+   "context_empty": false,
+   "context_tokens": 354,
+   "error": ""
+  },
+  {
+   "issue_number": 34082,
+   "predicted": {
+    "category": "docs",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting an issue with the documentation for Headroom compression. The documentation pins a specific version of a dependency that is outdated and causes errors, and the documented setup does not achieve the intended functionality. This requires a human to review and update the documentation."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The issue reports that the docs for the Headroom guardrail deploy guide pin a stale version (which is affected by an already-fixed upstream crash) and that following the documented setup exactly does not achieve real compression due to undocumented default protections. The code/integration itself works as intended when configured correctly (root cause is upstream, already filed separately); the actual problem here is that the LiteLLM docs are incomplete/misleading, causing users to end up with a silently no-op guardrail. This matches the docs category exactly: the documentation is missing important configuration details and pins an outdated version reference. It's not a security issue, not a question, and not asking for a new feature. The urgency is moderate — it's a doc gap that could confuse many users trying to deploy this specific guardrail integration, but it's narrow in scope (affects only Headroom guardrail users) and has a filed upstream issue with root cause identified, plus workaround (adjust config, pin higher version) essentially available once known. This fits P2 (narrow path, workaround exists via upstream fix version). Given clear reproduction steps, root cause identified, and a well-specified ask (update docs with version floor and configuration caveat), this can be routed without maintainer conversation — needs_human should be false."
+   },
+   "cost_usd": 0.0002019,
+   "cost_reported": true,
+   "tokens_in": 1751,
+   "tokens_out": 67,
+   "latency_ms": 3049,
+   "context_empty": false,
+   "context_tokens": 664,
+   "error": ""
+  },
+  {
+   "issue_number": 34096,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug in the UI where the \"Models + Endpoints\" page shows \"No models found\" for certain users, even though the models are functional. This seems to be related to how models are accessed (by tier vs. individual names) and affects the UI's ability to display the available models. The issue is specific to the UI dashboard and impacts version v1.91.0. Given the UI-specific nature and potential complexity in diagnosing the exact cause of the display issue, human intervention is needed. The bug is reproducible and impacts core functionality (model visibility), thus warranting a P1 urgency."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The Models + Endpoints page fails to resolve model access when a user is assigned via a model access group (tier) rather than explicit model names, even though the underlying access and functionality (Playground, key creation, actual requests) work correctly. This is a clear discrepancy between expected behavior (page should reflect actual access) and actual UI behavior, indicating a bug in how the UI resolves access-group-based model lists. It's reproducible with clear steps, affects a specific but plausibly common admin configuration pattern (tiered model access), and has a workaround (list models individually instead of using tiers), though that workaround defeats the purpose of access groups. This affects a subset of users (those using access-group-based assignment) rather than all users, so it's not P0/P1 severity, but it's a legitimate functional gap in the UI Dashboard module affecting an evidently used feature. Given clear reproduction steps and specific version, this can be routed directly to the UI Dashboard/model access group owners without further clarification."
+   },
+   "cost_usd": 0.0001761,
+   "cost_reported": true,
+   "tokens_in": 1185,
+   "tokens_out": 144,
+   "latency_ms": 1613,
+   "context_empty": false,
+   "context_tokens": 562,
+   "error": ""
+  },
+  {
+   "issue_number": 34205,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting that the AI is not performing as expected. This is a vague report, so a human needs to investigate further to understand the specific problem. It's categorized as a bug because it implies a malfunction or unexpected behavior. Urgency is set to P1 as AI issues can significantly impact user experience."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue is essentially empty and unintelligible, providing no actionable information, no reproduction steps, and no clear claim of misbehavior versus a question. Per the rules, an empty or unintelligible issue defaults to 'question' category, with the lack of information signaled via needs_human. There's no evidence of demand, security concern, or specific bug, so urgency is minimal (P3). Since it's impossible to route this without clarification from the author, needs_human must be true."
+   },
+   "cost_usd": 0.0000484,
+   "cost_reported": true,
+   "tokens_in": 168,
+   "tokens_out": 79,
+   "latency_ms": 1272,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 34241,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a discrepancy between the stated license boundaries in the `LICENSE` file and the actual implementation of \"Enterprise\" features. Many features that are described as \"Enterprise\" appear to have their gating logic and/or implementation in MIT-licensed files, making it unclear which features are truly free to use under the MIT license. This requires a human maintainer to review the code and clarify the licensing boundaries. The issue is categorized as a bug because it indicates a potential misrepresentation or flaw in how licensing is enforced or communicated. The urgency is P1 as it impacts user compliance and trust."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue raises a licensing/legal-boundary concern: it claims that enterprise-gated feature logic actually resides in MIT-licensed files, creating ambiguity about what can legally be used without an enterprise license. This isn't a security vulnerability (no exploit path, credential exposure, or injection), nor a simple question or docs issue — it's a claim that the codebase's licensing structure doesn't match its stated license boundaries, which is a product/legal-structure concern requiring maintainer and possibly legal judgement. It doesn't fit cleanly as a \"bug\" in code behavior, but is closest to a structural/documentation-vs-implementation mismatch requiring a policy decision — best categorized as a question about licensing intent that requires maintainer clarification (not a well-specified feature or docs fix). Given the complexity, this requires a maintainer/legal judgement call to resolve and cannot be auto-routed. It is not P0/P1 in the sense of broken functionality, but it does affect many users' ability to legally understand and use the software, so it's more than cosmetic — however, no concrete widespread technical breakage or exploit is claimed, so P2 with human review is appropriate given the licensing-clarity implications and need for maintainer/legal judgement."
+   },
+   "cost_usd": 0.0003586,
+   "cost_reported": true,
+   "tokens_in": 3046,
+   "tokens_out": 135,
+   "latency_ms": 1577,
+   "context_empty": false,
+   "context_tokens": 896,
+   "error": ""
+  },
+  {
+   "issue_number": 34252,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is requesting new functionality to be added to the componentized chart, specifically parity with `litellm-helm` regarding pod-hardening hooks. This is a clear feature request. The issue is not P0 as it doesn't seem to be a critical failure, but it's important for security and parity, hence P1. No human intervention is needed as the request is clear and actionable."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a well-specified feature request asking for parity with an existing chart (litellm-helm), listing concrete field names to add. It's not a bug (nothing broken), not docs, not a question. It references prior related issues (#21344, #20571), which shows some corroboration/history of demand for related functionality (e.g., independent Job SA), but this is still primarily a single detailed feature request. Given the referenced related issues indicating recurring demand for parts of this (serviceAccountName for migration job), and that it touches the shared chart core path (affecting all component deployments), it warrants a slight promotion to P2. It doesn't require deep judgement about direction—chart parity is a fairly clear, well-scoped ask—so it can be queued without a maintainer conversation."
+   },
+   "cost_usd": 0.0000733,
+   "cost_reported": true,
+   "tokens_in": 341,
+   "tokens_out": 98,
+   "latency_ms": 3125,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 34328,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a bug where `unpack_defs` hangs due to recursive JSON schemas. This is causing 502 errors for Bedrock and Vertex AI callers. The bug is related to a previous fix but persists because the `max_inlined_bytes` parameter is not being passed by these callers, and the existing cycle guard is insufficient for high-fan-in schemas. The suggested fix involves passing this parameter and potentially a more robust deduplication mechanism. This requires a maintainer to review and implement the fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a genuine bug: an existing safety mechanism (max_inlined_bytes budget, ref_chain guard) added in a prior fix (#19098) is not actually applied at the two call sites that matter (Bedrock Converse and Vertex/Gemini), so the code violates its intended contract of bounding schema expansion. It's reproducible with a standalone script (no network needed), clearly evidenced with measurements (CPU pegged, 510MB+ and climbing, 502 after gateway timeout). This affects two widely-used providers (Bedrock and Vertex/Gemini) — both major integrations — and causes full request failure (502) with no workaround for schemas of this recursive shape. This is a regression/incomplete-fix of a previously closed issue affecting the shared core path (unpack_defs) used by multiple providers, causing complete failure for affected requests, so it warrants a high urgency. Since it affects any request with certain recursive tool schemas across two major providers, with no workaround, and pegs CPU (broader than a narrow subset), this is P1 — major feature/provider broken for a subset of users with no workaround, and given the shared core path is affected (raise one level modifier), leaning P0. However since it only affects requests with this specific recursive schema shape, most users are unaffected, so P1 is more appropriate than P0. Given the severity (CPU-bound hang, service outage risk, unbounded resource use) and that it affects multiple large fronting providers, I will set P1 severity, and since this involves judgement about proper fix approach (arm existing guard vs. rearchitect with memoization) and reproduction validation, needs_human should be true."
+   },
+   "cost_usd": 0.0003308,
+   "cost_reported": true,
+   "tokens_in": 2824,
+   "tokens_out": 121,
+   "latency_ms": 1523,
+   "context_empty": false,
+   "context_tokens": 1154,
+   "error": ""
+  },
+  {
+   "issue_number": 34461,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to be added to the LiteLLM Playground: the ability to use the `/v1/ocr` endpoint. This is a UI enhancement and not a bug, security issue, documentation update, or a question. The urgency is P3 as it's a feature request that doesn't seem to be blocking any critical functionality. A human maintainer does not need to review this before it can be routed."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a request to add OCR endpoint support to the Playground UI, which is a new capability that doesn't currently exist. This is a well-specified feature request (add /v1/ocr to Endpoint Type dropdown with corresponding UI), but there is only a single requester with no corroborating evidence of demand from others. Per rules, feature requests default to P3 unless there's evidenced demand (multiple requesters, maintainer signal, or widely-used provider/core path affected). OCR playground UI is a narrow UI feature, not a core path, so it stays P3. Since it's well-specified and only needs queuing (not a product-direction judgement call about whether it should exist at all - it's a fairly clear feature addition), needs_human can be false."
+   },
+   "cost_usd": 0.0001727,
+   "cost_reported": true,
+   "tokens_in": 1307,
+   "tokens_out": 105,
+   "latency_ms": 1984,
+   "context_empty": false,
+   "context_tokens": 592,
+   "error": ""
+  },
+  {
+   "issue_number": 34619,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is reporting that the FAL.ai provider in LiteLLM only supports a small fraction of the available models on FAL.ai. They are requesting improvements such as model discovery, generic parameter passthrough, and broader category support (video, audio). This is a clear request for new functionality and expanded capabilities, making it a feature request. It does not require immediate human intervention as it's a request for enhancement rather than a critical bug. The urgency is set to P2 as it's a significant gap but not a complete outage."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-documented request to expand provider support for FAL.ai beyond the current ~15 hardcoded models to cover 200+ models including video, audio, and other categories that don't exist yet in LiteLLM. This is new functionality (model discovery, generic passthrough, new categories), not a bug fix — the existing hardcoded models still work as documented. It falls under 'feature' category since these are entirely missing capabilities (e.g., video/audio support don't exist at all). The request is detailed and well-argued by a single reporter, but per the rules a detailed write-up alone is not evidence of demand — no corroborating requests, maintainer signals, or multiple users are cited. FAL.ai is one provider among many in LiteLLM, not the shared core path, so it doesn't qualify for the 'many providers or core path affected' raise. This defaults to P3. Since this is a well-specified feature request/roadmap item that can be routed to the FAL module owners for prioritization without needing a maintainer conversation to clarify ambiguity, needs_human can be false — though it does propose a product-direction call (whether to build dynamic model discovery vs adding models incrementally), which arguably needs judgement. Given the scope (architectural change: dynamic discovery, generic passthrough) this is a product-direction question best decided by maintainer, so needs_human should be true."
+   },
+   "cost_usd": 0.000274,
+   "cost_reported": true,
+   "tokens_in": 2240,
+   "tokens_out": 125,
+   "latency_ms": 1997,
+   "context_empty": false,
+   "context_tokens": 748,
+   "error": ""
+  },
+  {
+   "issue_number": 34705,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a security vulnerability where sensitive information (API keys) and potentially harmful control characters are printed to stdout unredacted and unsanitized when verbose logging is enabled. This is a security bug that requires immediate attention. The issue also mentions multiple instances of this vulnerability across the codebase, indicating a systemic problem. The proposed fix involves adding redaction and sanitization logic to the `print_verbose` function, which is a significant change. Therefore, human review is needed to assess the impact and approve the fix. The urgency is P0 due to the security implications."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "Credentials (api_key, master/virtual keys, provider Bearer tokens) are printed raw to stdout when set_verbose=True, exposing secrets to any log collector capturing stdout. Additionally, unsanitized control characters allow log forging/terminal-escape injection (CWE-117). This is a genuine vulnerability with a plausible exploit path (any environment with set_verbose enabled and log aggregation), so it takes precedence as security regardless of framing as a bug. It affects the shared core logging path used across the entire codebase (multiple print_verbose copies across core, proxy, caching, streaming, guardrails), so impact is broad. There's no workaround other than disabling verbose logging entirely, which defeats debugging. This requires maintainer judgement to confirm the exploit path, coordinate the shared fix across many files, and decide on the correct sanitization approach."
+   },
+   "cost_usd": 0.0003258,
+   "cost_reported": true,
+   "tokens_in": 2738,
+   "tokens_out": 130,
+   "latency_ms": 1518,
+   "context_empty": false,
+   "context_tokens": 869,
+   "error": ""
+  },
+  {
+   "issue_number": 34710,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue title and body clearly indicate a security vulnerability where sensitive information (API keys) is being logged in plaintext. This warrants a bug category. The severity of a credential leak makes it a P0 urgency. A human maintainer needs to review and address this security issue."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This is a genuine security issue: a raw virtual key or JWT can be persisted in cleartext in durable logging sinks (S3, etc.) under a field named/documented as a hash, due to a verbatim copy without sanitization. There is a plausible exploit/leak path (credential exposure in long-lived logs), and it takes precedence over being classified as a bug per the category rules. It affects the shared logging path used across providers/sinks, warranting escalation. Security issues always require human judgement per the rules, and P0/P1 severity for credential leakage in durable storage affecting many users (any user using standard logging with certain auth paths) — no workaround stated, so treat as P0 given plausible exploit and data exposure at rest across all sinks."
+   },
+   "cost_usd": 0.0003052,
+   "cost_reported": true,
+   "tokens_in": 2772,
+   "tokens_out": 70,
+   "latency_ms": 1239,
+   "context_empty": false,
+   "context_tokens": 796,
+   "error": ""
+  },
+  {
+   "issue_number": 34733,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a race condition in concurrent router budget window resets, leading to incorrect spend calculations. The reproduction steps and code analysis clearly indicate a bug in the budget limiting logic. The bug can lead to incorrect billing and budget enforcement, making it a P1 urgency. Human review is needed to confirm the severity and prioritize the fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented, reproducible race condition in the router budget limiter causing incorrect spend accounting (last-write-wins instead of additive) across multiple deployments/workers. It behaves differently from documented/expected behavior (budget tracking should sum spend accurately) so it's a bug, not a feature request. It affects a shared core accounting path used by provider, deployment, and tag budgets in multi-replica deployments, which is a widely-used core path — this raises severity. There's no stated workaround for the race itself (mitigations would require code changes), and it can cause silent under-counting of spend which could let budgets be exceeded (financial/reliability impact) but not itself a security vulnerability. Given the shared core path is affected in multi-replica setups, this should be raised one level from a narrower P2 to P1. It requires judgement/reproduction confirmation and a design decision (Lua script, locking strategy) about how to properly fix, so a maintainer should review before routing/implementing."
+   },
+   "cost_usd": 0.0003296,
+   "cost_reported": true,
+   "tokens_in": 2972,
+   "tokens_out": 81,
+   "latency_ms": 1775,
+   "context_empty": false,
+   "context_tokens": 1110,
+   "error": ""
+  },
+  {
+   "issue_number": 34846,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new configuration option to override the 'user' field with an authenticated user ID. This is a clear feature request that does not require human intervention for triage. The urgency is set to P2 as it's a new feature and not a critical bug."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-specified request for new configurable behavior (proxy currently never overrides client-supplied 'user'; feature asks to add an option to override it with authenticated user_id). This is a feature request, not a bug, since current behavior is intentional per code comment. It has security motivation (prevents user spoofing in multi-gateway auth boundary scenarios) but is framed as an opt-in feature/config option rather than a vulnerability report demanding immediate fix - default behavior remains unchanged, so it doesn't meet the security category bar of an unsafe default with exploit. It's a single requester with a detailed write-up but no evidenced corroborating demand from others, so default P3. This is a product-direction decision about whether to add a new auth-boundary config option, requiring maintainer judgement on design and security implications."
+   },
+   "cost_usd": 0.0001861,
+   "cost_reported": true,
+   "tokens_in": 1577,
+   "tokens_out": 71,
+   "latency_ms": 1316,
+   "context_empty": false,
+   "context_tokens": 805,
+   "error": ""
+  },
+  {
+   "issue_number": 34895,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting that something is not working and is asking for help. This indicates a bug that needs investigation. It's unclear if a human needs to be involved, so setting needs_human to true is a safe default. The urgency is set to P1 as it's a general \"not working\" report without specific impact."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue provides no details about what is not working, no reproduction steps, no error messages, and no context about the environment or use case. This is an unintelligible/near-empty issue that cannot be routed without more information. Per the guidelines, an issue with no substantive content defaults to 'question' category, and since there's insufficient information to diagnose or route the issue, it requires human attention to follow up with the reporter for clarification."
+   },
+   "cost_usd": 0.0000509,
+   "cost_reported": true,
+   "tokens_in": 173,
+   "tokens_out": 84,
+   "latency_ms": 1220,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 34905,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where the `model_group` is dropped from `SpendLogs` when pre-call guardrails add `litellm_metadata`. This seems to be a regression or an oversight in how metadata is merged. The issue is specific to the proxy and affects spend log accuracy, making it a P1 bug. Human intervention is needed to investigate the metadata merging logic and fix it."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The code violates the documented/intended contract: standard logging payload correctly retains model_group, but the spend logs merge helper in get_litellm_metadata_from_kwargs() only copies user_api_key-prefixed keys from `metadata` when `litellm_metadata` is present, dropping `model_group`. This is a clear behavioral bug affecting spend accounting by model group, with a precise reproduction and root cause identified in core_helpers.py. It affects any routed request combined with pre-call guardrails that populate litellm_metadata — a fairly common setup (Router + guardrails), impacting spend aggregation accuracy but not causing outages; a workaround (disable guardrail or aggregate differently) may exist but is painful. This is not a security issue, not a docs issue (code violates intended contract), and not a feature request. Given clear reproduction steps and precise code location, a maintainer doesn't need to investigate root cause, just fix the merge helper to include model_group (or all metadata keys). This is well-specified enough to route directly to the owning module (core_helpers.py) without discussion."
+   },
+   "cost_usd": 0.0001975,
+   "cost_reported": true,
+   "tokens_in": 1583,
+   "tokens_out": 98,
+   "latency_ms": 1331,
+   "context_empty": false,
+   "context_tokens": 653,
+   "error": ""
+  },
+  {
+   "issue_number": 34914,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where the `service_tier` parameter is being rejected by the Vertex AI API. The issue appears to stem from incorrect API versioning and casing of the `service_tier` values. This requires a human maintainer to investigate and fix the code, as it impacts the functionality of the Vertex AI provider."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear regression introduced by PR #24898: the service_tier -> serviceTier mapping was added but only validated against Google AI Studio's v1beta API, not Vertex AI's v1 API, causing all values to be rejected with 400 errors. This breaks a documented/expected feature (service_tier support) for the Vertex AI provider across all Gemini models on that path, with no workaround other than duplicating model configs with extra_headers (a painful workaround). Since it worked in the sense that the parameter was recently added and is now broken for Vertex AI (a widely-used provider), and affects a widely used provider/shared code path, this qualifies as a bug with elevated urgency due to the regression and broad provider impact. It needs human judgement to determine correct value casing/handling for Vertex v1 API and whether to drop the field gracefully for unsupported configs."
+   },
+   "cost_usd": 0.0003693,
+   "cost_reported": true,
+   "tokens_in": 3361,
+   "tokens_out": 83,
+   "latency_ms": 3381,
+   "context_empty": false,
+   "context_tokens": 997,
+   "error": ""
+  },
+  {
+   "issue_number": 34927,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug in the UI where configuration fields for a specific provider are not rendering. The issue has a clear description, steps to reproduce, and even a suggested fix, indicating it's a bug that needs attention. Since it involves UI rendering and backend configuration models, a human maintainer should review it to ensure the fix is implemented correctly. The bug prevents users from configuring a specific guardrail type, making it a P1 issue."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The Generic Guardrail API cannot be configured through the Admin UI at all because both frontend (optional_params skipped with no dedicated form) and backend (missing api_base/api_key fields on the config model) fail to render the required configuration fields. This is a clear deviation from expected/documented behavior - the feature is completely unusable via UI, even though a config.yaml workaround exists. This is a well-documented bug with clear root cause analysis and reproduction steps, affecting a specific guardrail provider's UI configuration path. It's a narrower path (one guardrail provider) rather than the shared core, and a workaround exists (config.yaml), which would normally lower urgency, but the feature is entirely broken via UI for this provider. Given the workaround exists, this is P2 rather than P1. Given the detailed root cause and clear reproduction with suggested fix, this can be routed directly to the guardrails/UI team without further triage conversation."
+   },
+   "cost_usd": 0.0002678,
+   "cost_reported": true,
+   "tokens_in": 2254,
+   "tokens_out": 106,
+   "latency_ms": 1398,
+   "context_empty": false,
+   "context_tokens": 616,
+   "error": ""
+  },
+  {
+   "issue_number": 34932,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where Azure GPT-5.6 requests with a temperature other than 1 are failing with a 400 error. This is due to two defects: 1. Per-deployment capability overrides are ignored when a base_model is set, and 2. An unset `reasoning_effort` is treated as `none`, which is incompatible with Azure deployments where reasoning is on by default. The user has a fix for the first defect but needs input on the second. This requires human intervention to decide on the intended semantics for `reasoning_effort`."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented bug affecting Azure gpt-5.x deployments: per-deployment model_info capability overrides are silently ignored due to base_model resolution collapsing model identity, causing temperature params to be forwarded to Azure and resulting in 400 errors. This is a regression introduced by a registry change between v1.89.1 and v1.93.0 (12 new azure/gpt-5.6-* entries with supports_none_reasoning_effort:true), with production evidence of 332 occurrences after upgrade vs 0 before. The reporter provides a clear, minimal reproduction and even a proposed fix, but flags a second related defect (B) as a product-decision question that needs maintainer input. Given it's a regression breaking a shared/core Azure gpt-5 path for many deployments with no viable workaround (removing base_model breaks other functionality), this warrants urgent handling. Because it's a regression, we raise severity one level from what would otherwise be P2 (narrower path affects Azure gpt-5 deployments with overrides) to P1. It also involves two intertwined defects and requires judgement on the product-facing semantics of defect B, plus confirmation of the reproduction/fix, so a maintainer should look at it."
+   },
+   "cost_usd": 0.0003355,
+   "cost_reported": true,
+   "tokens_in": 2815,
+   "tokens_out": 135,
+   "latency_ms": 1430,
+   "context_empty": false,
+   "context_tokens": 1090,
+   "error": ""
+  },
+  {
+   "issue_number": 35056,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The issue title and body clearly indicate a request for a new feature to add support for Cloudflare Workers AI audio models. The request is well-defined with scope and references, and does not require immediate human intervention for triage."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a request to add new functionality (Workers AI audio: STT/TTS support) that does not currently exist for the Cloudflare provider. It's a clear feature request, explicitly framed as a follow-up scoping issue to a related PR (#21115), with defined scope and references. No evidence of widespread demand beyond the single issue/maintainer scoping - it's a single requester organizing future work, not multiple users asking. Per rules, feature requests default to P3 unless there's evidenced demand (multiple askers, maintainer intent signal, or a widely-used provider/core path). Cloudflare is a single provider, not the shared core path, and while it references a related issue for scoping, there's no explicit multiple-user demand shown. It's well-specified and can be queued without further clarification - it doesn't require product-direction judgement since it's explicitly an open invitation for community contribution to a scoped follow-up."
+   },
+   "cost_usd": 0.0001303,
+   "cost_reported": true,
+   "tokens_in": 1063,
+   "tokens_out": 60,
+   "latency_ms": 1151,
+   "context_empty": false,
+   "context_tokens": 582,
+   "error": ""
+  },
+  {
+   "issue_number": 35312,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to include pricing metadata in the `/v1/models` endpoint. This is an enhancement to the existing functionality and not a bug, security issue, or documentation request. The issue is well-defined and does not require human intervention for triage. The urgency is set to P3 as it's a feature request that doesn't seem to be immediately critical."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request to extend the /v1/models endpoint with optional pricing metadata for cost accounting. No indication of existing widespread demand beyond the single requester (references a related but distinct issue #14189). It's a product-direction decision about API shape and aggregation rules, requiring maintainer judgement on design (e.g., how to aggregate pricing across deployments, response format changes). This is a feature, not a bug or docs issue, and there's no evidenced multi-party demand, so default P3. Given it requires product-direction judgement on API design, needs_human should be true."
+   },
+   "cost_usd": 0.0002343,
+   "cost_reported": true,
+   "tokens_in": 1963,
+   "tokens_out": 95,
+   "latency_ms": 3771,
+   "context_empty": false,
+   "context_tokens": 880,
+   "error": ""
+  },
+  {
+   "issue_number": 35334,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where a tool call is being leaked to the client, which should not happen. The issue specifically mentions the Anthropic provider and the websearch interception feature. The user also suggests a fix, indicating a clear understanding of the problem. This warrants a P1 urgency as it affects functionality and requires investigation by a human maintainer."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The code fails to strip tool_choice (and tools) in _build_anthropic_request_patch before the follow-up call, unlike the two sibling code paths that already do this correctly. This causes a forced tool_choice to leak into the follow-up request, forcing the model to call the search tool again and return an unresolvable tool_use block to the client — a clear deviation from expected/documented behavior (the sibling paths establish the intended contract). This is a bug, not a docs issue, since the code violates the established pattern/contract. It affects the Anthropic /v1/messages websearch interception path specifically when a forced tool_choice is used alongside web search — a narrower subset of usage (forced tool_choice + websearch interception + native anthropic tool), with no stated workaround for callers who need forced tool_choice. This warrants P2 given it's a subset of interception+forced-tool_choice usage, not all users, though it does completely break usability for that subset. It's a clear, well-diagnosed bug with reproduction steps and root cause identified, so it can be routed to the owning module without further discussion."
+   },
+   "cost_usd": 0.0002651,
+   "cost_reported": true,
+   "tokens_in": 2307,
+   "tokens_out": 86,
+   "latency_ms": 2164,
+   "context_empty": false,
+   "context_tokens": 1079,
+   "error": ""
+  },
+  {
+   "issue_number": 35377,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a problem with the LiteLLM library, indicated by \"Hello i have problem with LITELLM\". The issue title and body lack specific details about the problem, and the provided image is not accessible. Therefore, human intervention is needed to understand the exact issue and categorize it. Given it's a report of a problem, it's categorized as a bug. Urgency is set to P1 as it's a user-reported issue that needs investigation."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue title is just \"LITELLM\" and the body contains no text description, only an embedded image which cannot be viewed to determine the actual problem. There's no reproduction, no error message text, no context about what is failing. This is an unintelligible/near-empty issue with insufficient information to route or categorize properly. Per the rules, an empty or unintelligible issue defaults to \"question\" category, and the lack of information should be flagged via needs_human."
+   },
+   "cost_usd": 0.0001092,
+   "cost_reported": true,
+   "tokens_in": 636,
+   "tokens_out": 114,
+   "latency_ms": 1995,
+   "context_empty": false,
+   "context_tokens": 337,
+   "error": ""
+  },
+  {
+   "issue_number": 35469,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting an issue where typing 'litellm' in the command prompt does not open the expected interface, instead showing an image. This indicates a potential problem with the command-line interface or its execution, which requires investigation by a human maintainer. The issue is preventing the user from proceeding with their workflow, suggesting a P1 urgency."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The user is following a third-party tutorial and reports that typing \"litellm\" in the command prompt does not open/start the tool as expected, with an unspecified image showing some error/output. There's no clear reproduction, no error text provided (just an image reference we can't see details of), no version info, no OS details, and no indication of what command was actually run or what output appeared. This is very vague and lacks the information needed to determine if it's a genuine bug, installation issue, or user error. It doesn't describe a clear misbehavior against documented behavior, nor is it a clear feature request or docs issue. Given the ambiguity and insufficient detail (relies entirely on an image we can't interpret), this requires human judgment to figure out what's actually happening - likely a question about CLI usage/installation, but could also indicate a real startup bug. Given the vague framing, closest fit is 'question' since the user seems to be asking why the command doesn't work as expected, but there's no explicit claim of software misbehavior beyond \"it just comes up with the image\" which could be an error. Insufficient information to route confidently, so needs_human should be true."
+   },
+   "cost_usd": 0.0001897,
+   "cost_reported": true,
+   "tokens_in": 1553,
+   "tokens_out": 86,
+   "latency_ms": 1321,
+   "context_empty": false,
+   "context_tokens": 1032,
+   "error": ""
+  },
+  {
+   "issue_number": 35527,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue title and body clearly indicate a security vulnerability where the drain endpoint can be accessed without authentication if not properly configured. This requires immediate attention from a human maintainer."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The drain endpoint intentionally bypasses standard auth to support Kubernetes preStop hooks, but when enable_drain_endpoint is true and no token is configured, the code silently allows unauthenticated access rather than failing closed. This is an unsafe default that any network-reachable client can exploit to trigger denial of service (repeated shutdown/drain of workers), fitting the security category (unsafe default with plausible exploit path). It requires maintainer judgement on the right remediation approach (fail closed at startup vs 401, doc changes), and is a security issue so needs_human is true per rules. Impact is limited since the feature is opt-in and disabled by default, and a trivial workaround exists (just set the token), but once enabled it can cause real DoS to a proxy's health-checking path, affecting production availability. Given it's opt-in and requires misconfiguration, but the security nature and potential impact to production combined with \"requires judgement\" push to at least P1, and per rules any security report defaults needs_human=true."
+   },
+   "cost_usd": 0.0001516,
+   "cost_reported": true,
+   "tokens_in": 1320,
+   "tokens_out": 49,
+   "latency_ms": 1115,
+   "context_empty": false,
+   "context_tokens": 549,
+   "error": ""
+  },
+  {
+   "issue_number": 35529,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a security vulnerability where database errors during end-user object loading cause budget checks to be skipped, potentially allowing unbudgeted requests. This requires immediate attention from a human maintainer."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "A database/repository failure during end-user lookup is silently coerced to None, causing the centralized common-check path to skip the end-user budget check entirely. This is an unsafe default (fail-open) that allows budget enforcement to be bypassed under transient infrastructure failures, which is a plausible exploit/impact path (unbounded spend during outages) — this fits the security category due to the fail-open safety-critical behavior, taking precedence over classifying it as a plain bug. The issue affects the shared core auth/budget-enforcement path used by all proxy deployments with end-user budgets, so it's a widely applicable fail-open risk, but requires no active exploit chain beyond triggering a transient DB error, and there's a reasonable workaround (monitor/alert on DB failures) though not clearly stated by the reporter. Given it's a security fail-open on a shared core path affecting budget enforcement broadly, it warrants urgent maintainer attention to decide the correct closed-fail semantics and to distinguish not-found vs error cases carefully — this requires product/security judgement, so needs_human is true."
+   },
+   "cost_usd": 0.000153,
+   "cost_reported": true,
+   "tokens_in": 1314,
+   "tokens_out": 54,
+   "latency_ms": 3053,
+   "context_empty": false,
+   "context_tokens": 478,
+   "error": ""
+  },
+  {
+   "issue_number": 35535,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue title and body clearly indicate a security vulnerability related to cached proxy-admin keys bypassing blocked-key checks. The vulnerability allows a blocked key to continue authenticating requests, which is a critical security flaw. The issue requires human intervention to assess the severity and implement a fix."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This is an authentication/authorization bypass: a blocked admin key can continue to authenticate and access privileged routes across workers due to a cache invalidation race condition. This is an auth bypass with a plausible exploit path (revoked/blocked admin credentials remain valid), which falls squarely under security per the rules, taking precedence over bug framing. Given it affects privileged admin access control and can allow continued unauthorized access after a key is explicitly blocked, this is a serious security issue affecting the core auth path shared by all proxy deployments with multiple workers - a widely used deployment pattern. There's no stated workaround, and it undermines a core security guarantee (revocation). This warrants P0 given the plausible exploit path and impact on privilege revocation guarantees, though it requires cache staleness/timing rather than being trivially exploitable, so P1 might also be reasonable — but since it's an auth bypass on admin-level keys with no workaround, treating as P0 is justified per the security modifier rules. Security issues always need human judgement to assess exploitability and design the correct fix (e.g., whether to add revalidation or versioning)."
+   },
+   "cost_usd": 0.0001542,
+   "cost_reported": true,
+   "tokens_in": 1258,
+   "tokens_out": 71,
+   "latency_ms": 1300,
+   "context_empty": false,
+   "context_tokens": 478,
+   "error": ""
+  },
+  {
+   "issue_number": 35541,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue reports multiple security vulnerabilities in a direct dependency (litellm) with publicly assigned CVEs and available exploits. The user explicitly states there is no supported remediation path, indicating a high-priority security concern that requires immediate attention from the maintainers. The urgency is set to P0 due to the severity and exploitability of the vulnerabilities. Needs_human is true because a maintainer needs to assess the impact and plan for remediation."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue reports multiple CVEs with public exploit PoCs affecting the core litellm package across several versions, with no remediation path. This is a security vulnerability report with plausible exploit paths (session expiration, missing authentication), which takes precedence over bug classification. High CVSS scores (up to 7.1) and affecting the shared core SDK across many versions with no workaround indicates severe impact. Security issues always require maintainer judgement to assess validity and severity, so needs_human is true. Given the plausible exploits and no remediation/workaround, and broad impact on the SDK, this warrants P0 urgency."
+   },
+   "cost_usd": 0.0001327,
+   "cost_reported": true,
+   "tokens_in": 915,
+   "tokens_out": 103,
+   "latency_ms": 1823,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 35648,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting the addition of native API support for a specific model (`deepseek-v4-flash`) within the LiteLLM library. This is a clear feature request that aligns with the library's purpose of providing a unified interface to various LLM providers. The request is well-defined with clear requirements and expected behavior, and it does not appear to require immediate human intervention beyond the standard development process."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a well-specified request for new provider capability (native DeepSeek Responses API support) that does not currently exist in LiteLLM - the provider only has chat/messages transformations, not a native Responses route. Per the rules, \"Provider X is not supported\" / new provider functionality is a feature request. There is no evidence of multiple users requesting this (single detailed requester), so it defaults to P3 despite the thorough write-up. It's a well-specified feature request that can be queued without further clarification from a maintainer - it clearly lays out scope, gating (v4-flash only), and required compatibility, so it doesn't need human judgement to route, though the decision of whether to build it is a product-direction call typically handled by maintainers triaging feature backlogs. Given it's a single, detailed, well-scoped request, needs_human can be false since it just needs queuing into the roadmap."
+   },
+   "cost_usd": 0.00013725,
+   "cost_reported": true,
+   "tokens_in": 2520,
+   "tokens_out": 99,
+   "latency_ms": 1723,
+   "context_empty": false,
+   "context_tokens": 1127,
+   "error": ""
+  },
+  {
+   "issue_number": 35664,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a security vulnerability where JWT tokens used for UI authentication contain reusable API key material. This could lead to credential replay and key extraction risks. The severity is marked as 'High' by the reporter, and the affected areas include proxy server and authentication modules. This warrants immediate attention from a human maintainer."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The report describes a plausible credential exposure/replay vulnerability: the UI session cookie is a JWT that embeds raw API key material, which can be extracted and replayed in another session or used directly as an Authorization bearer token, and the same key is also returned in the /v2/login response body, increasing exposure. This matches the security category definition (credential exposure with plausible exploit path) and takes precedence over bug/feature framing. Given it allows credential replay/extraction affecting any UI user's session and there's no stated workaround (session duration mitigates but doesn't eliminate risk), this is high impact on confidentiality of API keys for proxy admins/users — a plausible exploit path with significant impact, warranting P0 given it could lead to full API key compromise for any logged-in user, but since it requires cookie theft (browser/session compromise) rather than being trivially exploitable remotely, and default TTL limits window, P1 is more accurate. However, guidance says security vulnerability with plausible exploit path is P0. Given the key extraction leads to reusable long-lived credentials, I'll set P0 due to severity of credential exposure. This requires maintainer judgement to confirm and remediate (security reports always need human review)."
+   },
+   "cost_usd": 0.0002343,
+   "cost_reported": true,
+   "tokens_in": 2031,
+   "tokens_out": 78,
+   "latency_ms": 1232,
+   "context_empty": false,
+   "context_tokens": 808,
+   "error": ""
+  },
+  {
+   "issue_number": 35682,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue title and body mention numerous bug fixes and security fixes, indicating a focus on addressing existing issues. The urgency is set to P1 due to the mention of security fixes, which often require prompt attention. No specific human intervention is immediately required as the information provided is sufficient for categorization."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This issue is not a bug report, feature request, question, or docs issue - it's an announcement/blog post link about a townhall update summarizing bug fixes and security fixes. There's no actionable content, reproduction, or specific request. It doesn't fit cleanly into any category but is closest to a low-signal informational post, defaulting to 'question' per the no-junk-category rule. No urgency needed as it's purely informational with no user impact claim requiring action."
+   },
+   "cost_usd": 0.0000516,
+   "cost_reported": true,
+   "tokens_in": 224,
+   "tokens_out": 73,
+   "latency_ms": 1236,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 35765,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to parse and utilize the `x-litellm-tags` header for MCP gateway routes, similar to how it's handled for LLM routes. This would enable consistent usage attribution across different types of traffic. The change appears to be a straightforward implementation based on existing functionality."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a well-specified feature request: the author identifies an existing capability (x-litellm-tags header handling) on LLM routes that is missing on MCP gateway routes, with specific code pointers. It's not a bug since MCP routes were never designed to parse this header (no documented contract violated), it's new behavior for a new surface. Demand is from a single reporter describing their own gateway integration (Gravitee) — no evidence of multiple users or maintainer intent, so it stays at default P3 despite being a detailed, well-argued write-up. No regression, no security implication. Since it's a clear, well-scoped feature request that only needs to be queued/prioritized by the owning MCP team, it doesn't require a maintainer conversation to determine feasibility — the ask and the mechanism are already spelled out."
+   },
+   "cost_usd": 0.0001543,
+   "cost_reported": true,
+   "tokens_in": 1227,
+   "tokens_out": 79,
+   "latency_ms": 1787,
+   "context_empty": false,
+   "context_tokens": 352,
+   "error": ""
+  },
+  {
+   "issue_number": 35788,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is proposing a new feature to enhance LiteLLM's token management by allowing dynamic TPM allocation based on team, key, and model configurations, rather than a static floor. This directly addresses a stated need for improved fairness and cost control. The issue is well-defined and doesn't immediately require human intervention for clarification."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request proposing configurable per-key/per-team/per-model default output token estimates to replace the static TPM floor. It's a new capability, not a bug in existing documented behaviour. The request is detailed and thought out by a single requester, with no evidence of corroborating demand from other users or maintainers. Although framed as a \"security and fairness issue,\" this is a design/configuration limitation (a static heuristic), not an actual vulnerability with an exploit path bypassing authentication or access control—it's about TPM accounting granularity, so it doesn't meet the security bar. Per rules, feature requests default to P3 unless there's evidenced demand (multiple requesters, maintainer intent, or widespread impact on a shared core path). While TPM limiting is part of the shared core path, this specific enhancement is an evidenced-demand judgement call for maintainers—single detailed writeup does not itself count as demand. Given the significant design decisions (new metadata schema, resolution priority order, backward compatibility), this needs a maintainer/product-direction decision before it can be routed and queued."
+   },
+   "cost_usd": 0.0002402,
+   "cost_reported": true,
+   "tokens_in": 2074,
+   "tokens_out": 82,
+   "latency_ms": 3529,
+   "context_empty": false,
+   "context_tokens": 892,
+   "error": ""
+  },
+  {
+   "issue_number": 35904,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue reports incorrect pricing information in a JSON file, which directly impacts cost calculations and user budgets. This is a bug that needs human review to ensure the pricing data is corrected accurately. The urgency is P1 because it affects cost tracking, but it's not a complete outage."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "Documented/expected costs (per Google's actual billing) do not match what litellm's pricing table encodes and then charges users for. This is a clear cost accounting bug — incorrect pricing entries causing wrong spend calculations, directly affecting budget enforcement. The reporter gives clear reproduction steps, exact values, and even identifies the root cause (copy-paste error) and a fix reference already present in the same file (bedrock qwen entry). This affects 4 specific model entries (a narrower path), each with an available workaround (explicitly setting cost_per_token). Not a security issue, not a question, not purely docs (code/table drives billed behavior). It's a bug affecting cost accounting.\n\nUrgency: bug affects a narrow set of models (4 entries) among many Vertex MaaS providers, workaround exists (manually override input/output cost), reducing severity. This isn't a regression (values were seemingly wrong from introduction), and it doesn't affect \"most users\" — only users of these 4 specific Vertex MaaS models. Base severity would be P2 (narrow path affected, workaround available) then apply stated workaround modifier to lower one level to P3. However this could scale traffic-dependent up to 4x overcharge for budget-sensitive users, which is a meaningfully large financial impact, but per rules, narrow subset + workaround should place it at P2 with workaround lowering to P3. Given explicit stated workaround, lower by one level from P2 to P3.\n\nneeds_human: This is a well-specified, reproducible bug with exact price deltas and clear proposed fix (author even offers a PR). No judgement call needed, straightforward routing to update pricing JSON. Set false."
+   },
+   "cost_usd": 0.0002975,
+   "cost_reported": true,
+   "tokens_in": 2687,
+   "tokens_out": 72,
+   "latency_ms": 1356,
+   "context_empty": false,
+   "context_tokens": 837,
+   "error": ""
+  },
+  {
+   "issue_number": 35917,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is proposing a new feature to ingest externally-measured usage data into LiteLLM's spend tracking system. This involves adding a new ingestion point, which is a significant change that requires maintainer review. The issue is not a bug, security concern, documentation request, or a simple question that can be answered without human intervention. The urgency is P1 because it impacts the coherence of spend tracking for users who bypass the proxy."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-articulated request for new functionality that does not currently exist in LiteLLM: an ingestion API/endpoint to record externally-measured usage against virtual keys for traffic that bypasses the proxy. No claim of broken/misbehaving existing functionality — this is a feature request. It's a single requester with a detailed write-up but no evidenced corroboration from other users or maintainers, so per the rules it defaults to P3 despite being well-argued. This is a product-direction decision (whether LiteLLM should support external usage ingestion, and in what shape), which requires maintainer judgement to decide whether to accept the proposal and in what form."
+   },
+   "cost_usd": 0.000196,
+   "cost_reported": true,
+   "tokens_in": 1548,
+   "tokens_out": 103,
+   "latency_ms": 1367,
+   "context_empty": false,
+   "context_tokens": 826,
+   "error": ""
+  },
+  {
+   "issue_number": 36262,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where tool calls are lost during streaming with a specific version of LiteLLM (1.95.0) when using Anthropic models. The issue is reproducible and affects the core functionality of tool usage in streaming mode. This warrants a P1 urgency as it's a regression impacting a key feature. Human intervention is needed to investigate the root cause and implement a fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue reports that tool_use content blocks from Anthropic's streaming SSE are lost when converted into LiteLLM's internal streaming chunks (litellm.completion with stream=True), even though the same request works correctly with stream=False and the native Anthropic API returns a valid tool_use. This is a clear regression/bug in the shared Anthropic streaming transformation path affecting tool_calls extraction during stream_chunk_builder aggregation. This affects a widely-used provider (Anthropic) and a core capability (tool calling with streaming), which is heavily used by many users building agentic workflows. There's no stated workaround (stream=False loses streaming benefits, not a real workaround for streaming use cases), and it affects the shared core streaming path for a major provider - this is likely to affect many users. The report includes a detailed reproduction with version info, isolating the exact chunk-conversion layer. Given it affects a major provider's core tool-calling capability in streaming mode with no true workaround, and considering it impacts the shared/internal chunk-building path (used across proxy and Responses API too), this warrants P1 urgency. It requires a maintainer to confirm the reported behavior via reproduction and assess the internal streaming transformation code, so needs_human=true."
+   },
+   "cost_usd": 0.0002674,
+   "cost_reported": true,
+   "tokens_in": 2286,
+   "tokens_out": 97,
+   "latency_ms": 1445,
+   "context_empty": false,
+   "context_tokens": 887,
+   "error": ""
+  },
+  {
+   "issue_number": 36393,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting an issue where request tags are not being consistently propagated in direct MCP gateway operations, leading to incomplete spend logging. This is a bug that needs investigation by a human maintainer to ensure proper functionality and data logging. The security requirement also indicates a need for human review."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This issue describes missing propagation of attribution tags (end-user id, tags) through the direct MCP gateway's tools/list and tools/call operations, along with a security requirement to filter these gateway-only headers from outbound MCP server requests so they aren't leaked upstream. This is behavior that doesn't fully exist yet - it's a feature enhancement to add consistent tag/attribution support across MCP operations, with a specific security-adjacent concern (header leakage) baked in as an implementation requirement rather than a reported active vulnerability. Since the core ask is \"add request tag attribution\" (new capability) rather than reporting an existing exploit, this fits best as a feature request. It's well-specified with clear proposed implementation and test coverage, suggesting it could be a maintainer-authored issue or one written with deep repo knowledge, indicating some level of intent/direction already established. Given it touches the shared MCP gateway core path (affecting both tools/list and tools/call and header filtering), and includes an explicit security-adjacent requirement, it's reasonable to promote from default P3 to P2 due to core-path impact. It does not require human review to route since it's well-specified with clear proposed implementation, test coverage, and documentation update plan - it can be queued as a feature."
+   },
+   "cost_usd": 0.0001101,
+   "cost_reported": true,
+   "tokens_in": 813,
+   "tokens_out": 72,
+   "latency_ms": 1322,
+   "context_empty": false,
+   "context_tokens": 147,
+   "error": ""
+  },
+  {
+   "issue_number": 36493,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting multiple bugs related to image and video endpoints not correctly handling OpenAI-compatible backends. The issues stem from incorrect request formatting (JSON vs. multipart/form-data), improper parsing of multipart requests, and silent dropping of provider-specific parameters. These issues prevent self-hosted backends from working correctly with LiteLLM's standard routes. The complexity and number of distinct issues suggest a human maintainer should review and triage them, potentially splitting them into separate, more focused bug reports."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a detailed, well-researched bug report identifying four distinct spec-compliance gaps in LiteLLM's image/video routes that prevent them from working with OpenAI-compatible self-hosted backends (SGLang Diffusion, vLLM-Omni). The reporter provides source code references, exact line numbers, reproduction with real backend responses, and comparison against the official OpenAI SDK behavior. This is clearly a bug (behavior diverges from documented/expected OpenAI-spec-compatible behavior) rather than a feature request, since these are routes that already exist and are documented to be OpenAI-compatible but violate the spec in specific ways (wrong content-type negotiation, JSON-only parsing where multipart is required, silently dropped params, no extensibility for provider-specific fields). The issue affects the shared image/video generation path used by many self-hosted OpenAI-compatible backends, which is a widely-used integration pattern in LiteLLM (proxying custom providers). Given there are 4 distinct issues bundled together, each affecting the core video/image edit routes, and this affects any user trying to route self-hosted OpenAI-compatible backends through the standard endpoints (a common use case), this affects a subset of users but is a legitimate multi-part bug. Since it bundles several distinct problems in one issue and touches on core shared paths (image/video generation route logic used by many providers), it needs human judgment to decide how to split/prioritize the four issues, plus verify each claim. Urgency: affects self-hosted/OpenAI-compatible provider integration broadly (shared core path for images/videos affected raises severity), but not a complete widespread outage for most users - it's specific to compatible backends and video/image edit flows. Given \"several distinct problems bundled in one issue\" and the impact on shared core paths, P1 fits with needs_human=true."
+   },
+   "cost_usd": 0.0003716,
+   "cost_reported": true,
+   "tokens_in": 3248,
+   "tokens_out": 117,
+   "latency_ms": 1545,
+   "context_empty": false,
+   "context_tokens": 1093,
+   "error": ""
+  },
+  {
+   "issue_number": 36553,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a crash in the `_should_start_new_content_block` function due to an unconditional access to `chunk.choices[0]` when `choices` is an empty list. This is a clear bug that affects streaming functionality and can lead to data loss for clients. The suggested fix directly addresses the root cause by adding a check for the length of `chunk.choices`. The issue is reproducible and has a clear traceback. It does not require human intervention beyond the fix itself. The urgency is P1 because it impacts streaming functionality and data tracking, but it's not a complete outage (P0)."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a clear, reproducible crash: an unguarded chunk.choices[0] index access causes IndexError when a backend sends a usage-only chunk with empty choices, breaking the /v1/messages streaming adapter and losing final usage/message_stop events. This is a deviation from expected behavior (crash instead of graceful handling), so it's a bug, not a feature or docs issue. It affects a specific but real path (non-Anthropic backends via anthropic_messages route, e.g., GLM-5.1) — a narrower path affected by backend, with the same pattern reportedly also seen in other call sites (issue links #27928, #28884), suggesting a systemic issue across the codebase but confined to certain backends/model streaming quirks. This warrants P1 given it affects a widely-used proxy pass-through route and drops critical usage/billing data, but since it's backend-dependent (not all backends trigger it) and there's a reproduction with a suggested fix, it leans P2 with a bump since it's a shared pattern issue (multiple call-sites, \"same pattern\" cited in linked issues) reducing to core stream handling — I'll set P1 due to breaking usage tracking and the shared streaming iterator being critical path, but confine to P2 due to workaround-free but narrow condition (specific backends). Given clear reproduction and root cause with suggested fix, a maintainer doesn't necessarily need to inspect further before routing — this can go straight to the owning module as a bug fix."
+   },
+   "cost_usd": 0.0003086,
+   "cost_reported": true,
+   "tokens_in": 2514,
+   "tokens_out": 143,
+   "latency_ms": 1761,
+   "context_empty": false,
+   "context_tokens": 1192,
+   "error": ""
+  },
+  {
+   "issue_number": 36650,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a bug where streaming requests hang indefinitely without errors or logs when a specific token budget is exceeded. This indicates a failure in error handling and request translation for the Bedrock provider. The bug has a significant real-world impact, causing silent failures for certain use cases. The need for human intervention stems from the complexity of the issue, involving interaction with a specific cloud provider's API (Bedrock) and potential deep-dive into LiteLLM's internal request/response handling for streaming."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a genuine bug report affecting the Bedrock streaming path: (1) incorrect/incomplete translation of Anthropic 'enabled' thinking format to Bedrock's 'adaptive' format for budgets above ~16.4k, causing instant upstream rejection, and (2) a severe error-swallowing bug where upstream 4xx validation errors during stream setup are silently dropped, causing indefinite hangs with zero client-visible signal and no server logs. This matches the 'bug' category exactly - documented/expected behavior (successful translation, and errors surfacing to client) is violated by actual behavior. The impact is significant: it affects a widely-used provider path (Bedrock streaming with thinking-enabled requests), causes silent multi-minute hangs for any client hitting the affected budget range (like Claude Code's deep-thinking mode which requests ~32k budgets), and has no logging to aid diagnosis. This is not merely a narrow edge case - it's a systemic issue in error handling on the streaming path plus an incomplete parameter translation, both hitting the shared Bedrock invocation code. There's no confirmed workaround other than limiting budget size, which is a narrow mitigation not a real workaround for users needing higher budgets. Given it affects a widely used provider (Bedrock) and the shared streaming/error-handling path, and given the severity (silent hang, no diagnostics, in production), this warrants P1. It requires maintainer judgement to confirm reproduction and decide the best fix approach (extending translation range vs proper error surfacing), and combines two distinct problems (translation bug + error swallowing) requiring judgement about scope, so needs_human should be true."
+   },
+   "cost_usd": 0.0002952,
+   "cost_reported": true,
+   "tokens_in": 2484,
+   "tokens_out": 117,
+   "latency_ms": 1593,
+   "context_empty": false,
+   "context_tokens": 900,
+   "error": ""
+  },
+  {
+   "issue_number": 37007,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes a bug where a GET request to `/spend/logs` causes an OutOfMemory error due to fetching all rows without pagination. This is a critical issue as it makes the proxy unavailable. The user also suggests fixes and provides steps to reproduce. It needs human review to decide on the best fix and implementation."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear bug: an admin API endpoint (/spend/logs) violates reasonable expected behaviour by loading an unbounded number of rows into memory with no pagination, causing an OOM crash that takes down the entire proxy (all model traffic). The report includes a clear reproduction, code references showing the missing `take` cap, and shows related endpoints already implement proper pagination, confirming this is an oversight rather than by design. This affects availability broadly (proxy serving all models goes down), with no workaround other than blocking the endpoint at the ingress (an operator-side mitigation, not a fix), so it should be raised. Given it's a shared/core proxy path affecting all users of that deployment and causing a full outage of model traffic for about a minute, this is severe — a major, widely used core path (spend logging under admin API) is broken with no built-in workaround, warranting P1. It does not rise to P0 since it isn't a widespread issue for all users by default in every deployment (requires large table) and no data loss occurs, just temporary unavailability. Because this is P1, it requires human judgement per policy (P0/P1 requires human look), and also because reproduction/confirmation of severity is worth validating before routing/fix approach decision (three suggested fixes represent a product/design choice)."
+   },
+   "cost_usd": 0.0002026,
+   "cost_reported": true,
+   "tokens_in": 1706,
+   "tokens_out": 80,
+   "latency_ms": 1385,
+   "context_empty": false,
+   "context_tokens": 525,
+   "error": ""
+  },
+  {
+   "issue_number": 37015,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where Gemini TTS requests are not being spend-tracked through the proxy, while OpenAI TTS requests are. The issue description provides detailed steps to reproduce the bug, including specific API calls, configuration, and observed output. The root cause is also identified as a metadata handling issue in the proxy's internal logic for bridging speech requests to chat completions. This requires a maintainer to investigate and fix the code."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear, well-documented bug: Gemini (and other chat-completion-bridged) TTS calls through /v1/audio/speech are not spend-tracked because metadata is dropped/overwritten as None when the speech request is translated into a chat completion call internally. The reporter identifies the root cause precisely and provides full reproduction steps, debug logs, and comparison with the working OpenAI TTS path. This affects billing/spend accuracy and budget enforcement, which is a core proxy function (spend tracking is a widely-used, shared core path), and impacts any provider that uses this speech-to-completion bridge, not just Gemini. There's no workaround since spend tracking silently fails. This is not a security vulnerability, not a docs issue, and not a feature request - it's broken behavior in an existing supported code path. Given the impact on billing/budget enforcement (a widely-used core proxy feature) with no workaround, and affecting multiple providers via the shared bridge mechanism, this warrants P1 severity. It needs human review because it's a P1-level issue with a claimed root cause that should be verified/confirmed by a maintainer before routing, and it involves nontrivial internal logic (shared logging object mutation) requiring judgement to fix correctly across providers."
+   },
+   "cost_usd": 0.0003921,
+   "cost_reported": true,
+   "tokens_in": 3517,
+   "tokens_out": 101,
+   "latency_ms": 1362,
+   "context_empty": false,
+   "context_tokens": 1084,
+   "error": ""
+  },
+  {
+   "issue_number": 37054,
+   "predicted": {
+    "category": "security",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue title and body clearly indicate a security vulnerability related to authentication in the proxy when a master key is not set. The reporter has also provided a severity rating and suggested a fix. This requires a human maintainer to review and address."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This report identifies an unsafe default (no-auth dev mode triggered by missing LITELLM_MASTER_KEY) combined with a shipped docker-compose.yml that does not set the key, resulting in a plausible exploit: anyone reaching port 4000 gets unauthenticated access to inference routes using the operator's paid upstream credentials. This is an unsafe default with a plausible exploit path, so it takes precedence as security per the category rules. Impact is real (cost abuse/DoS) but requires network access to the proxy and is called out as \"Low\" severity by the reporter, and a CRITICAL warning is already logged at startup — so it's not a full P0 (no widespread active exploitation, and it is a known warned condition), but it does affect a default configuration path used by many following the quickstart, warranting elevated urgency. This is a security issue affecting the default setup for potentially many users with no immediate workaround other than manually setting the key, so P1 is appropriate. Security issues always require human judgement per the needs_human rule."
+   },
+   "cost_usd": 0.0000944,
+   "cost_reported": true,
+   "tokens_in": 692,
+   "tokens_out": 63,
+   "latency_ms": 1257,
+   "context_empty": false,
+   "context_tokens": 137,
+   "error": ""
+  },
+  {
+   "issue_number": 37121,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where the output is not as expected, showing a malformed URL. This requires a human to investigate the code. The urgency is P1 as it affects the core functionality of the library."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue is extremely vague, containing only a one-word title \"help\" and a brief description of unexpected output (\"%s://%s://%s:%d\" instead of a proper URL). This suggests a possible string formatting bug in URL generation, but there's no reproduction steps, no context about which feature/provider is involved, and no environment details. While it appears to be a bug (incorrect output vs expected URL), the lack of information makes it impossible to route confidently without maintainer input. The vague title and body signal insufficient information to properly triage."
+   },
+   "cost_usd": 0.0000421,
+   "cost_reported": true,
+   "tokens_in": 185,
+   "tokens_out": 59,
+   "latency_ms": 1118,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 37133,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The issue describes a bug where the chat->responses bridge incorrectly formats `output_text` content by omitting the required `annotations` field, leading to 400 errors from strict providers like Azure. The proposed fix directly addresses this formatting issue. The urgency is P1 because it breaks multi-turn conversations for specific provider configurations and tool usage."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The chat->responses bridge violates the documented/expected OpenAI Responses API spec by omitting the required 'annotations' field on output_text items, causing strict providers (Azure AI Foundry) to reject requests with a 400 error. This is a clear code defect with a documented spec contract being violated (bug, not docs, since code behavior is wrong). It affects multi-turn conversations with tools+reasoning_effort combos, breaking agentic clients like OpenCode on Azure - a narrower but real path (subset of providers/configs) is broken, and a workaround (avoid combining tools+reasoning_effort) may partially exist though it defeats functionality. This is not a security issue. The issue includes a clear reproduction, root cause identification, and even a proposed one-line fix, so a maintainer doesn't need to investigate further - it can be routed directly to fix."
+   },
+   "cost_usd": 0.0003105,
+   "cost_reported": true,
+   "tokens_in": 2765,
+   "tokens_out": 85,
+   "latency_ms": 1498,
+   "context_empty": false,
+   "context_tokens": 1241,
+   "error": ""
+  },
+  {
+   "issue_number": 37142,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user wants to add new models to the `model_prices_and_context_window.json` file. This is a straightforward addition of new model information, which falls under the category of a feature request. It does not require human intervention as it's a simple data update. The urgency is P3 as it's an addition of new models and not a critical bug fix."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a request to add new model entries (openrouter/deepseek-v4-pro and deepseek-v4-flash) to the pricing/context window JSON files. This is new model support that doesn't exist yet, matching the definition of a feature request (\"Provider X/model X is not supported\" = feature). There's no evidence of widespread demand beyond a single request, so it defaults to P3. It's well-specified (just needs adding model metadata with pricing/context info once that source is verified), so it can be queued without maintainer discussion, though pricing data would need verification."
+   },
+   "cost_usd": 0.000181,
+   "cost_reported": true,
+   "tokens_in": 1430,
+   "tokens_out": 95,
+   "latency_ms": 3131,
+   "context_empty": false,
+   "context_tokens": 925,
+   "error": ""
+  },
+  {
+   "issue_number": 37143,
+   "predicted": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is reporting a documentation error where a function mentioned in the docs does not exist. This is a documentation bug. The urgency is P3 as it's a documentation issue and not a critical bug in the code. No human intervention is needed as it's a straightforward documentation fix."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The documentation references a nonexistent config option (litellm.turn_on_message_logging) when the actual code/behavior uses litellm.turn_off_message_logging. The code behaves as intended; only the docs are wrong. This is a simple, well-specified docs typo/error that can be routed without maintainer discussion."
+   },
+   "cost_usd": 0.00008,
+   "cost_reported": true,
+   "tokens_in": 504,
+   "tokens_out": 74,
+   "latency_ms": 1194,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 37149,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The issue describes a bug in the `GET /v1/batches` endpoint where invalid `limit` values (0, -1, 101, 1000) do not return the expected HTTP 400 error, but instead return 200 with incorrect record counts. This deviates from the expected behavior and the behavior of other similar APIs (like OpenAI's). The fix involves adding query parameter validation for the `limit` parameter."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The /v1/batches endpoint fails to validate the `limit` query parameter, accepting values outside the documented/expected 1..100 range and returning inconsistent, incorrect results (200 with wrong record counts) instead of a 400 error like OpenAI's API. This is a clear behavioral bug: the endpoint returns wrong output for out-of-range inputs, which could break pagination logic in client scripts. There's a clear reproduction with exact steps and version. This affects a specific endpoint (batches) rather than the shared core path, and a workaround exists (validate/clamp limit client-side before sending). It's not a security issue, not a docs issue, and not a feature request since the intended behavior (matching OpenAI's validation contract) already exists in spec but is not implemented correctly."
+   },
+   "cost_usd": 0.0003115,
+   "cost_reported": true,
+   "tokens_in": 2671,
+   "tokens_out": 111,
+   "latency_ms": 1446,
+   "context_empty": false,
+   "context_tokens": 861,
+   "error": ""
+  },
+  {
+   "issue_number": 37170,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is reporting a missing configuration in a JSON file that affects the functionality of a specific model. This is a straightforward bug fix that does not require human intervention beyond the code change itself. The urgency is P2 as it's a configuration error that might not be critical for all users but should be fixed."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The code's pricing/model metadata is missing supported fields (supports_audio_input/output) that are documented/present in an analogous entry for the same model, causing incorrect capability metadata for the Azure gpt-audio-mini model. This is a data correctness issue in the model metadata JSON, which affects functionality (capability detection) rather than just documentation, so it's a bug. It's narrow in scope (single model entry, two files), with a clear fix, no broad user impact—P3 with workaround (users could hardcode capabilities). No security implications. Clear, well-specified fix, doesn't require maintainer judgement."
+   },
+   "cost_usd": 0.000145,
+   "cost_reported": true,
+   "tokens_in": 1138,
+   "tokens_out": 78,
+   "latency_ms": 1381,
+   "context_empty": false,
+   "context_tokens": 599,
+   "error": ""
+  },
+  {
+   "issue_number": 37284,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where compression/caching savings are incorrectly reported as $0.00 for custom models, even when tokens are compressed. The issue seems to stem from how pricing information is handled for custom models, leading to incorrect calculations in the Cost Optimization dashboard. This requires a human maintainer to investigate the pricing logic and potential key-shadowing issues described in the bug report."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "This is a clear, well-reproduced bug: compression/caching savings computation falls back to (0.0, 0.0) for any custom model with operator-supplied pricing not in litellm's built-in cost map, because the pricing lookup key used by savings.py doesn't align with how Router registers custom pricing (shared_backend_model_info strips pricing, and provider-prefixed key shadows bare name). Billing/spend works correctly, but the savings/cost-optimization dashboard reports incorrect ($0.00) values despite correct token counts — this is \"incorrect cost accounting\" per the bug rules. It's not a docs issue (code violates intended behavior) nor a feature request (existing behavior is broken) nor a security issue. This affects any self-hosted/custom model user relying on the compression/caching savings dashboard — a fairly broad audience for self-hosted deployments, but it's a narrower reporting/analytics feature (not core request/response path), and a workaround isn't really available besides not trusting the dashboard. Given it's scoped to a specific dashboard metric (not blocking core requests or billing), and affects a subset of users (those using custom models + compression guardrails), P2 fits best. It's well-documented with clear reproduction steps and root cause analysis, so a maintainer doesn't need to triage from scratch, but the fix requires resolving the key-shadowing constraint (a judgement call on how to fix registration/lookup), so some human judgement is warranted before implementation, though the issue reporter already suggests both a root cause and a working fix pattern. Given the clarity of repro and root cause, this could be routed directly to the owning module (savings.py) without discussion."
+   },
+   "cost_usd": 0.0003386,
+   "cost_reported": true,
+   "tokens_in": 3006,
+   "tokens_out": 95,
+   "latency_ms": 1379,
+   "context_empty": false,
+   "context_tokens": 848,
+   "error": ""
+  },
+  {
+   "issue_number": 37485,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where streaming responses from `vercel_ai_gateway` are dropping `prompt_tokens_details.cached_tokens`, leading to incorrect billing. This is a regression from a previous version and has a significant financial impact. The issue requires human intervention to investigate and fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear regression: cached_tokens/prompt_tokens_details is correctly populated in non-streaming responses but dropped during streaming usage reassembly for vercel_ai_gateway, causing significant overbilling (documented 7.4x overcharge in production). The report includes detailed reproduction steps, version bisection (works in v1.89.3, broken since v1.95.0), and cross-checked evidence against provider billing logs. This matches the bug category (incorrect cost/token accounting, streaming issue) rather than a feature request. Since it's a regression affecting billing accuracy for a provider integration and affects cache-heavy streaming workloads broadly (not just this reporter's edge case), and there's no stated workaround other than downgrading to an old version (which is a workaround but painful - requires full version rollback), this warrants elevated urgency. Base urgency would be P1/P2 since it's a specific provider (not \"most users\") but core streaming usage reassembly logic is shared code path affecting multiple providers potentially (related to PR #34812 also referencing OpenAI). Given the regression modifier (+1 level) and the severe financial impact reproducibility, this should be P1. Needs human review is required since this is a P1 bug requiring investigation into the streaming reassembly code and confirmation of the regression's root cause and scope across providers."
+   },
+   "cost_usd": 0.0003515,
+   "cost_reported": true,
+   "tokens_in": 3215,
+   "tokens_out": 75,
+   "latency_ms": 1224,
+   "context_empty": false,
+   "context_tokens": 983,
+   "error": ""
+  },
+  {
+   "issue_number": 37509,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to add support for OpenAI's prompt caching mechanism, which is analogous to an existing feature for Anthropic. This is not a bug, security issue, or documentation request. The urgency is P2 as it addresses a gap in functionality for mixed model fleets but does not appear to be a critical failure. Human intervention is not immediately required as the request is clear and actionable."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request: extend the existing cache_control_injection_points config to also emit OpenAI's prompt_cache_breakpoint/prompt_cache_options for OpenAI-compatible targets. The functionality does not exist yet - it's asking for new behavior, not a bug or docs issue. The reporter explicitly frames it as a gap to capture, not prescribing implementation, and leaves the approach to maintainer judgment - this is clearly a feature request. There's no evidence of multiple users requesting this (single detailed write-up from one reporter), so per the rules it defaults to P3 despite being well-argued. It doesn't affect a widely-used provider's core path being broken (it's a missing capability, not broken behavior), and there's no regression or workaround language relevant here. This is a product-direction call (whether to build a parallel translation path for OpenAI caching) requiring maintainer judgement on implementation approach, so needs_human should be true."
+   },
+   "cost_usd": 0.0002688,
+   "cost_reported": true,
+   "tokens_in": 2300,
+   "tokens_out": 97,
+   "latency_ms": 1386,
+   "context_empty": false,
+   "context_tokens": 1138,
+   "error": ""
+  },
+  {
+   "issue_number": 37567,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where tool schemas are lost when using the `generateContent` endpoint with non-Gemini providers. This causes function calls to be made with incorrect or missing arguments. The issue seems to stem from how the `parameters` field is handled versus `parametersJsonSchema` in the request transformation. This requires a human to investigate the code transformation logic."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The bridge converting generateContent requests to chat-completions format only reads functionDeclarations[].parametersJsonSchema, missing the parameters field that both idiomatic SDK usages (google-genai) actually send. This causes tool schemas to be silently dropped for non-Gemini providers, resulting in empty or hallucinated function arguments. This is a clear behavioral bug (code violates the expected/documented contract of passing tool schemas through), well reproduced with curl commands and control comparison. It affects any non-Gemini provider deployment behind the generateContent bridge, which is a widely-used cross-provider path (affects all OpenAI-compatible and other non-Gemini providers, a core path), and there's no workaround for SDK users since the SDK itself emits `parameters` not `parametersJsonSchema`. This silently produces wrong output without error, which is a correctness/reliability issue impacting a broad swath of users of the Gemini-compatible endpoint for non-Gemini providers."
+   },
+   "cost_usd": 0.0003443,
+   "cost_reported": true,
+   "tokens_in": 3083,
+   "tokens_out": 90,
+   "latency_ms": 1398,
+   "context_empty": false,
+   "context_tokens": 1094,
+   "error": ""
+  },
+  {
+   "issue_number": 37782,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a UI slowness issue with a specific error message (ChunkLoadError) in version 1.97.0, which clearly indicates a bug. The issue is related to the proxy module. Since it's a bug affecting the UI and potentially a recent regression, it warrants immediate attention. Human review is needed to assess the impact and assign it for a fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The user reports a specific version (v1.97.0) exhibits UI slowness and a ChunkLoadError when loading static Next.js chunks in the browser, a concrete regression-like symptom affecting the proxy UI. This is behavior differing from expected (UI should load properly), so it's a bug. It appears version-specific, suggesting a regression from a prior working version, warranting an urgency raise. However, it's unclear how many users are affected—could be a build/deployment configuration issue (asset-prefix) specific to this reporter, so scope is uncertain. No workaround stated. Given ambiguity in reproduction and potential regression, this needs maintainer judgement to confirm and diagnose the chunk loading issue."
+   },
+   "cost_usd": 0.000093,
+   "cost_reported": true,
+   "tokens_in": 554,
+   "tokens_out": 94,
+   "latency_ms": 1350,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 37810,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is reporting a bug where keys with `key_type=\"llm_api\"` are receiving a 403 error when trying to access model metadata endpoints. The issue description and reproduction steps clearly indicate an unintended restriction in the routing logic. The suggested fix is specific and addresses the described problem without introducing broader changes. The urgency is P1 because it affects core functionality for a specific key type but doesn't appear to be a complete outage. No human intervention is needed as the issue is well-defined and a solution is proposed."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The code behaves inconsistently with the documented/expected contract: a key scoped to key_type=\"llm_api\" is expected to be able to call and discover metadata for models it can access, but the ACL gap causes 403s on /model/info, /v1/model/info, /v2/model/info, and /model_group/info while /v1/models works fine. This is a genuine gap/bug in access control logic rather than a deliberate restriction, matching the \"bug\" category (behaves differently from reasonably expected behavior, and it's a clear regression-like gap in the ACL feature introduced with key_type=\"llm_api\"). It affects a specific but likely common workflow (OpenAI-compatible clients using key_type=llm_api to discover model metadata), impacting a subset of users who use this preset, with a workaround (use a broader key type or add explicit routes) available. This scopes it to P2. There's also a related observability/logging gap mentioned, and a judgement call flagged by the reporter (whether to strip api_base from /model/info), which requires maintainer judgement on scope of the fix — hence needs_human=true."
+   },
+   "cost_usd": 0.000331,
+   "cost_reported": true,
+   "tokens_in": 2810,
+   "tokens_out": 125,
+   "latency_ms": 1530,
+   "context_empty": false,
+   "context_tokens": 760,
+   "error": ""
+  },
+  {
+   "issue_number": 37852,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is reporting a bug in the Responses API where streaming tool calls with no text content result in malformed SSE events. This breaks downstream clients like the Vercel AI SDK. The issue is reproducible and affects specific models and providers. The fix should involve ensuring that either the corresponding 'added' events are emitted or the 'done' events for empty messages are omitted, adhering to the API contract."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented, reproducible protocol-conformance bug in the Responses API streaming translation layer for Anthropic-family models (direct Anthropic and Bedrock routes). Clear steps to reproduce, exact event traces, and root cause narrowed to tool-call-with-no-text case. It breaks agentic tool-calling loops for any client (like Vercel AI SDK) that validates output_item add/done pairing, affecting a widely-used core code path (Responses API streaming) shared across multiple providers (Anthropic, Bedrock). This is not a docs issue since the documented contract (every .done preceded by matching .added) is violated by the code. Not a security issue. Given it's a real behavioral defect, category=bug.\n\nUrgency: affects a shared/core path (Responses API streaming translation) across multiple widely-used providers (Anthropic direct + Bedrock), breaking tool-calling agent loops entirely with no workaround mentioned (other than instructing the model to always emit text, which is not reliable/controllable) — this is a major broken feature for many users. This pattern warrants P1. It qualifies for the \"many providers or shared core path affected\" raise, but base severity already reflects broad impact from a widely used feature breaking with no reliable workaround, so P1 fits well (not P0 since it's not data loss or affecting literally all users/all providers, and there's partial mitigation by avoiding triggering condition though not fully reliable).\n\nneeds_human: true, since this is P1 severity bug requiring judgement per the rules (P1 always needs human triage), and also because it involves the streaming event-construction pipeline shared across multiple provider transformation paths, requiring maintainer judgment on where to best fix (event suppression vs proper pairing) — a product/implementation decision."
+   },
+   "cost_usd": 0.0003027,
+   "cost_reported": true,
+   "tokens_in": 2643,
+   "tokens_out": 96,
+   "latency_ms": 1790,
+   "context_empty": false,
+   "context_tokens": 900,
+   "error": ""
+  },
+  {
+   "issue_number": 37853,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is requesting a new feature to add a private/internal-only ingress mode to the Terraform module for GCP load balancing. This is a clear feature request and does not require immediate human intervention for triage. The urgency is set to P3 as it's a new feature request and not a critical bug."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "This is a request for a new capability that does not currently exist in the terraform/litellm/gcp module: a private/internal-only ingress mode. This is clearly a feature request, not a bug (module works as documented, just lacks this capability). There's no evidence of demand from multiple users—only a single requester describing a detailed use case, so per rules this defaults to P3 despite the thorough write-up. It's a well-specified feature request (clear scope: terraform module, specific files referenced, desired behavior outlined) that can be queued for the infra/terraform module owners without needing a clarifying conversation, so needs_human is false."
+   },
+   "cost_usd": 0.0001299,
+   "cost_reported": true,
+   "tokens_in": 987,
+   "tokens_out": 78,
+   "latency_ms": 1259,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 37881,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is reporting a bug where LiteLLM incorrectly forwards a JSON schema with conflicting `enum` and `type` values to Anthropic, causing a 400 error. The issue is reproducible and the user has provided detailed steps and scope analysis. The bug is specific to the Anthropic provider and does not require human intervention to categorize or prioritize."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The documented/intended contract is that structured output schemas should be transformed to be compatible with Anthropic's native output_format API (as evidenced by prior fixes #33981/#34313/#34319/#35811 handling similar constraint-stripping). The code fails to reconcile enum+type conflicts, causing valid Pydantic-generated schemas (Optional[Enum]) to produce a 400 error on the native path for azure_ai/anthropic/bedrock. This is a clear regression-adjacent gap in existing sanitization logic, not new desired behavior — it's a bug where code violates the intended contract of making schemas Anthropic-compatible. The reporter provided a clear, minimal, no-API-key-required repro plus an end-to-end curl repro, and pinpointed the exact function and missing logic. This affects a widely-used provider path (Anthropic native output_format across azure_ai, anthropic, bedrock) and is very plausible/common since Optional[Enum] is a common Pydantic pattern. No stated workaround exists in the general case (removing \"type\" is a manual workaround the user found, but that requires it being under user control, i.e., itself a workaround affecting only reporter, not built into litellm). Given many providers/shared core path affected, this raises severity. It's well-specified enough that a maintainer/engineer could route it directly to the anthropic transformation module without further clarification — reproduction is clear and localized to one function."
+   },
+   "cost_usd": 0.0003331,
+   "cost_reported": true,
+   "tokens_in": 2983,
+   "tokens_out": 87,
+   "latency_ms": 1471,
+   "context_empty": false,
+   "context_tokens": 1184,
+   "error": ""
+  },
+  {
+   "issue_number": 37890,
+   "predicted": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue title is too generic and the body is empty. It's unclear what the user is asking for or reporting. A human needs to ask for clarification."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue has no title content beyond a package name and an empty body. There is no information about what the problem, question, or request actually is. This is unintelligible/near-empty, so per the rules it defaults to 'question' category, and needs_human should be true due to insufficient information."
+   },
+   "cost_usd": 0.0000362,
+   "cost_reported": true,
+   "tokens_in": 170,
+   "tokens_out": 48,
+   "latency_ms": 1114,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 37923,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is reporting a bug where streamed requests to Vertex Anthropic models are not being logged with the correct spend, leading to inaccurate cost reporting and potentially bypassing budget limits. The issue is reproducible and has a clear impact on cost tracking. The provided details are sufficient for triage without immediate human intervention."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "This is a clear, well-reproduced bug: streamed Vertex Anthropic requests are logged with spend=0 while identical non-streamed requests are priced correctly, despite correct token counts and a verified-correct cost function. This causes budget enforcement to silently fail, which is a significant financial/authorization impact for many proxy users (streaming is the default for most clients), and affects a widely-used provider/core spend-calculation path. There's no stated workaround, and the shared cost-calculation path is affected for streaming generally, warranting escalation. Given the financial impact, budget-bypass risk, and broad effect on any streaming usage across a major provider, this should be raised in urgency and needs a maintainer to confirm and prioritize the fix (also touches billing/security-adjacent authorization semantics)."
+   },
+   "cost_usd": 0.0003421,
+   "cost_reported": true,
+   "tokens_in": 3125,
+   "tokens_out": 74,
+   "latency_ms": 1292,
+   "context_empty": false,
+   "context_tokens": 981,
+   "error": ""
+  },
+  {
+   "issue_number": 38012,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is asking to add support for a new audio translation endpoint, which is currently returning a 404. The user has provided a detailed explanation of the endpoint, its similarity to existing endpoints, and a workaround. This clearly indicates a feature request. The user also mentioned that they would be willing to contribute a PR, but would like confirmation and guidance from the maintainers first, hence `needs_human` is set to true. The urgency is set to P1 as it's a missing endpoint that mirrors existing functionality and is used by clients, but not a critical bug causing system failure."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-documented request for a new endpoint (/v1/audio/translations) that does not currently exist in LiteLLM proxy. It mirrors an existing endpoint (transcriptions) but is genuinely missing functionality, not a bug or docs issue — no code path currently implements it, so it's not \"behaving incorrectly,\" it's simply unimplemented. This fits \"feature\" category cleanly (new endpoint support, matching rule 5).\n\nFor urgency: this is a single requester, albeit with a detailed and well-researched writeup, citing that other OpenAI-compatible providers (Groq, Azure, vLLM, faster-whisper-server) support this endpoint, and noting it partially breaks the \"gateway\" value prop. However, per the rules, a detailed write-up alone is not evidenced demand — there's no second person corroborating, no maintainer signaling intent, and no indication this is a \"widely-used provider or shared core path\" being broken (it's an unimplemented endpoint, not a broken one). A workaround exists (pass-through config) and works reasonably well, which would normally lower urgency by one level, but since this defaults to P3 already as a feature request without evidenced demand, it stays at P3.\n\nFor needs_human: this is fundamentally a product-direction question — the author explicitly asks \"whether you'd want it and where you'd want the transform logic to live\" before submitting a PR. This requires a maintainer's judgment call about scope, design, and whether to bundle with the streaming-audio-upload work (#34254). That satisfies the \"requires judgement — product-direction call\" criterion, so needs_human = true."
+   },
+   "cost_usd": 0.0002895,
+   "cost_reported": true,
+   "tokens_in": 2347,
+   "tokens_out": 137,
+   "latency_ms": 1611,
+   "context_empty": false,
+   "context_tokens": 873,
+   "error": ""
+  },
+  {
+   "issue_number": 38026,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is suggesting a new feature to export `eval_information` as a portable EvalPort ResultSet. This aligns with the 'feature' category. The user explicitly states this is a \"low-priority idea\" and not something that should \"jump the queue,\" indicating it does not require immediate human attention, hence `needs_human` is false. The urgency is set to P3 due to the low-priority nature of the request."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-articulated feature request proposing integration with an external third-party spec (EvalPort) that LiteLLM does not currently support. It's a new capability (export/converter), not a bug or docs issue. The author explicitly frames it as a low-priority idea from a single requester with no corroborating demand from other users or maintainers. Per rules, feature requests default to P3, and a single detailed requester without corroboration stays P3. It doesn't affect a widely-used provider or core path, and there's no regression or existing workaround needed. This is a product-direction call (whether LiteLLM should adopt/support a third-party eval interop spec), which requires maintainer judgement before it can be routed/queued — so needs_human should be true."
+   },
+   "cost_usd": 0.0001999,
+   "cost_reported": true,
+   "tokens_in": 1583,
+   "tokens_out": 104,
+   "latency_ms": 1397,
+   "context_empty": false,
+   "context_tokens": 692,
+   "error": ""
+  },
+  {
+   "issue_number": 38064,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is reporting a bug in the `cost-based-routing` functionality where it ignores `cache_read` prices, leading to suboptimal cost decisions when `cache_read` costs differ significantly between providers. The issue is reproducible and has a clear impact on cost. The suggested fixes are reasonable and address the core problem. The urgency is P1 because it affects cost optimization, which is a primary feature of the router, but it's not a complete outage. Needs_human is false as the bug is clearly defined and a solution is proposed."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The cost-based-routing strategy behaves differently from reasonably expected behaviour: it is documented/intended to pick the cheapest deployment, but ignores cache_read_input_token_cost entirely, causing non-deterministic (config-order-dependent) selection on ties and systematically wrong rankings for cache-heavy workloads. This is a clear bug (code violates the intended contract of the feature), not a docs or feature issue. The reporter provides a full, reproducible repro script showing the order-dependent flip, and even quantified the scope (1 of 49 pairs affected today, but growing as more providers add cache pricing). This affects a narrow subset of routing configs today (only exact ties or close cases), and a trivial workaround exists (manually reorder model_list, or pin the cheaper provider) until fixed, but the underlying instability (sort not accounting for cache cost) affects the shared cost-based-routing core path in principle, which could raise severity. Given it's currently narrow (affects deployments with matching input+output cost but differing cache-read cost), and a workaround exists, this fits P2 impact, though the core \"cost-based-routing is supposed to minimize cost\" purpose is undermined for cache-heavy use-cases. This is a well-reproduced, well-diagnosed bug with clear suggested fix and code locations, so it doesn't need a maintainer to diagnose it, but the decision on which fix approach (tie-break only vs. configurable cache_hit_ratio) is a design/direction call that should get maintainer sign-off before merging, since it changes routing semantics."
+   },
+   "cost_usd": 0.0003254,
+   "cost_reported": true,
+   "tokens_in": 2746,
+   "tokens_out": 127,
+   "latency_ms": 1666,
+   "context_empty": false,
+   "context_tokens": 813,
+   "error": ""
+  },
+  {
+   "issue_number": 38075,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is requesting a new feature to support `httpx2` and remove the dependency on the unmaintained `httpx` package. This change is important for security and compatibility with newer versions of other libraries like `openai`. Since this involves dependency management and potential breaking changes, a human maintainer needs to review the request. The urgency is P1 because it addresses a security concern and improves compatibility."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a request for the library to support a new dependency version (httpx2) / relax pins on httpx and openai to enable future compatibility. No existing behavior is broken — litellm works fine with current pins. This is a forward-looking feature/roadmap question about dependency management, not a bug or a \"how do I use X\" question. It requires a maintainer/product decision about dependency strategy (whether to support httpx2, whether to relax openai pin), which is a product-direction call. It's a single requester (enterprise security tooling concern) with no evidence of broader community demand, so default to P3 per feature request rules. Since it requires a product-direction judgement call about dependency strategy, needs_human should be true."
+   },
+   "cost_usd": 0.0002562,
+   "cost_reported": true,
+   "tokens_in": 2178,
+   "tokens_out": 96,
+   "latency_ms": 1363,
+   "context_empty": false,
+   "context_tokens": 730,
+   "error": ""
+  },
+  {
+   "issue_number": 38077,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The user is reporting an issue with uvicorn displaying something with a '%' sign, which is likely a bug in the output formatting. It's unclear without more context, so a human needs to review it. The issue is reported in German, but the content suggests a bug. Urgency is set to P2 as it's not critical but needs attention."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue is extremely vague and unintelligible, providing no clear description of the problem, no reproduction steps, and no context about what is actually wrong. It only mentions seeing \"uvicorn running on\" and something with \"%\" without any further detail. This lacks sufficient information to determine if it's a bug, question, or something else. Per the rules, an empty or unintelligible issue defaults to 'question' category, and needs_human should be true due to insufficient information."
+   },
+   "cost_usd": 0.0000554,
+   "cost_reported": true,
+   "tokens_in": 198,
+   "tokens_out": 89,
+   "latency_ms": 1362,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 38121,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue describes a bug where the LiteLLM proxy fails to handle initial Prisma connection failures correctly, leading to incorrect HTTP 401 responses and a failure to recover even after the database is available. This requires human intervention to investigate the Prisma integration and authentication logic."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-documented bug affecting the core proxy auth/db-availability path. The documented contract of allow_requests_on_db_unavailable is violated: readiness reports 200 (fail-open) but auth still hard-fails with 401 instead of using the fail-open identity or a 503, and the failed initial connection never gets the reconnect watchdog, so it never recovers without a restart. This affects the shared authentication/core path used by all proxy deployments with a Postgres backend, and in multi-replica deployments causes intermittent false 401s for valid credentials with no recovery except restart (no real workaround other than restarting pods). This is a core reliability/auth defect, not a docs or feature issue. Given it affects the shared core auth path across many users/replicas and has no real workaround (restart is not a fix, it recurs), and combines multiple related issues, this needs maintainer judgement to reproduce/confirm and decide the right fix (503 vs fail-open identity, watchdog reuse). Impact: affects widely-used core auth path for DB-backed deployments, workaround (restart) is painful and doesn't prevent recurrence — raising to P1. Given the complexity and multiple facets (auth bypass logic, readiness inconsistency, reconnect watchdog gap) this needs human triage."
+   },
+   "cost_usd": 0.0003145,
+   "cost_reported": true,
+   "tokens_in": 2869,
+   "tokens_out": 69,
+   "latency_ms": 1235,
+   "context_empty": false,
+   "context_tokens": 1036,
+   "error": ""
+  },
+  {
+   "issue_number": 38179,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting that several xAI models are returning a \"Model not found — retired by xAI\" error, indicating that these models are no longer available. Additionally, two other xAI models do not support the Chat Completions API as expected. This is a bug report affecting specific models and their API compatibility. Since the issue involves external model deprecation and potential misconfigurations in the LiteLLM proxy for these models, human intervention is needed to investigate and update the model support. The urgency is P1 because it affects the usability of certain models."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue reports that several xAI models (grok-2, grok-2-1212, grok-2-latest, grok-2-vision, grok-2-vision-latest, grok-beta, grok-vision-beta) are retired/deprecated by xAI and no longer work, and that grok-4.20-multi-agent models only work with the Responses API, not the Chat Completions API used by LiteLLM. This is behavior differing from expected/documented behavior (models listed as supported but failing), fitting the bug category. It affects a specific provider (xAI) and subset of models, not the shared core path, and a workaround likely exists (using different models or the Responses API), so P2 is appropriate rather than P1. Because this involves multiple distinct issues (deprecated models + API mismatch for multi-agent models) and would benefit from maintainer judgement on how to update the model list/config, it needs human review to confirm and decide on updates."
+   },
+   "cost_usd": 0.0002245,
+   "cost_reported": true,
+   "tokens_in": 1737,
+   "tokens_out": 127,
+   "latency_ms": 1691,
+   "context_empty": false,
+   "context_tokens": 922,
+   "error": ""
+  },
+  {
+   "issue_number": 38216,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where the router incorrectly load-balances requests across unrelated model groups due to a collision on `litellm_params.model`. This is a critical issue as it can lead to unexpected behavior and security concerns (unauthorized access to model groups). The user also suggested a feature to mitigate this, but the primary report is a bug. It needs human review to assess the impact and decide on the best course of action, including the proposed feature. Urgency is P1 due to the potential for silent misrouting and production impact."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The router's fallback lookup by litellm_params.model matches across unrelated model_name groups, causing requests to be silently load-balanced across model groups the client never configured to call. This is a genuine behavioral defect (violates expected isolation between model groups) rather than a missing feature, though the reporter also proposes a flag-based fix. It's a real bug with a clear reproduction and production impact (capacity leaking across groups, potential security/isolation concern in multi-tenant proxy setups). It's not framed as an exploit against auth/credentials, so security category doesn't strictly apply, though there is a governance/isolation angle. Given the production impact but narrow trigger condition (requires literal string collisions across model groups, which is a specific misconfiguration/coincidence), this affects a subset of users - impacts the shared router core code path though, which affects many users if they hit this collision pattern. Since it can silently borrow capacity from unrelated groups without any config granting that, and is confirmed in production, this needs prompt attention. There's no user-side workaround other than avoiding collisions. Given decision requires judgement on whether to add a flag (product-direction call) and it's a subtle correctness/isolation bug, needs_human should be true."
+   },
+   "cost_usd": 0.0002612,
+   "cost_reported": true,
+   "tokens_in": 2104,
+   "tokens_out": 127,
+   "latency_ms": 1447,
+   "context_empty": false,
+   "context_tokens": 740,
+   "error": ""
+  },
+  {
+   "issue_number": 38383,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting that a previously merged feature (audit-log callback) was not included in a release. They have a rebased version ready and are asking where it should be submitted to ensure it ships. This indicates a need for human review to determine the correct branch and process for re-submitting the feature."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a request asking where a previously-merged but never-released feature (audit-log callback integration) should land, essentially a well-specified feature/integration request that requires a maintainer's product-direction decision about which branch to target and how to structure the PRs. There's no bug in existing behavior - the code simply hasn't been promoted/released. This is a feature (new integration/functionality not yet shipped). Demand is from a single requester (the author who did the rebuild), no corroboration from others, so it defaults to P3 despite being a detailed, ready-to-merge contribution. However, since it involves a decision on branch strategy/process and coordination that only a maintainer can make (not something that can be auto-routed), needs_human should be true."
+   },
+   "cost_usd": 0.000117,
+   "cost_reported": true,
+   "tokens_in": 854,
+   "tokens_out": 79,
+   "latency_ms": 1328,
+   "context_empty": false,
+   "context_tokens": 243,
+   "error": ""
+  },
+  {
+   "issue_number": 38505,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user is requesting to add a new feature to integrate xAI's x_search functionality as a native SearchProviders entry. This involves modifying the existing Search API interface and handling cost calculations, which are all within the scope of a feature request. The issue is well-defined and does not require immediate human intervention for clarification."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "This is a well-specified feature request to add xAI's x_search as a native Search API provider, including detailed technical design (request building, response translation, cost handling). No existing behavior is broken; it's new functionality that doesn't exist yet. This clearly falls under 'feature'. There's only a single requester with no corroboration of demand from others, so per rules it defaults to P3 despite the detailed write-up (a detailed write-up is not demand). This is a product-direction call about whether to build native support for a specific provider's search tool, requiring maintainer judgement on scope/design (e.g., cost calculation approach, whether to shoehorn a non-conforming API into BaseSearchConfig), so needs_human should be true."
+   },
+   "cost_usd": 0.0002487,
+   "cost_reported": true,
+   "tokens_in": 2163,
+   "tokens_out": 81,
+   "latency_ms": 1299,
+   "context_empty": false,
+   "context_tokens": 1212,
+   "error": ""
+  },
+  {
+   "issue_number": 38515,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where zero-cost models are blocked after a user's personal budget is exhausted. This contradicts the expected behavior where zero-cost models should remain usable. The issue description provides a clear root cause and a suggested fix, indicating a code-level problem. It requires human review to confirm the fix and merge it."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The documented contract (BUDGET_CODE_MATRIX.md, auth layer behavior) is that zero-cost models bypass budget checks entirely. The max_budget_limiter hook violates this contract by not exempting zero-cost models from the personal budget check, causing inconsistent and incorrect 429 rejections for free models once a user's personal budget is exhausted. This is a clear behavioral bug relative to documented/intended behavior, with a precise root cause, code reference, and reproduction steps on a live proxy. It affects any deployment using personal budgets plus zero-cost/free models - a narrower but real path (affects users with apply_user_budget_to_team_keys or personal keys), with a workaround (avoid setting personal budgets, or the team pool remains available to other members). This warrants P2 given it's a subset of users affected with some workaround availability, not a widespread P0/P1 outage. It's well-specified with clear reproduction and suggested fix, so it can be routed without maintainer conversation."
+   },
+   "cost_usd": 0.0003366,
+   "cost_reported": true,
+   "tokens_in": 3030,
+   "tokens_out": 84,
+   "latency_ms": 1341,
+   "context_empty": false,
+   "context_tokens": 897,
+   "error": ""
+  },
+  {
+   "issue_number": 38549,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": false,
+    "rationale": "The user is reporting a bug where the library is unnecessarily resolving AWS credentials, causing significant delays. The issue is well-documented with code snippets and performance measurements. The suggested fixes are clear and actionable. The bug does not appear to be a security vulnerability, a request for a new feature, or a documentation issue. It's also not a question that can be answered with a simple response. The urgency is P1 because it significantly impacts performance for a specific use case. A human maintainer does not need to be involved as the issue is clearly defined and a solution is proposed."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear, well-documented bug: the Bedrock bearer-token auth path eagerly resolves AWS SigV4 credentials that are never used, and the IAM cache fails to cache a falsy/None resolution, causing a ~2s IMDS timeout tax on every request when no instance metadata service is reachable (e.g., containers, on-prem, VMs). This is not a feature request or question - it's a performance/behavior bug affecting the shared Bedrock auth path used by many users with bearer-token or non-EC2-key configurations. The report includes precise code references, reproduction steps, and measured timing data. A workaround exists (AWS_EC2_METADATA_DISABLED=true), which would normally lower urgency by one level, but the underlying issue affects a widely-used provider's shared core auth path (raise one level), netting to P1. Given the clear reproduction and specific fix suggestion, a maintainer should still confirm the approach and there's an unexplained inconsistency (some deployments don't hit this path) that needs investigation, so human judgement is warranted."
+   },
+   "cost_usd": 0.0002938,
+   "cost_reported": true,
+   "tokens_in": 2410,
+   "tokens_out": 132,
+   "latency_ms": 1555,
+   "context_empty": false,
+   "context_tokens": 761,
+   "error": ""
+  },
+  {
+   "issue_number": 38660,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user has provided a detailed bug report with steps to reproduce, including code snippets and expected vs. actual behavior. The issue clearly indicates a problem with how custom Prometheus metadata labels are being populated, specifically on failure and fallback metrics. The user has also suggested a fix. This warrants a bug category and requires human review to verify the fix and merge it. The urgency is P1 as it affects the observability of failures."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": false,
+    "rationale": "The documented/intended contract is that custom_prometheus_metadata_labels are populated on all metrics (as established by prior fix #27268). Here the code violates that contract on failure and fallback metrics, silently emitting \"None\" instead of the configured label value. This is a functional defect with clear reproduction and a well-understood root cause plus suggested fix, affecting observability for a widely-used feature (custom labels) on failure paths across multiple emitters. It's a bug, not just docs, since behavior contradicts intended design. Impact: affects a subset of users who use custom_prometheus_metadata_labels with proxy failure/fallback metrics — a real but non-catastrophic issue, with clear workaround absent but core functionality (success metrics) still works. This is not a full outage of a widely used provider; it degrades observability for failure metrics. Given multiple emitters affected across the shared metrics/logging path (core observability path), but scoped to those using custom labels, I'll set P2. It's a clear, well-specified bug with reproduction and diagnosis, so no maintainer conversation is needed before routing — it can go straight to the owning module (prometheus integration)."
+   },
+   "cost_usd": 0.0003232,
+   "cost_reported": true,
+   "tokens_in": 2836,
+   "tokens_out": 99,
+   "latency_ms": 1526,
+   "context_empty": false,
+   "context_tokens": 912,
+   "error": ""
+  },
+  {
+   "issue_number": 38666,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug where a specific provider (`bedrock_mantle`) is incorrectly excluded from a feature (`supports_openai_prompt_cache_breakpoint`) due to an overly strict provider check. The user has provided detailed steps to reproduce the issue and a clear explanation of the desired behavior. This requires a human maintainer to review the code and potentially implement the suggested fix."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The code violates the intended contract: the model-map flag `supports_prompt_cache_breakpoint` is supposed to be an explicit, authoritative signal for a given deployment string, but the unconditional provider-name check in `_targets_openai_prompt_cache_breakpoint` overrides it, preventing bedrock_mantle deployments (which genuinely support the OpenAI cache-breakpoint dialect, as verified live by the reporter) from being recognized. This is a logic defect causing incorrect behavior (feature never engages despite explicit opt-in), not a docs issue or missing feature - it's a bug in gating logic introduced by a prior PR (#37628), affecting a real provider path. It's narrow (affects only bedrock_mantle users using this specific feature) with no simple workaround (can't override the provider check), so P2 is appropriate. It doesn't rise to P1 since it's not a widely-used provider path or major feature broken for most users. A maintainer should review the proposed fix and confirm it doesn't have unintended side effects on the gating logic for other providers, and reproduction claims should be validated, so needs_human is true."
+   },
+   "cost_usd": 0.0001947,
+   "cost_reported": true,
+   "tokens_in": 1575,
+   "tokens_out": 93,
+   "latency_ms": 1559,
+   "context_empty": false,
+   "context_tokens": 617,
+   "error": ""
+  },
+  {
+   "issue_number": 38947,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The issue title clearly indicates a bug. The urgency is P1 because it affects the UI and potentially user experience, but it's not a critical system failure. Human review is needed to confirm the scope and impact."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The issue reports a UI bug: models that are disabled and have no team assignment incorrectly display as attached to specific teams. This is a behavior mismatch between expected (no team association) and actual (shown attached to teams) UI display, so it's a bug. The body is empty with no reproduction steps, so a maintainer needs to gather more information or verify this claim before it can be routed properly. It affects UI display of models which is a narrower path (not breaking most users, workaround likely exists by ignoring UI display), so urgency is moderate but not severe - P2 given it's a data integrity/display issue affecting model management, not a full outage. Since there's no reproduction and no body, needs_human should be true due to insufficient information."
+   },
+   "cost_usd": 0.000067,
+   "cost_reported": true,
+   "tokens_in": 434,
+   "tokens_out": 59,
+   "latency_ms": 1210,
+   "context_empty": false,
+   "context_tokens": 203,
+   "error": ""
+  },
+  {
+   "issue_number": 39057,
+   "predicted": {
+    "category": "question",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The user is asking a question about the intended behavior of the system regarding token accounting on cache hits. They are not reporting a bug or requesting a new feature, but rather seeking clarification on a design decision. The question is specific and requires a maintainer to confirm the intended contract for token columns on cache hits."
+   },
+   "gold": {
+    "category": "docs",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The author explicitly frames this as a design/semantics question (\"Not claiming a bug — asking where the intended boundary is\"), asking which accounting basis (tokens vs spend) is the intended contract for cache-hit rows. This is not a claim that the software misbehaves relative to documented behavior, nor a simple how-to question with an existing-behavior answer — it's a request for clarification on intended design and potentially documentation of that convention. It fits the docs category best if code is working as intended and the ask is to clarify/document the convention, but the underlying question is really \"what should the contract be,\" which is a product-direction judgement call that a maintainer needs to make (docs would follow from that decision). Given the explicit \"not a bug\" framing and request for clarification/doc, docs is the best fit, but the ambiguity about which basis is correct requires maintainer judgement before any doc change lands. Urgency is low — no evidenced widespread demand, no broken system, workaround (aggregate by known convention) implicitly exists. This is a single-reporter thoughtful design query, defaulting to P3. Needs_human=true because this requires a product-direction decision on the accounting contract before it can be routed as a simple docs fix."
+   },
+   "cost_usd": 0.0002201,
+   "cost_reported": true,
+   "tokens_in": 1893,
+   "tokens_out": 77,
+   "latency_ms": 1556,
+   "context_empty": false,
+   "context_tokens": 1016,
+   "error": ""
+  },
+  {
+   "issue_number": 39113,
+   "predicted": {
+    "category": "feature",
+    "urgency": "P3",
+    "needs_human": false,
+    "rationale": "The user wants to add a feature to disable a response header for security reasons. This is a new feature request and does not require immediate human intervention."
+   },
+   "gold": {
+    "category": "feature",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "This is a request for a new configuration option to suppress the x-litellm-version header (and possibly other version-revealing headers) that does not currently exist. This is a feature request rather than a bug since the current behavior is working as designed, just lacking a security-hardening option. There is a legitimate security motivation (information disclosure aiding attackers in targeting known CVEs for specific versions), but it's not an active exploit or vulnerability itself—it's a hardening/feature request, so it doesn't meet the bar for the security category which requires a plausible exploit path in the software itself. Only one user has requested this so far, so demand is not yet evidenced beyond this single report, keeping it at baseline. However, given the security-adjacent nature (info disclosure enabling targeted attacks), it merits slight elevation from the default P3 baseline. This is a well-specified feature request that could be routed to the proxy module without needing a maintainer conversation, but since it touches on security-relevant information disclosure, a maintainer should weigh in on whether to prioritize it."
+   },
+   "cost_usd": 0.0000921,
+   "cost_reported": true,
+   "tokens_in": 741,
+   "tokens_out": 45,
+   "latency_ms": 1151,
+   "context_empty": false,
+   "context_tokens": 134,
+   "error": ""
+  },
+  {
+   "issue_number": 39290,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a vulnerability in the `pypdf` and `tornado` packages used by the SDK. This is a security-related bug that requires a maintainer to update the dependencies. The urgency is P1 because it's a vulnerability that affects the pipeline."
+   },
+   "gold": {
+    "category": "security",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The report identifies known CVE vulnerabilities in dependencies (pypdf, tornado) with medium/low CVSS scores, requiring a lock file update to remediate. This is a security-related issue with a plausible (though not critical) exploit path via vulnerable dependencies, so it falls under 'security' category which takes precedence. Severity is medium/low (no critical/high), and there's no indication most users are actively exploited or broken - but security issues by rule require human judgement regardless. Urgency: no P0 exploit evidenced (max CVSS 6.9, medium), affects dependency management, workaround (pinning) may exist, so P2 is appropriate given it's not critical/high but needs a fix. Since it's a security report, needs_human must be true per the rules."
+   },
+   "cost_usd": 0.0001225,
+   "cost_reported": true,
+   "tokens_in": 941,
+   "tokens_out": 71,
+   "latency_ms": 1305,
+   "context_empty": true,
+   "context_tokens": 0,
+   "error": ""
+  },
+  {
+   "issue_number": 39322,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P0",
+    "needs_human": true,
+    "rationale": "The issue describes multiple bugs in the `least-busy` routing strategy that lead to traffic starvation. Specifically, it details how response-cache hits decrement the counter without a matching increment, how ties in the counter are always resolved to the first deployment, and how the counter is not shared across workers due to issues with the Redis cache and in-memory cache TTL. These issues collectively cause severe performance degradation and incorrect routing. The bug is critical as it directly impacts the core routing functionality and can lead to complete starvation of deployments. Human review is needed to assess the severity and prioritize the fixes."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a well-researched bug report identifying three concrete, reproducible defects in the least-busy routing strategy: (1) cache hits decrement the busy counter without a matching increment, causing negative drift and starvation; (2) tie-breaking always picks the first deployment due to strict comparison, meaning even a clamp fix is insufficient; (3) the in-memory TTL default prevents proper cross-worker sharing via Redis, defeating documented multi-worker coordination. Code behaves contrary to reasonable/documented expectations (least-busy should distribute load evenly), so this is a bug, not a feature or docs issue. It affects a widely-used routing strategy (least-busy) combined with caching and multi-worker deployments — a common proxy configuration — causing near-total starvation of deployments in production with no failures/cooldowns to explain it and no workaround mentioned (other than not using cache+least-busy together, which is not a real workaround for a documented supported combination). This is a significant correctness issue on the core routing path affecting many users running multi-worker or cached setups, warranting P1. It doesn't rise to P0 since it doesn't cause data loss and isn't a security issue, and it's not literally \"broken for most users on current release\" — only those combining least-busy with caching or multi-worker Redis setups, but that's a widely-documented supported combination. Given three distinct root causes bundled together, and the need for a maintainer to decide how to sequence/land the clamp + tie-break + TTL fixes together (explicitly called out as needing to land together), this requires human judgement to confirm and coordinate the fix strategy."
+   },
+   "cost_usd": 0.000379,
+   "cost_reported": true,
+   "tokens_in": 3258,
+   "tokens_out": 133,
+   "latency_ms": 3761,
+   "context_empty": false,
+   "context_tokens": 1049,
+   "error": ""
+  },
+  {
+   "issue_number": 39431,
+   "predicted": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "The user is reporting a bug with streaming delays in the `/v1/messages` endpoint when using adaptive-thinking Bedrock models. The `message_start` event is delayed until the model's thinking pass finishes, which is not the expected behavior. The user has provided a detailed explanation of the issue, including expected vs. actual behavior and a suggested fix. This indicates a bug that requires investigation by a human maintainer. The urgency is P1 because it affects the user experience and perceived responsiveness of the streaming API."
+   },
+   "gold": {
+    "category": "bug",
+    "urgency": "P1",
+    "needs_human": true,
+    "rationale": "This is a clear behavioral bug: streaming /v1/messages through the router unconditionally buffers lifecycle SSE frames (message_start, content_block_start, ping) even when no fallback deployments are configured, causing significant client-perceived latency that diverges from documented/expected streaming behavior and from calling the provider directly. The reporter provides a detailed reproduction, root cause analysis (buffering logic in Router._aanthropic_messages_streaming_iterator plus httpx chunk_size splitting frames), and a concrete suggested fix. This affects the shared router streaming path used by all providers/models going through /v1/messages with streaming enabled, not just Bedrock adaptive-thinking models specifically, since the buffering logic itself is unconditional in the shared core path. This qualifies as \"many providers or shared core path affected,\" pushing urgency up. It's not a security issue, not a docs issue, and not a question—it's a functional defect with real-world impact (client can't distinguish slow model from hung proxy, no workaround for streaming latency other than disabling thinking mode). Given the shared-core-path impact and lack of workaround (short of not using streaming or not using adaptive thinking), this is P1: affects a widely-used path (any model that thinks long before first delta, streamed through this proxy) and there's no clean workaround. It requires maintainer judgement because the fix involves two coordinated changes (router-level buffering gate, plus httpx chunk_size fix) and confirming the claimed behavior/for correctness before implementing, so needs_human=true."
+   },
+   "cost_usd": 0.0003147,
+   "cost_reported": true,
+   "tokens_in": 2663,
+   "tokens_out": 121,
+   "latency_ms": 1474,
+   "context_empty": false,
+   "context_tokens": 892,
+   "error": ""
+  },
+  {
+   "issue_number": 39455,
+   "predicted": {
+    "category": "question",
+    "urgency": "P2",
+    "needs_human": true,
+    "rationale": "The user is asking for guidance on how to interpret log counts due to retries in the router. They are questioning whether to group logs by a correlation ID or if a new field would be beneficial. This indicates a need for clarification and potential feature discussion, making it a question that requires human attention."
+   },
+   "gold": {
+    "category": "question",
+    "urgency": "P3",
+    "needs_human": true,
+    "rationale": "The issue asks whether there is existing guidance for consumers to derive logical operations from inflated log counts, and whether a new field (operation_id/retry_group_id) would be useful. This is primarily a question about existing behavior/guidance, but also floats a feature idea (new field on spend_logs). Since no concrete demand beyond this single reporter, and the core ask is \"is there guidance\" / \"would this be useful\" - it's framed as a question first, with a feature suggestion embedded. Per the category rules, question takes precedence if the author is asking how to do something without claiming misbehavior - here the observation is about a known/documented multi-entry shape (not a bug, since dollar spend is correctly handled and the retry metadata suggests intentional design), and the actual ask is \"is there guidance\" - a question. The feature request (operation_id field) is speculative, single-requester, no evidenced demand, so it would be P3 if categorized as feature. Since the primary framing is a question seeking clarification/guidance, category=question. This requires judgement/product-direction call about whether to add new fields, and is part of a broader conformance campaign referencing related issues, so a maintainer should look at it rather than being routed as a simple duplicate or typo."
+   },
+   "cost_usd": 0.0001037,
+   "cost_reported": true,
+   "tokens_in": 737,
+   "tokens_out": 75,
+   "latency_ms": 3127,
+   "context_empty": false,
+   "context_tokens": 138,
+   "error": ""
+  }
+ ]
+}

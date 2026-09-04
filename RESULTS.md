@@ -1,214 +1,192 @@
-# Results — dev split, n=60
+# Results
 
-**Dataset** `f383db39072f4a10` · 60 dev items · rubric v1 · labeller `claude-sonnet-5`
-**Sweep** 8 configs, 480 calls, 0 failures, **$0.157**
+**Dataset** `7f44e8bd524b51b0` — 198 real litellm issues, rubric v2, 118 dev / 80 holdout.
+**Cost** of every run reported here: **~$1.20**. Whole project, including four discarded
+labelling attempts: ~$7.9.
 
-Every number below is from `harness sweep` and `harness compare` on committed run records.
+All numbers come from committed run records via `harness sweep` and `harness compare`.
 
-## The floor comes first
+---
 
-Trivial strategies, scored against the same labels (`harness baselines --split dev`):
+## 1. Read the floor first
 
-| baseline | macro-F1 | accuracy | error weight/issue |
-|---|---|---|---|
-| majority-per-field / escalate-everything | 0.133 | 0.50 | **2.27** |
-| never-escalate | 0.133 | 0.50 | 8.60 |
-| random | 0.197 | 0.20 | 6.87 |
+Before any config number means anything: what does a strategy with no intelligence score?
 
-`needs_human` is 69% positive and a missed escalation costs 10x an unnecessary one, so
-**escalating everything is a strong policy**. That is the cost model being honest, and it sets
-the bar. Reading config numbers without it makes mediocre look good.
+| baseline strategy | macro-F1 | error weight/issue |
+|---|---|---|
+| **escalate-everything** | 0.135 | **2.16** (dev) · **2.20** (holdout) |
+| never-escalate | 0.135 | 9.55 |
+| random | 0.153 | 7.66 |
 
-## Configs
+`needs_human` is 76% positive and a missed escalation costs 10x an unnecessary one, so
+blanket escalation is a strong policy. **A config that does not beat 2.16 has earned
+nothing.** `harness baselines` prints this for free on any split.
 
-| config | model | macro-F1 | urg MAE | nh recall | nh prec | err wt | $/issue | p50 ms |
-|---|---|---|---|---|---|---|---|---|
-| baseline | gemini-2.5-flash-lite | 0.868 | 0.43 | 0.75 | 0.97 | 2.32 | $0.00029 | 2003 |
-| tier-small | gemini-2.5-flash-lite | 0.868 | 0.43 | 0.75 | 0.97 | 2.32 | $0.00030 | 1698 |
-| tier-mid | gemini-2.5-flash | 0.867 | 0.55 | 0.82 | 0.82 | **2.08** | $0.00099 | 2027 |
-| tier-cheap | mistral-nemo | 0.892 | 0.57 | **0.25** | 1.00 | 5.80 | $0.00003 | 3662 |
-| context-none | gemini-2.5-flash-lite | **0.898** | **0.38** | 0.65 | 1.00 | 2.90 | $0.00022 | 1875 |
-| prompt-terse | gemini-2.5-flash-lite | 0.795 | 0.63 | 0.82 | 0.79 | 2.40 | $0.00022 | 1604 |
-| rationale-pre | gemini-2.5-flash-lite | 0.878 | 0.50 | 0.62 | 0.96 | 3.23 | $0.00032 | 2039 |
-| rationale-off | gemini-2.5-flash-lite | 0.868 | 0.48 | 0.78 | 0.84 | 2.33 | $0.00025 | 1176 |
+## 2. Dev (n=118)
 
-**Only `tier-mid` beats the 2.27 floor**, and not significantly. Every config scores macro-F1
-0.79–0.90 against the floor's 0.133, so the models are doing real classification work — it is
-simply swamped by escalation errors in the flagship.
+| config | macro-F1 | urg MAE | nh recall | **err wt** | $/issue | p50 ms |
+|---|---|---|---|---|---|---|
+| **tier-mid** `gemini-2.5-flash` | 0.894 | 0.58 | 0.92 | **1.50** | $0.00105 | 1975 |
+| **free-minimax** `minimax-m3:free` | 0.884 | 0.31 | 0.82 | **1.93** | **$0.00000** | 6918 |
+| *floor — escalate everything* | *0.135* | *0.82* | *1.00* | *2.16* | *—* | *—* |
+| prompt-terse | 0.755 | 0.69 | 0.80 | 2.90 | $0.00023 | 1401 |
+| rationale-off | 0.856 | 0.37 | 0.64 | 3.32 | $0.00026 | 1061 |
+| context-none | 0.879 | 0.26 | 0.55 | 3.91 | $0.00024 | 1657 |
+| baseline `gemini-2.5-flash-lite` | 0.894 | 0.30 | 0.51 | 4.24 | $0.00020 | 1595 |
+| rationale-pre | 0.892 | 0.26 | 0.49 | 4.36 | $0.00034 | 1768 |
+| opt-escalate *(attempted fix)* | 0.801 | 0.35 | 0.46 | 4.94 | $0.00033 | 1517 |
+| free-liquid `lfm-2.5-2.6b:free` | 0.803 | 0.49 | 0.38 | 5.59 | $0.00000 | 5052 |
+| tier-cheap `mistral-nemo` | 0.827 | 0.40 | 0.19 | 6.90 | $0.00003 | 3787 |
+| regress-lean *(deliberate)* | 0.862 | 0.35 | 0.13 | 7.19 | $0.00027 | 1522 |
 
-## What the harness will and will not conclude
+**Two configs beat the floor.** The ranking tracks `needs_human` recall almost perfectly —
+everything else the models do is swamped by it.
 
-Paired bootstrap, 4,000 resamples, 95% CI, `baseline` as A:
+## 3. Holdout (n=80) — the decisions
 
-| vs | flagship Δ | 95% CI | verdict |
-|---|---|---|---|
-| tier-mid | −0.233 | [−0.933, +0.367] | **no significant difference** (needs ~465 items) |
-| tier-cheap | +3.483 | [+2.266, +4.816] | **baseline better** |
-| context-none | +0.583 | [−0.000, +1.267] | no significant difference (needs ~77 items) |
-| prompt-terse | +0.083 | [−0.917, +1.017] | no significant difference (effect ≈ 0) |
-| rationale-pre | +0.917 | [+0.283, +1.667] | **baseline better** |
-| rationale-off | +0.017 | [−0.383, +0.333] | no significant difference (effect ≈ 0) |
+Looked at once, for final candidates only.
 
-**Four of six comparisons are inconclusive at n=60.** That is the harness working. Most of these
-are differences a team would ship on a vibe.
-
-## The headline trade-off
-
-`tier-mid` costs **3.4x** more per issue ($0.00099 vs $0.00029) — a significant, precisely
-measured price difference — and its quality advantage is **not** statistically demonstrable.
-
-The economics still favour it, decisively. Breakeven is at **$0.0030 per error-weight unit**:
-above that, `tier-mid` is cheaper overall; below it, `baseline` is. A weight unit is roughly a
-minute of maintainer attention, so the real value is hundreds of times the breakeven, and
-`tier-mid` wins at every anchor from $0.01 to $100.
-
-**So the decision does not turn on price at all.** LLM spend differs by $0.0007/issue; the error
-cost difference is $0.23/issue at the default anchor — **330x larger**. At these prices quality
-dominates cost so completely that the "3x more expensive" framing is a red herring.
-
-The honest recommendation: *`tier-mid` is preferred on expected cost at any plausible valuation
-of maintainer time, but the quality difference driving that preference is not statistically
-established. It needs ~465 items to resolve, or accept the risk knowingly.*
-
-## Findings worth keeping
-
-**`tier-cheap` fails for one specific reason.** `mistral-nemo` scores macro-F1 0.892 — nominally
-the best of any config — but `needs_human` recall of **0.25**. It classifies well and refuses to
-escalate. A single aggregate would have hidden this; per-field diagnostics made it obvious in one
-line.
-
-**Reasoning-before-deciding hurts.** `rationale-pre` is significantly worse than `post`
-(Δ=+0.917 [+0.283, +1.667]) *and* costs more output tokens. A clean reject.
-
-**Dropping the rationale costs nothing measurable.** `rationale-off` is indistinguishable from
-baseline (Δ=+0.017, effect ≈ 0) with identical macro-F1, at fewer output tokens and the lowest
-latency of any config (1176 ms p50 vs 2003). The strongest ship candidate here.
-
-**Repo context helps the opposite field from the one predicted.** The expectation was that repo
-knowledge would improve `category` (does this module exist?) and not `needs_human`. The reverse
-happened: `context-none` has *better* macro-F1 (0.898 vs 0.868) and *better* urgency MAE, and
-loses only on `needs_human` recall (0.65 vs 0.75, significant). Context is earning its ~1,050
-tokens through escalation judgement, not classification — and the flagship difference needs ~77
-more items to call.
-
-**The flagship metric is ~72% about escalation.** With a 10:1 weight and a 69% positive rate,
-missed escalations account for roughly 1.67 of baseline's 2.32 error weight. Category and urgency
-barely move it. That is a deliberate consequence of the cost model — this harness measures the
-routing decision well and treats the rest as diagnostics — but it should be read that way rather
-than as a general quality score.
-
-**Determinism confirmed for free.** `baseline` and `tier-small` are the same config with different
-names, so they hash identically and ran as two independent samples. Their scores match to four
-decimal places, so run-to-run variance is ~0 at temperature 0 for this model, and observed
-differences are not noise from the service.
-
-## Label reliability — and why it matters most here
-
-A cross-model check (`harness verify cross`), 25 items stratified 5 per category, labelled
-independently by `x-ai/grok-4.6` — a different lineage from both the labeller and every config:
-
-| field | observed agreement | Cohen's kappa | reading |
-|---|---|---|---|
-| category | 0.96 | **+0.950** | strong |
-| urgency (linear-weighted) | 0.88 | **+0.694** | substantial |
-| `needs_human` | 0.80 | **+0.576** | **moderate** |
-
-**The weakest label is the one the harness leans on hardest.** `needs_human` carries the 10x
-weight, drives roughly 72% of the flagship metric, and is where every significant difference
-between configs appeared — and two frontier models agree on it only moderately. Category, which
-barely moves the flagship, is the field they agree on almost perfectly.
-
-**What this does and does not invalidate.** Random label noise **attenuates** measured
-differences toward zero, and comparisons here are paired — both configs face the same labels —
-so a result that reached significance *despite* noisy labels is still real. Noise made it harder
-to detect, not easier:
-
-- `tier-cheap` worse (nh recall 0.25 vs 0.75, Δ=0.50) — far beyond label noise. Stands.
-- `rationale-pre` worse (flagship Δ=+0.917, CI excludes zero) — stands.
-- The four inconclusive comparisons may be inconclusive *partly because* label noise attenuates
-  the effect. The "needs ~465 items" figure is therefore optimistic; with labels this noisy the
-  true requirement is higher.
-
-**What it cannot rule out is shared bias.** Pairing corrects random noise, not a blind spot both
-models share — and cross-model agreement is exactly the wrong instrument for detecting one. That
-is the argument for human verification, unchanged by this result.
-
-**A ceiling observation.** Baseline's `needs_human` recall is 0.75; two frontier models agree
-with each other 0.80 of the time on that field. The service is operating close to the level at
-which the raters themselves agree, which is the signal that further optimisation on this field
-is chasing noise rather than quality.
-
-**Cross-model agreement is weak evidence in one direction only.** Low agreement would have been
-strong evidence the labels are unreliable. High agreement is only weak evidence they are sound,
-since two models can share a blind spot a person would not. `data/verification/sample.md` holds
-the 25-item sample with gold labels withheld, awaiting a human pass.
-
-## Label errors found, and whether they matter
-
-Three raters reviewed the 25-item verification sample independently: `x-ai/grok-4.6`, this
-agent, and a human. **Two items were flagged by all three** and are recorded as corrections in
-`data/verification/human-labels.jsonl`:
-
-| issue | was | corrected to | reasoning |
-|---|---|---|---|
-| #35023 | `bug/P1` | `security/P0` | CJK text from concurrent requests bleeding across streams is cross-tenant information disclosure. The rubric puts `security` first *even when the report is framed as a bug*. |
-| #37459 | `feature/P2` | `feature/P3` | Single-vendor guardrail integration, one requester, no demand evidence. P2 requires "clear demand". |
-
-Independent agreement from three raters — one of them human — is much stronger evidence than any
-one of them alone, and it is the only part of this that breaks the model-checking-model
-circularity.
-
-### A systematic bias, not just two mistakes
-
-Feature urgency across the dataset is **12 x P2, 2 x P3, zero P1, zero P0**. The rubric reserves
-P2 for "clear demand" and puts "niche or speculative" at P3. In a real tracker most feature
-requests come from one person with no demand evidence, so an 86% P2 rate is implausible: **the
-labeller inflates urgency for features.**
-
-This is worse than random noise, because of how it interacts with scoring. Where gold says P2 and
-the truth is P3, a config answering P2 scores zero error while being wrong, and a config
-answering P3 is penalised while being right. **Pairing does not correct it** — random noise
-cancels across arms, systematic bias rewards whichever config best mimics the labeller.
-
-### Does it change any conclusion? No — but read why
-
-Run records keep each item's gold label beside the prediction, so corrections can be applied to
-completed work for free. Flipping all 8 dev feature items from P2 to P3 as a hypothesis:
-
-| config | error weight as-labelled | if P3 | urgency MAE as-labelled | if P3 |
+| config | macro-F1 | urg MAE | nh recall | err wt |
 |---|---|---|---|---|
-| baseline | 2.32 | 2.28 | 0.43 | 0.40 |
-| tier-mid | 2.08 | 2.18 | 0.55 | 0.65 |
-| tier-cheap | 5.80 | 5.93 | 0.57 | 0.70 |
-| rationale-off | 2.33 | 2.43 | 0.48 | 0.58 |
+| **tier-mid** | 0.928 | 0.62 | 0.86 | **1.90** |
+| *floor* | *0.129* | *0.79* | *1.00* | *2.20* |
+| prompt-terse | 0.757 | 0.71 | 0.74 | 3.14 |
+| rationale-off | 0.872 | 0.31 | 0.61 | 3.23 |
+| baseline | 0.872 | 0.25 | 0.54 | 3.64 |
 
-**All six paired verdicts are unchanged.** Nothing flips.
+| vs baseline | Δ flagship | 95% CI | verdict | breakeven escalation weight |
+|---|---|---|---|---|
+| **tier-mid** | **−1.737** | [−2.799, −0.712] | **B_BETTER** | **2.28x** |
+| rationale-off | −0.413 | [−1.150, +0.287] | no significant difference (needs ~234) | 1.75x |
+| prompt-terse | −0.500 | [−1.463, +0.400] | no significant difference (needs ~274) | 6.36x |
 
-The honest reading is less comforting than it sounds. The conclusions are robust to urgency bias
-**because the flagship metric barely measures urgency** — it is ~72% escalation error, and an
-urgency step costs 1.0 against a missed escalation's 10.0. The metric is insensitive to this bias
-because it is largely ignoring the biased field, not because the labels are sound. Anyone reading
-the urgency MAE column directly should discount it accordingly.
+## 4. The headline trade-off
 
-### Dataset versions
+`tier-mid` costs **5.3x more per issue** ($0.00105 vs $0.00020) — significant and precisely
+measured — and is **significantly better on the holdout**.
 
-Both corrections fall in the **holdout** split, so every number above — all computed on dev —
-is unaffected. The corrected dataset is `data/dataset/gold-v2.json` (`e10c02ba117a979c`, against
-v1's `f383db39072f4a10`).
+The price is not what decides it. LLM spend differs by ~$0.0009/issue; error cost differs by
+~$1.74/issue — **nearly 2,000x larger**. At these prices quality dominates cost so completely
+that "5x more expensive" is a red herring.
 
-Per the freeze rule, corrections create a new version rather than editing in place. v1 and v2
-results are **not comparable**, and `compare` refuses to mix them. Holdout evaluation should use
-v2; the dev results here stand against v1.
+**Breakeven on the escalation assumption: 2.28x.** `tier-mid` wins as long as a missed
+escalation costs more than 2.28 times an unnecessary one. We assumed 10x. The conclusion
+therefore survives that assumption being wrong by a factor of four — which is a far stronger
+claim than a sensitivity table.
 
-## Caveats
+**Free models are competitive, and the cost axis is not only dollars.** `minimax-m3:free`
+beats the floor at **zero marginal cost**, at 4x the latency. Of eight free models with
+structured-output support, four failed a single probe call, and one posted the best macro-F1
+of anything here on the 24 of 60 calls that returned — survivorship bias the harness now
+refuses.
 
-- **n=60 on dev.** Underpowered for anything but large effects, which is why so much is inconclusive.
-- **Nothing here has touched the holdout.** These are iteration numbers, not final ones.
-- **The gold set is model-labelled and not yet human-verified.** A cross-model check gives
-  kappa 0.95 / 0.69 / 0.58 across the three fields, but that cannot detect a bias two models
-  share. Every number here inherits whatever bias `claude-sonnet-5` has.
-- **Cost reporting is not universal.** `x-ai/grok-4.6` returned no cost while the account was
-  charged $0.29 for 25 calls. Runs now record `cost_reported` and `compare` refuses a run
-  containing unpriced calls, but the gap is a property of the gateway, not of the harness.
-- **Stratification oversampled `security` and P0**, which inflates the 69% escalation rate and
-  flatters escalate-everything. Not a production estimate.
+## 5. What a single aggregate would have hidden
+
+`mistral-nemo` has a respectable **0.827 macro-F1** and `needs_human` recall of **0.19**. It
+classifies competently and refuses to escalate. Any blended score would have read "somewhat
+below average". Per-field diagnostics made it one line.
+
+## 6. The deliberate regression
+
+A prompt that reads like an improvement — *"maintainer attention is the scarcest resource, be
+selective about escalating"* — the change a well-meaning engineer ships to cut reviewer noise:
+
+| | baseline | regress-lean |
+|---|---|---|
+| needs_human recall | 0.51 | **0.13** |
+| error weight | 4.24 | **7.19** |
+| $/issue | $0.00020 | **$0.00027** |
+| p50 latency | 1595 ms | **1522 ms** ← faster |
+
+Cheaper on error-free surface metrics, faster, and catastrophically worse. Every metric a
+naive evaluation reports says ship it.
+
+## 7. An optimisation the harness rejected
+
+Escalation recall drives the ranking, so `opt-escalate` replaced the rubric's one-line
+escalation hint with seven explicit triggers plus "being unsure is itself a reason to answer
+true".
+
+**Recall fell** (0.51 → 0.46) and category regressed (0.894 → 0.801).
+
+Best explanation: a seven-item checklist converts an uncertain judgement into a *completable
+procedure*, and "none of these apply" is an easy conclusion. Structure manufactured
+confidence — consistent with `prompt-terse`, where a vaguer prompt scores *higher* recall.
+For this decision, more explicit criteria reduce caution; the lever that works is model
+capability. **Cost of learning this: $0.04.**
+
+## 8. Is any of it noise?
+
+Three runs of each config on identical items:
+
+| config | error weight sd | values |
+|---|---|---|
+| baseline | **0.0000** | 4.2373, 4.2373, 4.2373 |
+| tier-cheap | 0.0135 | 6.9237, 6.8938, 6.8966 |
+
+`gemini-2.5-flash-lite` is perfectly deterministic at temperature 0; `mistral-nemo` is not —
+so variance is **not** uniform across configs, which is why two were measured. Every reported
+difference exceeds the noise floor by a wide margin.
+
+## 9. Can the labels be trusted?
+
+A frontier model from a different lineage (`grok-4.6`) labelled 25 stratified items blind:
+
+| field | Cohen's κ | reading |
+|---|---|---|
+| category | 0.95 | strong |
+| urgency (weighted) | 0.69 | substantial |
+| **needs_human** | **0.58** | **moderate** |
+
+**The weakest label is the one the flagship leans on hardest.** Random label noise attenuates
+differences toward zero and comparisons are paired, so results significant *despite* it stand;
+what noise plausibly explains is some of the inconclusive ones. What pairing cannot correct is
+a bias two models share — which is why three raters including a human reviewed the sample and
+independently flagged the same two errors (`data/verification/human-labels.jsonl`).
+
+**A systematic bias was found and fixed.** Rubric v1 rated 78% of feature requests P2 where it
+reserved P2 for "clear demand" — the phrase was being read as "clearly written". Rubric v2
+makes the test observable (more than one requester, maintainer intent, or a widely-used path).
+Feature P2 rate fell to **17%**.
+
+## 10. The most important finding — about the metric, not the models
+
+Broken down per issue on dev:
+
+| cost component | baseline | escalate-everything |
+|---|---|---|
+| missed escalations | **3.729** | 0.000 |
+| unnecessary escalations | 0.008 | 0.237 |
+| wrong category | 0.186 | **0.983** |
+| wrong urgency | 0.314 | **0.941** |
+| **total** | **4.237** | **2.161** |
+
+**Baseline is 5x better at category and 3x better at urgency — and loses anyway.**
+
+Two of our own decisions, each defensible alone, are jointly degenerate: the rubric tells the
+labeller *"when genuinely torn, choose true"* (pushing the positive rate to 76%), and a missed
+escalation costs 10x. At 76% positive with a 10:1 penalty, blanket escalation is near-optimal
+by arithmetic — so the flagship weights the **lowest-information field** above everything else.
+
+**The weight was deliberately not changed.** Adjusting an assumption after seeing results, to
+obtain a nicer answer, is exactly the failure that stating the rule in advance exists to
+prevent. The honest output is the breakeven, reported prominently, plus the admission that the
+question cannot be settled without operational data we do not have.
+
+What a real team would do next: derive the cost ratio from observed operations; revisit "when
+torn, choose true", which inflates the base rate the metric then rewards; and consider whether
+`needs_human` belongs in the flagship at all rather than being a confidence threshold.
+
+## 11. Caveats
+
+- **118 dev / 80 holdout.** Underpowered for small effects — which is why several comparisons
+  return "can't tell" with the sample size that would settle them.
+- **Dev has been evaluated 18 times** (`harness ledger` counts it). Those figures are
+  optimistic by an unquantified amount; holdout was looked at once per dataset version.
+- **The flagship is ~88% escalation error.** It measures the routing decision well; the rest
+  are diagnostics, not a general quality score.
+- **`free-minimax` has no holdout run** — it beat the floor on dev but was not a final
+  candidate when the holdout was spent.
+- **Stratification oversamples security and P0**, inflating the escalation base rate. Not a
+  production estimate.
+- **One repo, one three-month window.** Generalisation untested, and not claimed.
