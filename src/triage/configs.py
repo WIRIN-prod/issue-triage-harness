@@ -73,8 +73,10 @@ CONFIGS: dict[str, TriageConfig] = {
     # Harness-directed fix (D32): enforce the model's own rubric after the fact.
     # `harness errors` found baseline contradicting itself on 44% of its P0/P1
     # predictions; 18 of those 20 are genuinely needs_human. Costs nothing to apply.
-    "rule-escalate": _variant("rule-escalate", enforce_rubric=True),
-    "rule-off": _variant("rule-off", rationale_mode="off", enforce_rubric=True),
+    "rule-escalate": _variant("rule-escalate", enforce_rubric="v1"),
+    "rule-v2": _variant("rule-v2", enforce_rubric="v2"),
+    "rule-off": _variant("rule-off", rationale_mode="off", enforce_rubric="v1"),
+    "rule-off-v2": _variant("rule-off-v2", rationale_mode="off", enforce_rubric="v2"),
     # A deliberate regression, used to demonstrate that the harness catches one.
     # The prompt reads like an improvement — "maintainer attention is the scarcest
     # resource, over-escalation makes a queue useless, be selective" — which is exactly

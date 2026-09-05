@@ -227,3 +227,7 @@ data/cache/
 
 # local-only working notes, never committed
 *.local.md
+
+# local reference material, never committed
+*.docx
+*.pdf

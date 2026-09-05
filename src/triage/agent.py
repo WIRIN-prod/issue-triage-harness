@@ -202,8 +202,8 @@ def triage(
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
     decision = to_decision(result.output)
-    if config.enforce_rubric:
-        decision = enforce_rubric(decision)
+    if config.enforce_rubric != "off":
+        decision = enforce_rubric(decision, config.enforce_rubric)
 
     usage = result.usage
     cost, reported = _cost(usage)

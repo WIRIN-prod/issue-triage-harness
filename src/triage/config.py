@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 PROMPTS = Path(__file__).parent / "prompts"
 
 RationaleMode = Literal["pre", "post", "off"]
+RubricRule = Literal["off", "v1", "v2"]
 ContextMode = Literal["graph", "none"]
 
 
@@ -34,11 +35,13 @@ class TriageConfig(BaseModel):
     rationale_mode: RationaleMode = "post"
     context: ContextMode = "graph"
     temperature: float = 0.0
-    # Enforce the model's own rubric after the fact: the prompt states that any P0 or P1
-    # must escalate, and baseline violates that on 44% of its own P0/P1 predictions
-    # (`harness errors`). This is post-processing, not a prompt change — no extra call,
-    # no extra token, and it only ever moves needs_human toward true.
-    enforce_rubric: bool = False
+    # Enforce the model's own rubric after the fact (see triage.models.enforce_rubric).
+    #
+    # **Versioned, not boolean.** As a bool, editing the rule changed behaviour while the
+    # config hash stood still — the same hole the prompt hash was built to close, reopened
+    # for post-processing. `v1` forces on P0/P1; `v2` adds the categories the rubric makes
+    # unconditional. Old runs keep their hash and stay comparable to each other.
+    enforce_rubric: RubricRule = "off"
     context_budget_tokens: int = 1500
     max_body_chars: int = 6000
     # OpenRouter can route one model id to different backends; pinning keeps a

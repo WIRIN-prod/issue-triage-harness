@@ -96,7 +96,14 @@ are differences a team would have shipped on a vibe. (At the earlier n=60 it was
 more data resolves more comparisons, which is the sample-size argument demonstrated rather
 than asserted.)
 
-**The headline trade-off resolved, and price wasn't the deciding factor.** `tier-mid` costs
+**The best result: the price difference bought nothing.** A free post-processing rule —
+enforcing the escalation triggers the prompt already states, when the model contradicts itself
+on 44% of its own P0/P1 predictions — makes the cheap config **statistically indistinguishable
+from the 4x dearer model** on the holdout (Δ=−0.037, CI [−0.562, +0.413]), at **$0.00026 vs
+$0.00103** and 36% lower latency. How that was found, run by run:
+[docs/improvement-log.md](docs/improvement-log.md).
+
+**The model-tier trade-off, before that fix.** `tier-mid` costs
 5.3× more per issue — significant and precisely measured — and on the holdout it was
 significantly better (flagship Δ=−1.737, CI [−2.799, −0.712]), driven by escalation recall
 rising 0.54 → 0.86. Error cost exceeds inference cost by roughly 2,000× here, so *quality

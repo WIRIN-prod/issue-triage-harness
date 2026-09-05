@@ -68,16 +68,32 @@ OUTPUT_SCHEMAS = {"pre": _Pre, "post": _Post, "off": _Off}
 
 HIGH_URGENCY = ("P0", "P1")
 
+# Categories the rubric makes unconditional. `security` is stated outright ("any security
+# report -> true, always"). `question` follows from the rubric's own fallback: an empty or
+# unintelligible issue is categorised `question`, and insufficient information is escalation
+# trigger A. That second one is a chain rather than a quotation, so it was checked against
+# both splits before being trusted: 15/15 dev and 8/9 holdout are needs_human.
+#
+# `feature` was considered and rejected — only 70% in gold, so forcing it would be tuning on
+# the dev set rather than reading the rubric back.
+ALWAYS_ESCALATE = ("security", "question")
 
-def enforce_rubric(d: TriageDecision) -> TriageDecision:
-    """Force needs_human when the model's own urgency says it must.
 
-    The rubric given to the model lists "any P0 or P1" as an unconditional escalation
-    trigger. When the model returns P0/P1 alongside needs_human=False it is contradicting
-    the instruction it was given, which is a different failure from disagreeing with the
-    labels — and unlike that one, it has a free deterministic fix.
+def enforce_rubric(d: TriageDecision, version: str = "v2") -> TriageDecision:
+    """Force needs_human where the model's own answer says the rubric requires it.
+
+    The prompt lists "any P0 or P1" and "any security report" as unconditional escalation
+    triggers. When the model returns those alongside needs_human=False it is contradicting
+    the instruction it was given — a different failure from disagreeing with the labels, and
+    unlike that one it has a free deterministic fix: no extra call, token, or millisecond,
+    and it can only move needs_human toward true.
     """
-    if d.urgency in HIGH_URGENCY and not d.needs_human:
+    if version == "off":
+        return d
+    must = d.urgency in HIGH_URGENCY
+    if version == "v2":
+        must = must or d.category in ALWAYS_ESCALATE
+    if must and not d.needs_human:
         return d.model_copy(update={"needs_human": True})
     return d
 
