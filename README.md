@@ -144,7 +144,25 @@ with structured output, four failed a single probe call, and `nemotron-3-super` 
 best macro-F1 of anything here on the 24 of 60 calls that returned. That is survivorship
 bias, and the harness now refuses runs below 90% success.
 
-**We got a prediction wrong.** Repo context was expected to help `category`. It didn't —
+**The ranking depends on who labelled the data — and that was worth finding out.** The same
+runs, rescored against three independent labellers (different lineages from each other *and*
+from every config), put a different config on top each time: `rule-off-v2` under two of them,
+`free-minimax` under the third, `tier-mid` under majority consensus. What survives is the large
+effect — `baseline` is last under every source. What does not is the ordering among the top
+three, which sit within 0.03 and reshuffle.
+
+> **Large effects survive relabelling; fine distinctions do not.**
+
+Two things make that reassuring rather than alarming. The paired bootstrap had *already* called
+those same comparisons "cannot distinguish" — two independent methods agreeing on where the
+uncertainty lives. And the shipping recommendation is unchanged, because it never rested on a
+fine distinction.
+
+It also cost me a published conclusion: with only two label sets the rankings looked stable and
+I wrote that down. The third overturned it. The correction is in the log as D35 rather than
+edited into D34.
+
+**We got a prediction wrong, twice.** Repo context was expected to help `category`. It didn't —
 `context-none` scores *better* macro-F1 and urgency MAE, and loses only on escalation
 recall. Context earns its ~1,050 tokens through escalation judgement, not classification.
 
@@ -172,10 +190,11 @@ Open questions we'd normally put to a stakeholder, with the assumption taken, ar
   positive rate to 76% and a 10:1 penalty then rewards blanket escalation. Two of our own
   decisions, each defensible alone, are jointly degenerate — documented in
   [RESULTS.md §10](RESULTS.md) rather than tuned away.
-- **The gold set is model-labelled.** Cross-model κ is 0.95 / 0.69 / **0.58** — and the
-  weakest field is the one the flagship leans on hardest. Two label errors were confirmed
-  by three independent raters including a human; a systematic urgency inflation for
-  feature requests was found, quantified, and shown not to change any verdict.
+- **The gold set is model-labelled, and the labels are less certain than a single set
+  suggests.** Three independent labellers agree on all three fields for only **31%** of
+  holdout items (`needs_human` alone: 53%). The weakest field is the one the flagship leans
+  on hardest. Two label errors were confirmed by three raters including a human, and a
+  systematic urgency inflation for feature requests was found, quantified, and fixed.
 - **One repo, one three-month window.** Generalisation is untested, not claimed.
 - **No production monitoring.** Deliberately — the boundary is documented in
   [SPEC.md §10](SPEC.md) rather than built.
