@@ -810,14 +810,19 @@ beside labels, so swapping the gold column costs nothing.
 And the escalation base rate differs by **19 points — 71% (sonnet) against 52% (grok)**. This
 is not a rounding difference; it is the exact bias the criticism predicted.
 
-**The rankings are nevertheless stable.** Under both metrics and both label sets:
+**With two label sets the rankings looked stable** — but see D35, where a third labeller
+overturns this conclusion. The finding below was true of the two sets available at the time and
+was stated with more confidence than two raters can support.
+
+Under both metrics and both label sets:
 
 | | $ flagship | balanced |
 |---|---|---|
 | order under sonnet labels | tier-mid, rule-off-v2, baseline | rule-off-v2, tier-mid, baseline |
 | order under grok labels | tier-mid, rule-off-v2, baseline | rule-off-v2, tier-mid, baseline |
 
-**No config is winning by fitting one labeller.**
+**No config appeared to be winning by fitting one labeller.** D35 shows that a third,
+independent labeller reorders the top three — so this conclusion did not survive more evidence.
 
 **But the magnitudes are label-dependent, and that matters.** Baseline scores 3.64 under sonnet
 and **2.19** under grok — because grok thinks fewer issues need a human, so baseline's weak
@@ -829,6 +834,52 @@ a labelling as much as about the configs, and should be read that way.
 average out labeller noise. Three or four would allow a genuine consensus label and per-item
 disagreement flags. That was budget-limited here (~$0.70 per frontier pass over 80 items) and is
 the first thing worth buying with more.
+
+### D35 — A third labeller overturns D34: the fine ordering is not stable
+**D34 was premature.** With two label sets the config ranking looked stable and I said so. A
+third independent labeller — `openai/gpt-5.1`, lineage distinct from both prior labellers *and*
+from every config — shows the ordering moves.
+
+**Unanimity is much lower than two raters implied.** Across the 60 holdout items all three
+labelled:
+
+| field | unanimous |
+|---|---|
+| category | high |
+| urgency | 34/60 (56%) |
+| needs_human | 32/60 (53%) |
+| **all three fields** | **19/60 (31%)** |
+
+**The top config depends on which labeller you ask** (balanced error, best first):
+
+| source | order |
+|---|---|
+| claude-sonnet-5 | **rule-off-v2**, free-minimax, tier-mid, baseline |
+| grok-4.6 | **rule-off-v2**, tier-mid, free-minimax, baseline |
+| gpt-5.1 | **free-minimax**, tier-mid, rule-off-v2, baseline |
+| majority consensus | **tier-mid**, rule-off-v2, free-minimax, baseline |
+
+**What survives and what does not.** `baseline` is last under every source — that gap is large
+and robust. The ordering *among the top three* is not: they sit within 0.01–0.03 of each other
+and reshuffle with the labeller. **Large effects survive relabelling; fine distinctions do not.**
+
+That is the honest version of every close call in this project. `rule-off-v2` vs `tier-mid` was
+already reported as "cannot distinguish" by the bootstrap; the third labeller says the same
+thing from a different direction, and the two agreeing is the reassuring part.
+
+**One result to treat carefully.** On the 19 fully unanimous items, the order *inverts* —
+`baseline` best (0.023), `tier-mid` worst (0.081). A tempting reading is that the configs are
+indistinguishable on clear-cut items and all measured difference lives in contested ones. **At
+n=19 that is not established**, and it would be exactly the kind of small-sample story this
+harness exists to refuse. It is recorded as a question worth power, not a finding.
+
+**Caveat on the third set.** `gpt-5.1` completed 60 of 80 items (20 failures), so consensus
+covers 60 rather than the full holdout, and the unanimous subset is smaller still.
+
+**What this changes in practice.** Nothing about the shipping recommendation — `rule-off-v2` is
+still indistinguishable from `tier-mid` and far cheaper, which was already the conclusion. What
+it changes is the *confidence language*: any claim finer than "clearly better than baseline"
+should be read as a statement about a labelling as much as about a config.
 
 ---
 

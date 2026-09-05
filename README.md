@@ -92,9 +92,12 @@ at α=0.05 carry a ~26% chance of one false positive.
 escalation base rate per category, and *metric leverage* — how much of achievable error each
 field can contribute, which is a property of the labels rather than any config. And the whole
 holdout was labelled a second time by a different-lineage frontier model: the two labellers
-disagree meaningfully (needs_human κ=0.515, base rates 71% vs 52%), yet **config rankings are
-identical under both label sets and both metrics**. Effect sizes are not — baseline scores 3.64
-under one labelling and 2.19 under the other. See DECISIONS.md D34.
+disagree meaningfully (needs_human κ=0.515, base rates 71% vs 52%), and a third
+(`gpt-5.1`) shows only **31% of items have all three labellers unanimous**. Large effects
+survive relabelling — `baseline` is last under every source — but the ordering among the top
+three configs reshuffles depending on which labeller you ask. Any claim finer than "clearly
+better than baseline" is a statement about a labelling as much as about a config. See
+DECISIONS.md D34 and its correction in D35.
 
 **Refusals over warnings.** `compare` will not compare runs scored against different
 dataset hashes, runs where temperature was honoured for one arm and silently dropped for
