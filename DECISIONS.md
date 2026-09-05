@@ -2,6 +2,25 @@
 
 Chronological. Includes the decisions that were reversed — the reversals are the useful part.
 
+## Where to start
+
+If you read five entries, read these:
+
+| | |
+|---|---|
+| **D32** | Error analysis found the model contradicting its own instructions on 44% of its P0/P1 answers. Three lines of post-processing closed a gap that a 4x more expensive model had been buying. |
+| **D33** | The flagship's *field shares* were never chosen — a base rate decided them, and the metric blamed the wrong thing as a result. |
+| **D35** | A third labeller overturned a conclusion published two entries earlier. Large effects survive relabelling; fine distinctions do not. |
+| **D22** | A labelling run silently kept a fifth of its data and hashed cleanly. Partial failure is more dangerous than total failure. |
+| **D26** | A "conservative" retry fix turned a 6-minute sweep into a projected 17-hour one. Backing off longer than a limit requires is not safe, just slower. |
+
+**Entries later overturned, kept in place with forward pointers:** D4 → D33, D20 → D32,
+D29 (self-corrected), D34 → D35.
+
+**The failures worth reading:** D30 (a prompt change that made things worse and explained three
+other results), D25 (batch inference, rejected with the conditions under which it flips), and
+the cascade rejection inside D32.
+
 ---
 
 ## 2026-09-03
@@ -82,6 +101,9 @@ scores zero for choosing the wrong defensible answer. The human verifier flags t
 face the same arbitrary call.
 
 ### D4 — Accuracy and price expressed in a single currency
+> **Later qualified by D33.** The weights here are per-*error*; combined with the label base
+> rate they silently became per-*field*, giving escalation ~54% of the metric. A second metric
+> with openly chosen field shares now runs beside this one.
 **Options:** report quality and cost side by side and eyeball the trade-off · Pareto frontier
 with a pre-registered acceptance rule · convert error types into dollars and sum
 **Chose:** convert and sum — `total cost per issue = LLM spend + expected error cost`.
@@ -337,6 +359,9 @@ records it per run, and a test asserts no named config uses an affected model. T
 avoids `openai/*` entirely.
 
 ### D20 — Model ladder and the labeller
+> **Recommendation later reversed by D32.** This entry concludes "buy the better model". A
+> free post-processing rule subsequently closed the gap, and the answer became "apply the rule
+> to the cheap one". Left as written; the reversal is the useful part.
 **Labeller: `anthropic/claude-sonnet-5`**, and therefore barred from the config space (D3). The
 loss is that we cannot ask "is the frontier model worth it as the service" — accepted, because the
 useful question for triage is whether a *cheap* model suffices, not whether the dearest one is best.
