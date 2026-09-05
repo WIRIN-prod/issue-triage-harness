@@ -161,6 +161,49 @@ at a cost of $0.26 to re-establish.
 
 ---
 
+## Iteration 7 — the metric was blaming the wrong thing
+
+**Raised as a criticism of the harness**, not found by it: the flagship collapses three fields
+into one dollar number, and the AI was better at category and urgency yet still lost, because
+76% of items need a human and each miss costs 10x.
+
+**What the harness showed, once asked.** `harness quality` reports *metric leverage* — the share
+of achievable error each field can contribute: **escalation 53.9%, urgency 31.6%, category
+14.5%.** Nobody chose those. The 10:1 was a claim about one error against another; multiplied by
+a base rate it silently became a claim about one *field* against another.
+
+**Proof it misattributes.** On the holdout, escalate-everything (2.20) beats baseline (3.64) —
+while baseline is **8x better at category and 3x better at urgency**.
+
+**Changed.** `balanced_error`: normalise each field by its own worst case first, then weight by
+a share stated openly. The escalation asymmetry stays, as a ratio *within* the field.
+
+**Result.** The floor becomes the *worst* performer (0.293) and `rule-off-v2` the best (0.123).
+Both metrics are now reported together, because they answer different questions. Config verdicts
+agree under both; the floor comparison does not, and the earlier write-up had that wrong.
+
+## Iteration 8 — label stability, and a conclusion withdrawn
+
+**Also raised as a criticism:** every result was scored against one labeller under one rubric, so
+a config sharing its biases would score well for the wrong reason.
+
+**First test — two label sets.** The full holdout was relabelled by `grok-4.6`. The labellers
+genuinely disagree (needs_human κ=0.515, base rates 71% vs 52%), but the rankings were identical.
+Written up as "no config is winning by fitting one labeller".
+
+**Second test — a third labeller overturned that.** `gpt-5.1`, lineage unlike both prior
+labellers and every config, showed only **31% of items are unanimous across all three**, and the
+top-ranked config differs by source: `rule-off-v2` under sonnet and grok, `free-minimax` under
+gpt-5.1, `tier-mid` under consensus.
+
+**Changed.** Nothing about the service. The conclusion was corrected in the log (D34 → D35)
+rather than edited away, and the confidence language in the README was tightened.
+
+**The lesson worth keeping.** *Large effects survive relabelling; fine distinctions do not.*
+`baseline` is last under every source; the top three reshuffle. And the paired bootstrap had
+already called those same comparisons indistinguishable — two independent methods agreeing on
+where the uncertainty lives.
+
 ## Where the service ended up — decided on the holdout
 
 Dev (n=118) proposed; the holdout (n=80, looked at once) decided.

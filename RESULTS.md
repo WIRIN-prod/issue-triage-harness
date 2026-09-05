@@ -130,24 +130,72 @@ difference exceeds the noise floor by a wide margin.
 
 ## 9. Can the labels be trusted?
 
-A frontier model from a different lineage (`grok-4.6`) labelled 25 stratified items blind:
+**Three independent labellers, chosen from three different lineages** — and deliberately
+different from every config's lineage too, so a labeller cannot quietly favour a config that
+shares its training.
+
+| | labeller |
+|---|---|
+| gold | `anthropic/claude-sonnet-5` |
+| second | `x-ai/grok-4.6` (80/80 holdout items) |
+| third | `openai/gpt-5.1` (60/80 — 20 failures) |
+
+**Pairwise agreement** (gold vs grok, full holdout):
 
 | field | Cohen's κ | reading |
 |---|---|---|
-| category | 0.95 | strong |
-| urgency (weighted) | 0.69 | substantial |
-| **needs_human** | **0.58** | **moderate** |
+| category | 0.963 | strong |
+| urgency (weighted) | 0.676 | substantial |
+| **needs_human** | **0.515** | **moderate** |
 
-**The weakest label is the one the flagship leans on hardest.** Random label noise attenuates
-differences toward zero and comparisons are paired, so results significant *despite* it stand;
-what noise plausibly explains is some of the inconclusive ones. What pairing cannot correct is
-a bias two models share — which is why three raters including a human reviewed the sample and
-independently flagged the same two errors (`data/verification/human-labels.jsonl`).
+**Three-way unanimity is much lower than two raters implied:**
 
-**A systematic bias was found and fixed.** Rubric v1 rated 78% of feature requests P2 where it
-reserved P2 for "clear demand" — the phrase was being read as "clearly written". Rubric v2
-makes the test observable (more than one requester, maintainer intent, or a widely-used path).
-Feature P2 rate fell to **17%**.
+| field | unanimous across all three |
+|---|---|
+| urgency | 34/60 (56%) |
+| needs_human | 32/60 (53%) |
+| **all three fields** | **19/60 (31%)** |
+
+### The ranking depends on which labeller you ask
+
+The same committed runs, rescored against each label source (balanced error, best first):
+
+| source | order |
+|---|---|
+| claude-sonnet-5 | **rule-off-v2**, free-minimax, tier-mid, baseline |
+| grok-4.6 | **rule-off-v2**, tier-mid, free-minimax, baseline |
+| gpt-5.1 | **free-minimax**, tier-mid, rule-off-v2, baseline |
+| majority consensus | **tier-mid**, rule-off-v2, free-minimax, baseline |
+
+> **Large effects survive relabelling; fine distinctions do not.**
+
+`baseline` is last under *every* source — that gap is real. The top three sit within 0.01–0.03
+of each other and reshuffle. **Any claim finer than "clearly better than baseline" is a
+statement about a labelling as much as about a config.**
+
+**Two independent methods agree on where the uncertainty lives.** The paired bootstrap had
+already reported `rule-off-v2` vs `tier-mid` as *cannot distinguish*; relabelling says the same
+thing from a completely different direction. That agreement is worth more than either alone, and
+it means the shipping recommendation is unaffected.
+
+**A conclusion that was published and then withdrawn.** With two label sets the ranking looked
+stable and was written up as such (DECISIONS.md D34). The third labeller overturned it (D35).
+The correction lives in the log rather than being edited into the original.
+
+**A result deliberately not claimed.** On the 19 fully unanimous items the order *inverts* —
+`baseline` best (0.023), `tier-mid` worst (0.081). The tempting reading is that configs are
+indistinguishable on clear-cut items and every measured difference lives in contested ones. At
+**n=19** that is not established, and it is exactly the small-sample story this harness exists
+to refuse. Logged as a question worth power, not a finding.
+
+**Also fixed: a systematic labelling bias.** Rubric v1 rated 78% of feature requests P2 where it
+reserved P2 for "clear demand" — the phrase was being read as "clearly written". Rubric v2 makes
+the test observable. Feature P2 rate fell to **17%**.
+
+**And the dataset is now evaluated in its own right.** `harness quality` reports class balance,
+escalation base rate per category, and *metric leverage* — how much of achievable error each
+field can contribute, which is a property of the labels rather than any config. It is what made
+§10 diagnosable.
 
 ## 10. The most important finding — about the metric, not the models
 
