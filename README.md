@@ -88,6 +88,14 @@ straddles zero the harness says `NO SIGNIFICANT DIFFERENCE` and reports how many
 would settle it. Families of diagnostics get Holm-Bonferroni correction, because six tests
 at α=0.05 carry a ~26% chance of one false positive.
 
+**The dataset is evaluated too, not assumed.** `harness quality` reports class balance, the
+escalation base rate per category, and *metric leverage* — how much of achievable error each
+field can contribute, which is a property of the labels rather than any config. And the whole
+holdout was labelled a second time by a different-lineage frontier model: the two labellers
+disagree meaningfully (needs_human κ=0.515, base rates 71% vs 52%), yet **config rankings are
+identical under both label sets and both metrics**. Effect sizes are not — baseline scores 3.64
+under one labelling and 2.19 under the other. See DECISIONS.md D34.
+
 **Refusals over warnings.** `compare` will not compare runs scored against different
 dataset hashes, runs where temperature was honoured for one arm and silently dropped for
 the other, runs containing calls the gateway never priced, or a run that mostly failed.

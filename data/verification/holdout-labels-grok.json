@@ -1,0 +1,482 @@
+{
+ "39455": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Category is question: the author asks how consumers should derive logical operations from existing spend/request logs and whether guidance already exists. They explicitly treat current behaviour as intended (spend is not double-counted; attempted_retries/max_retries already exist for the multi-entry shape) and do not claim a malfunction. The optional operation_id/retry_group_id idea is secondary; question is the first matching category. Urgency is P3: most questions, no breakage, no evidenced demand for a new field. needs_human is true because a maintainer must answer the guidance question and the embedded \u201cwould a new field be useful\u201d is a product-direction call."
+ },
+ "39431": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no vuln/exploit) and not a question or docs issue: the author reports misbehavior versus expected/direct-provider streaming, with a concrete repro. Category is bug.\n\nImpact is delayed Anthropic `/v1/messages` lifecycle frames until the first `content_block_delta`, which is severe for adaptive-thinking Bedrock models (seconds to minutes of silence) but is a narrower path (thinking + that stream wrapper), not an outage for most users. No stated in-library workaround; calling Bedrock directly is bypassing the product, not a product workaround. No explicit recent-release regression. Shared-core buffering exists, but the user-visible break is the thinking subset, so do not raise. That is P2.\n\nThe report names the iterator, config with zero fallbacks, expected vs actual, and a repro, so it can be routed without a prior maintainer conversation (`needs_human: false`)."
+ },
+ "39322": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "Not security (no exploit/credential/auth issue). Not a question: the author claims misbehavior and shows expected vs actual routing. Not docs-only: cache-hit decrement, negative counters, and starvation violate reasonably expected (and documented Redis-sharing) least-busy behavior; when docs describe the contract and code violates it, that is a bug. Category is therefore bug.\n\nUrgency is P2: the broken path is the least-busy strategy (especially with response cache / multi-worker DualCache), i.e. a subset of users, not most users on a current release and not a widely-used provider. Workarounds exist (other routing strategies, disable cache). No stated recent-regression, no \u201cmany providers / whole shared core\u201d bump, so it stays P2 (not P0/P1).\n\nneeds_human is true because the report bundles three distinct defects (unmatched cache-hit decrement, deterministic first-deployment tie-break, in-memory TTL so Redis does not share counters) and a maintainer should split/confirm before routing."
+ },
+ "39290": {
+  "category": "security",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "The report is a set of known OSV/GHSA findings in locked dependencies (pypdf 6.15.0 and tornado 6.5.7), framed as a bug because CI\u2019s OSV scan fails. Category 1 applies first: this is a vulnerability report, not a how-to, docs mismatch, or new feature. It is not P0: there is no critical/high finding, no data-loss or \u201cbroken for most users\u201d runtime failure, and no exploit path through LiteLLM is described\u2014only scanner output and a request to bump the lockfile. Impact is a narrower, fixable dependency issue (medium/low CVEs, fixed versions listed), so P2. needs_human is true because every security report requires maintainer judgement before routing."
+ },
+ "39113": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Category is applied in order. This is not a security vulnerability with a plausible exploit path: version-header disclosure is information that might aid attackers, but the issue does not describe an injection, auth bypass, credential leak, or exploitable unsafe default. It is not a question (the author states no setting exists) and not docs (docs correctly omit a non-existent option). It is not a bug: the proxy is behaving as designed by emitting x-litellm-version. The ask is new behaviour\u2014a way to suppress that header\u2014so category is feature.\n\nFeature requests default to P3. There is a single requester and no observable demand (no extra askers, maintainer intent, or core/provider breakage). No regression or workaround modifiers apply.\n\nneeds_human is false: the request is specific (suppress x-litellm-version on the proxy), scoped to one module, and can be queued without a product-direction debate or reproduction."
+ },
+ "39057": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Category is applied in order. This is not a security report. The author explicitly does not claim misbehaviour (\u201cNot claiming a bug \u2014 asking where the intended boundary is\u201d) and asks what the intended contract is for token columns on cache-hit spend_logs rows. That matches question: the answer is a pointer to existing (or intended) behaviour, not a required code change. Docs is not taken because they only float a clarifying PR after the contract is known; they are not asserting that docs are wrong while the code is right.\n\nUrgency is P3: most questions, no user-facing breakage claimed, no evidenced demand for a change.\n\nneeds_human is true: clarifying accounting semantics (provider consumption vs served volume) is a maintainer judgement call, not something that can be routed without conversation. When torn, escalate."
+ },
+ "38947": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "Category is bug: the title asserts incorrect UI behaviour (disabled public models with no team assignment shown as attached to teams), not a question, docs mismatch, feature, or security issue. Body is empty, so this is a display/assignment bug claim with no further detail.\n\nUrgency is P2: a narrower UI path affecting a subset (teams + disabled public models), not a security/data-loss/outage for most users (P0) and not a widely-used provider or major feature fully broken (P1). No regression or workaround stated; not a shared-core/multi-provider failure, so no modifiers.\n\nneeds_human is true: empty body, no reproduction, screenshots, or version \u2014 insufficient information for a UI bug, and the claim needs confirmation before routing."
+ },
+ "38666": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "Not security (no vuln/exploit). Not a question: the author claims the gate is wrong and asks for a code change. Not docs: the code path itself refuses the dialect. This is a bug, not new-provider work: `prompt_cache_breakpoint` already exists, `supports_prompt_cache_breakpoint` is the intended per-deployment signal, and check 2 (`custom_llm_provider == \"openai\"`) unconditionally overrides it so `bedrock_mantle` (which the author shows actually honors cache write/hit) can never enable the dialect. Impact is a narrower integration path / subset of users \u2192 P2. No stated workaround; they do not claim it worked on a prior release through LiteLLM, so no regression bump; not a shared-core outage. needs_human true: the Bedrock live-support claim and whether the model-map flag should beat the provider heuristic need maintainer confirmation before routing."
+ },
+ "38660": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security or a how-to question. Code and expected contract disagree: custom_prometheus_metadata_labels are declared on all series and filled on success, but four failure/fallback emitters pass no value so labels export as \"None\". That is a bug, not missing docs or a new feature. Impact is a narrower Prometheus path for proxy operators using those labels (subset, not most users / not a broken provider), with a clear repro and no stated workaround \u2192 P2. No confirmed recent regression, and it is not a multi-provider/core-path outage, so no urgency modifiers. The report is complete (repro, expected vs actual, suggested fix) and can be routed to the Prometheus integration without a product-direction call \u2192 needs_human false."
+ },
+ "38549": {
+  "category": "bug",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Not security: unused SigV4 lookup and IMDS delay, no exploit or credential leak. Not a question or docs issue \u2014 the author shows the code resolving AWS credentials on the Bedrock bearer-token path, discarding them, and failing to cache a falsy miss, adding ~2s per request. That is unexpected behaviour (latency / incorrect request path), so bug.\n\nImpact is a narrower Bedrock auth path (bearer token / api_key, hosts without IMDS), not the whole provider or most users. A workaround is stated (`AWS_EC2_METADATA_DISABLED=true`). Base P2, then stated-workaround lowers one level to P3. Not a claimed regression; only one provider.\n\nClear reproduction, line-level code, and a concrete fix: can be routed to Bedrock without a maintainer conversation first, so needs_human false."
+ },
+ "38515": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (over-strict budget gate, no exploit). Not a question: the author asserts misbehaviour vs documented zero-cost bypass. Docs describe the intended contract (BUDGET_CODE_MATRIX / auth skip); the `_PROXY_MaxBudgetLimiter` hook violates it, so this is a bug, not docs. Clear expected vs actual, root cause, and reproduction.\n\nUrgency starts at P2: narrower path (personal `max_budget` only, zero-cost models), subset of users, and the report itself says it is rarely hit (team keys unless `apply_user_budget_to_team_keys`). Not P0 (not most users / no data loss). Not P1 (not a widely-used provider or major path broken for many). No version regression (hook never had the check). No stated user workaround to lower. Shared-hook/provider-independent does not outweigh the explicit subset/rare-hit scope.\n\nneeds_human false: single well-specified bug with code pointers and reproduction; can be routed without a product call. (If treated as P1 it would need a human; the subset/rare-hit facts keep it P2.)"
+ },
+ "38505": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Not security, a question, or docs. The author asks to add xAI `x_search` as a first-class `SearchProviders` entry (Responses-API under the hood, citation-to-`SearchResult` mapping, cost wiring). That behaviour does not exist today; using Responses tools by hand is a workaround, not a claim of misbehaviour. Category is therefore feature.\n\nFeature requests default to P3. There is only one requester, no maintainer intent, and a detailed write-up is not demand. x_search via Search API is a new path, not a broken widely-used provider or shared core. Stay P3.\n\nThe request is well-specified (interface, translation, cost) and can be queued to the search/xAI module without a prior conversation, so needs_human is false."
+ },
+ "38383": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Category is feature: the asqav audit-log callback never shipped in any release, so this is new integration behaviour, not a runtime defect. It is not security (no exploit). It is not a question under the test (shipping it requires a code change, not a pointer to existing behaviour). It is not docs. It is not a bug: nothing in a current release misbehaves; a dropped staging merge is not documented/expected product behaviour.\n\nUrgency is P3: feature requests default to P3. There is only one requester and no observable extra demand. A past merge into a later-dropped staging branch is not current maintainer intent or multi-user demand. Not a regression (never in a release). No shared-core/many-provider modifier.\n\nneeds_human is true: re-landing a dropped integration is a product-direction call (should it be built/shipped), and the author explicitly needs a branch/split decision before routing. When torn, escalate."
+ },
+ "38216": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "This is unexpected Router behavior, not a question or docs issue: `_get_deployment_by_litellm_model` matches a raw `model` string on `litellm_params.model` across the entire `model_list` and feeds that into the load balancer, so a client that never named a `model_name` group can be spread across unrelated groups that happen to share the same literal. That is a real correctness/isolation bug with a concrete repro.\n\nIt is not categorized as security: there is no credential leak, injection, or auth-bypass exploit path described. Unintended capacity/backend use is a consequence of the routing bug; the reporter even wants an opt-in flag defaulting off so current behavior is preserved.\n\nUrgency is P2: it only fires on colliding `litellm_params.model` plus a raw-string client, so it is a subset path with an available workaround (send a configured `model_name` / avoid shared literals). It is not broken for most users, not claimed as a regression, and not a feature request. The shared-core raise does not apply because the fallback is not the common successful `model_name` path.\n\nneeds_human is true: the report sits next to access-control/isolation concerns, the proposed flag/default is a product-behavior call, and a maintainer should confirm the intended contract of the \u201cdeployment name instead\u201d fallback before routing a fix."
+ },
+ "38179": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "Not security (no vuln/exploit). Not a question: the author reports that listed xAI models fail. Not docs-only: Proxy/catalog still exposes retired grok-2* / grok-beta models that xAI returns as \u201cModel not found \u2014 retired\u201d, and routes grok-4.20-multi-agent* to Chat Completions though they only support Responses. That is unexpected behaviour for advertised models \u2192 bug. Impact is a subset (specific xAI model IDs), not the whole provider or most users; switching to current grok models is a workaround \u2192 P2. No LiteLLM regression stated, no stated workaround modifier, not shared-core. needs_human true because the issue bundles two distinct problems (retire stale chat models vs. Responses-only multi-agent routing) and routing/catalog updates need maintainer confirmation."
+ },
+ "38121": {
+  "category": "bug",
+  "urgency": "P1",
+  "needs_human": true,
+  "rationale": "Not security: this is fail-closed auth misbehavior (valid keys get 401, no bypass/exploit). Not a question or docs issue \u2014 the author claims `allow_requests_on_db_unavailable` is not honored on the initial Prisma-connect-failure path. That is a bug: documented/intended fail-open vs 401, plus no reconnect so the replica never recovers without restart. Base urgency is a narrower startup path (DB + that flag + initial connect failure), so P2; raise one level because virtual-key auth is a shared core proxy path and the replica stays poisoned while readiness is 200. Restart is recovery from the defect, not a usable in-incident workaround that should lower urgency. P1 requires needs_human."
+ },
+ "38077": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The issue is unintelligible/near-empty (German fragment about seeing uvicorn \u201crunning on\u201d and a \u201c%\u201d), with no clear ask, no claim of misbehaviour, and no reproduction. Per the rules, junk/unintelligible issues are category question, most questions are P3, and insufficient information requires needs_human."
+ },
+ "38075": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Not security: unmaintained-httpx scanner findings and pin constraints are not a vulnerability, credential leak, injection path, auth bypass, or unsafe default with a plausible exploit. Not a question: the author is not asking how to use existing behaviour; they want new dependency support (httpx2 / openai>=3). Not docs or a bug: current pins and the ModuleNotFoundError match intended packaging. This is a feature request (httpx2 support, drop httpx<1.0, openai v3). Feature requests default to P3; a single detailed write-up is not evidenced demand, so it stays P3 (no regression; failed workarounds do not raise). needs_human is true because whether to migrate the Python SDK off httpx / unpin openai is a product-direction call, not something that can be queued blindly."
+ },
+ "38064": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no exploit/credential/auth issue) and not a question (author claims misbehaviour, with repro). Not docs: cost-based-routing is expected to pick the cheaper deployment, and lowest_cost.py scores only input+output, ignoring cache_read_input_token_cost. That is incorrect cost ranking versus reasonably expected behaviour of the existing strategy, so category is bug (not a new-capability feature).\n\nUrgency is P2: the broken path is cost-based-routing when cache-read pricing matters (ties or cache-heavy mix). The author states it is narrow today (1 of 49 multi-provider models with a real cache-read price ranks wrong). Not broken for most users, not a current-release outage, and not a widely-used provider fully down \u2014 so not P0/P1. No stated regression. Config-order determining the tie winner is the bug description, not a stated workaround, so no down-mod. Shared-core/many-providers up-mod does not apply: this is one optional router strategy, not the main completion path.\n\nneeds_human is false: clear bug with code pointers, price table, and a runnable repro that can be routed to the router/lowest_cost module without a prior conversation. Suggested ranking/API options do not turn it into a product-direction or multi-problem issue."
+ },
+ "38026": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Not security, not a how-to question, not a docs mismatch, and not misbehaviour \u2014 the author asks for a converter/docs snippet so llm_as_a_judge eval_information can be exported as an EvalPort ResultSet. That is new behaviour (integration/export), so category is feature. Feature requests default to P3; there is only one requester, they explicitly call it low-priority, and there is no evidenced demand, so it stays P3 (no regression or core-path modifiers). needs_human is true because shipping a third-party EvalPort export is a product-direction call about whether something should be built, not a request that can be queued without judgement."
+ },
+ "38012": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The report is that `/v1/audio/translations` is unregistered (404) while speech/transcriptions exist. That is missing behaviour, not a documented contract being violated, so it is a feature (new endpoint), not a bug, docs issue, or question. Security does not apply: the allowlist note is an aside about pass-through, not an exploit in this request.\n\nFeature requests default to P3. There is only one requester, no maintainer intent, and a detailed write-up is not demand. A stated pass-through workaround would lower urgency, but P3 cannot go lower. Not a regression.\n\nneeds_human is true: the author asks whether the omission is deliberate and whether a PR is wanted (product-direction), and the body also mixes in pass-through allowlist behaviour and streaming-upload coupling."
+ },
+ "37923": {
+  "category": "bug",
+  "urgency": "P1",
+  "needs_human": true,
+  "rationale": "This is incorrect cost accounting on a documented, expected path: streamed Vertex Anthropic requests log spend=0 while the identical non-streamed call is priced correctly (tokens succeed; only cost is lost). That matches the bug rule (\u201cincorrect cost or token accounting\u201d, \u201cProvider X returns the wrong price\u201d), not a security vuln/auth bypass (valid keys still required; budget failure is a consequence of spend=0). Not a question or docs issue.\n\nUrgency is P1: Vertex Claude streaming is a widely used proxy path, cost/budget tracking is a core proxy feature, and the practical workaround (disable streaming) is painful for default editor/chat clients. Not P0: not a security exploit, not broken for most LiteLLM users, and non-stream still works. Not P2: impact is not a narrow edge case (streaming is default; budgets never fire). No stated regression; no \u201cstated workaround\u201d modifier (non-stream is contrast evidence, not an operational workaround). Single-provider path, so no multi-provider bump.\n\nneeds_human=true because every P1 requires maintainer review, even though reproduction is thorough."
+ },
+ "37890": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The issue has an unintelligible title (\"litellm\") and an empty body. Per the category rules, empty or unintelligible issues are classified as question (there is no junk category). Most questions are P3. needs_human is true due to insufficient information (empty/near-empty, routing would be a guess)."
+ },
+ "37881": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security or a how-to question. Code is forwarding a conflicting enum/type pair into Anthropic output_format.schema and the provider 400s; that is a real integration failure versus expected structured-output behaviour, so category is bug (not docs). Impact is a narrower native-path only (azure_ai / direct anthropic / bedrock native; vertex_ai already on the tool-use path), triggered by a common Pydantic Optional[enum] shape rather than Anthropic as a whole being down \u2014 P2. Not framed as a recent regression, and the \u201cremove type\u201d / vertex fallback notes are diagnostic isolation, not a practical user workaround, so no urgency modifiers. Reproduction is complete (local no-key filter dump plus live 400), single owning module (Anthropic schema filter), so it can be routed without a maintainer conversation first."
+ },
+ "37853": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The issue is an explicit request to add a private/internal-only ingress mode to `terraform/litellm/gcp`. It is not a vulnerability report, not a how-to question, and not a claim that current (external LB) behavior is wrong versus docs\u2014it describes missing capability. Category is therefore feature.\n\nFeature requests default to P3. There is only one requester, no corroborating demand, no maintainer intent, and this is a GCP Terraform module path rather than a widely-used provider or the shared core. No regression or other modifiers apply, so urgency stays P3.\n\nThe request is well-specified (desired mode, preserve URL-map routing, generic private LB, migration docs) and can be queued to the terraform/gcp module without a prior conversation, so needs_human is false."
+ },
+ "37852": {
+  "category": "bug",
+  "urgency": "P1",
+  "needs_human": true,
+  "rationale": "Not security (malformed stream events, no exploit/auth issue) and not a question or docs issue: the author reports Responses API streaming that violates the documented event contract (*.done without matching *.added) for Anthropic-family tool calls with empty text. That is incorrect streaming behaviour and breaks clients (Vercel AI SDK aborts before the tool result is delivered), so category is bug.\n\nUrgency is P1: a widely-used provider (Anthropic, also via Bedrock) is broken on a major path (Responses API streaming + tool calls). Agentic loops fail on the first tool-only turn; no workaround is stated. It is not P0 because it is not a security/data-loss issue and is not broken for most users on the current release (Chat Completions and OpenAI-shaped providers still work; only the empty-text Anthropic Responses stream is wrong). Not a claimed regression, so no extra bump. Anthropic+Bedrock is the same model family/transform, not \u201cmany providers / shared core\u201d enough to promote to P0.\n\nneeds_human is true because every P1 requires maintainer review, even though the report includes a clear curl repro and event log."
+ },
+ "37810": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "Not security: the report is over-restrictive ACL (403), not an exploit or credential leak. The api_base note is a side comment on a possible fix, not the issue.\n\nNot a question: the author claims misbehaviour with expected vs actual, not how-to.\n\nNot docs: code (route allowlists) is what they want changed; docs are not the disagreement.\n\nBug, not feature: `/model/info` and related endpoints already exist. `key_type=\"llm_api\"` already allows `/v1/models` and completions; denying the sibling metadata GETs is a gap versus reasonably expected OpenAI-compatible discovery, with a full repro on v1.94.2.\n\nUrgency P2: only `llm_api` keys and four info routes; completions still work; workaround is another key type or master key. Not P0/P1 (not most users, not a widely-used provider/core completion path). No stated regression or workaround modifier that would change the level.\n\nneeds_human true: clear repro, but routing still needs a maintainer call on intended ACL (carve-out vs leave in `info_routes`, and whether `/model/info` exposing `api_base` is acceptable). When torn, escalate."
+ },
+ "37782": {
+  "category": "bug",
+  "urgency": "P1",
+  "needs_human": true,
+  "rationale": "Not security, a question, or docs: the reporter claims the proxy UI misbehaves (ChunkLoadError plus slowness) on v1.97.0. That is a bug against reasonably expected UI loading. Proxy UI is a widely used surface, so impact is P1 rather than P0: it is not a security/data-loss issue and it is not clearly broken for most users with no workaround (the `/litellm-asset-prefix/` path may be deployment-specific). No explicit \u201cworked last release\u201d statement, so the regression bump is not applied. needs_human is true because this is P1 and the claim needs reproduction (vague user flow, possible asset-prefix/cache/deploy cause)."
+ },
+ "37567": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no exploit/credential/auth issue). Not a question: the author claims misbehaviour with expected vs actual. Not docs: the conversion code drops `functionDeclarations[].parameters` while `parametersJsonSchema` works. This is a bug: the generateContent\u2192chat-completions bridge silently omits tool schemas for non-Gemini backends, so models get name/description only and return empty or invented args. Impact is a narrower path (native generateContent + tools + non-Gemini/OpenAI-compatible deployments, typical google-genai SDK payloads), not most users on the current release, so base urgency is P2. Not stated as a regression. The `parametersJsonSchema` control is a proof, not a practical SDK workaround, so do not lower. Many non-Gemini providers share this bridge, but that does not outweigh the subset nature enough to treat the whole product as broken; stay at P2. Reproduction, version, config, and curls are complete, so it can be routed to the google_genai adapter without a prior conversation (`needs_human` false)."
+ },
+ "37509": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "This is not a security issue, a how-to question, or a docs mismatch. Existing `cache_control_injection_points` / `AnthropicCacheControlHook` behaviour is Anthropic-shaped by design; the author asks for a new translation into OpenAI `prompt_cache_breakpoint` / `prompt_cache_options` when routing to GPT-5.6+ compatible targets. That is new behaviour (new provider-path support for an existing admin primitive), so category is feature, not bug.\n\nFeature requests default to P3. There is only a single requester; related issues are prior Anthropic work, passthrough plumbing, or an external client gap\u2014not corroborating demand here. A detailed write-up is not demand. This is not \u201cOpenAI unsupported\u201d; it is a narrower caching-config extension. No regression. Do not promote to P2.\n\nThe request is well-specified and can be queued to the caching / OpenAI-compatible path without a prior conversation. Implementation approach is left to maintainers but that does not make routing a guess. needs_human is false."
+ },
+ "37485": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no vuln/exploit), not a how-to, and not a docs mismatch: streaming usage for vercel_ai_gateway drops prompt_tokens_details.cached_tokens so cache reads are billed as fresh input, while non-streaming is correct. That is incorrect token/cost accounting and broken streaming \u2192 bug.\n\nBase urgency is P2: one provider (vercel_ai_gateway) on the streaming reassembly path, subset of users, non-streaming and downgrade available. Regression since v1.89.3 raises one level; stated workarounds lower one level. Not most users / no-workaround, so not P0. Shared-core/many-provider raise does not apply (OpenAI streaming details already called out as separately handled). Clear repro, versions, and usage objects \u2192 can route without a maintainer conversation (needs_human false)."
+ },
+ "37284": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (wrong dashboard savings, no exploit). Not a question or docs issue: the author reports misbehaviour with a full repro. Category is bug \u2014 compression/caching savings spend is always $0.00 for custom/non-cost-map models while token counts and real spend are correct (incorrect cost accounting). Urgency P2: only the savings columns break, only for custom models (subset), billing still works; not a current-release outage for most users. No stated regression or workaround; not a shared-core/multi-provider outage of the product itself, so no modifiers. Clear, single-issue report with reproduction, so it can be routed without a maintainer conversation first."
+ },
+ "37170": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no exploit/credential/auth issue) and not a question (author claims the Azure model entry is wrong). The JSON is runtime model-capability config, not docs: missing `supports_audio_input`/`supports_audio_output` on `azure/gpt-audio-mini-2025-10-06` (present on the matching OpenAI entry) would make LiteLLM treat the model as lacking audio. That is incorrect expected behaviour \u2192 bug. Impact is a single Azure model, not core/most users, no stated workaround or regression \u2192 P2. The missing keys and files are specified with line links, so it can be routed without maintainer triage \u2192 needs_human false."
+ },
+ "37149": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security: invalid `limit` on list-batches is API-contract/pagination misbehavior, not an exploit path, credential leak, injection, or auth bypass.\n\nNot a question: the author asserts the proxy misbehaves versus OpenAI and versus reasonable pagination.\n\nNot docs: the endpoint is meant to be OpenAI-compatible; code accepts out-of-range `limit` and `limit=0` returns 20 rows instead of rejecting or honoring the requested size.\n\nCategory is bug: `GET /v1/batches` returns 200 for 0/-1/101/1000, and `limit=0` silently returns a default page. Clear repro on v1.94.3, no provider call.\n\nUrgency P2: narrower batches-list path, subset of proxy users, easy workaround (use 1..100). Not P0/P1 (not broken for most users, not a major provider outage). No stated regression, no multi-provider/core raise.\n\nneeds_human false: single well-specified bug with commands, versions, and expected 400 shape; can route to proxy batches endpoints without a product-direction or repro conversation."
+ },
+ "37143": {
+  "category": "docs",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The report is that docs name `litellm.turn_on_message_logging`, which does not exist, and should likely be `litellm.turn_off_message_logging`. That is documentation misdescribing the API, not a runtime defect, security issue, or request for new behaviour. Category is therefore docs. Impact is a minor docs inaccuracy with a clear pointer to the page; no crash, data loss, or broken core path, so urgency is P3. The wrong symbol and intended replacement are specified, so it can be routed without maintainer judgement."
+ },
+ "37142": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The issue asks to add two new OpenRouter DeepSeek models to model_prices_and_context_window.json (and the backup). That is new model support, not a vulnerability, how-to question, docs mismatch, or a claim that existing behaviour is wrong. Category is therefore feature.\n\nFeature requests default to P3. There is no observable demand (single requester, no corroboration, no maintainer intent). OpenRouter is already supported; this is only two new model entries, not a missing widely-used provider or a shared-core gap. No regression, workaround, or multi-provider modifiers apply. Urgency stays P3.\n\nThe request names the models and files and can be queued to the OpenRouter/pricing module without a product-direction conversation. needs_human is false."
+ },
+ "37133": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security or a how-to: the author reports incorrect chat\u2192responses request transformation (missing required `annotations` on `output_text`) with a concrete 400 from Azure, a curl repro, and the offending code path. Docs are not the issue\u2014the emitted payload violates the Responses input contract. That is a bug.\n\nUrgency is P2: the failure is a narrower path (bridge only when `tools` + `reasoning_effort` on gpt-5.x, multi-turn assistant history, strict providers like Azure Foundry). OpenAI is lenient; first-turn requests work. Not broken for most users, not a claimed regression, and no stated workaround to apply. Shared-core / many-provider bump does not apply\u2014the defect only surfaces on that subset.\n\nneeds_human is false: single, well-specified bug with reproduction, logs, version, and an exact module to route (`litellm_responses_transformation`). Not P0/P1 or security, and not a product-direction call."
+ },
+ "37121": {
+  "category": "bug",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The report claims the library prints an unsubstituted format string (`%s://%s://%s:%d`) instead of a URL, which is a claim of wrong output rather than a how-to, docs gap, or security exploit. That fits **bug** (first matching category after security/question/docs). Impact cannot be judged: there is no reproduction, product area, version, or user scope, so this is not a demonstrated outage for most users (not P0/P1) and not a clearly scoped subset with a workaround (not a solid P2). Treat as low-urgency **P3**. **needs_human** is true because the issue is near-empty, has no reproduction, and routing would be a guess."
+ },
+ "37054": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "This is an auth-bypass / unsafe-default report: when `LITELLM_MASTER_KEY` is unset (and JWT/OAuth2 is not configured), the proxy treats any API key as an INTERNAL_USER and skips authz (\u201cno-auth dev mode\u201d). The shipped docker-compose does not set the key, so a default `docker compose up` leaves inference routes open to anyone who can reach port 4000, using the operator\u2019s upstream credentials. That matches **security** (unsafe default with a plausible exploit: cost abuse / quota exhaustion). Security with a plausible exploit path is **P0**; the \u201cstated workaround\u201d modifier does not lower P0. Any security report requires maintainer judgement, so **needs_human** is true."
+ },
+ "37015": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security: a valid virtual key is still required; this is failed spend/budget accounting, which the rules list under bug (\u201cincorrect cost or token accounting\u201d), not auth bypass or a plausible exploit.\n\nNot a question or docs: the author claims misbehaviour (Gemini TTS 200s but no spend log / key spend stays 0) with expected vs actual, repro, and a concrete root cause (speech entrypoint drops `metadata`, inner completion overwrites the shared logging object).\n\nCategory is bug. OpenAI TTS on the same endpoint is tracked; only the speech-to-completion path (Gemini TTS and similar) skips the spend callback.\n\nUrgency P2: narrower path, subset of users (Gemini / bridged TTS), not broken for most users on a current release. Not framed as a regression, no stated workaround, and it is not the shared core of all proxy requests (only TTS that is translated into completion). Feature-request demand rules do not apply.\n\nneeds_human false: single, well-specified bug with config, commands, spend-log proof, and debug evidence; can be routed without a product-direction or security judgement call."
+ },
+ "37007": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Category is bug, not security: this is an authenticated admin GET that loads an unbounded result set and OOMs the process. It is not credential exposure, injection, auth bypass, or an unauthenticated exploit path; a master key is required. It is not a question or a docs mismatch, and pagination on the legacy route is a fix for existing misbehaviour rather than a new feature.\n\nUrgency starts at P2: the broken path is the legacy `/spend/logs` handler (v2/UI already paginate), it only bites deployments with large `LiteLLM_SpendLogs`, and callers can avoid the v1 route. It is not P0 (not most users on a current release, not data loss, workaround exists) and not P1 (not a widely-used provider or the shared inference path; the UI does not use this endpoint). No regression is claimed, so no raise. The P2 bucket already includes \u201cworkaround available,\u201d so the ingress-block note is not applied a second time (that would collapse an availability crash into P3/cosmetic). Core-path raise does not apply: spend-log listing is not the shared completion path.\n\nneeds_human is false: single, well-specified bug with version, code (no `take`/`page`), and reproduction; it can be routed to the proxy spend-logs module without a product-direction or confirmation conversation. Not security/P0/P1."
+ },
+ "36650": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "This is a concrete misbehavior report, not a question, docs gap, feature request, or security issue. Streaming `/v1/messages` against Bedrock Opus 4.8 with `thinking.type=enabled` and a high `budget_tokens` either sends an invalid upstream request or fails to map adaptive thinking, and the Bedrock `ValidationException` is swallowed so the client gets zero bytes, no SSE/HTTP error, and no proxy logs until a timeout. That is wrong vs expected streaming/error handling.\n\nUrgency is P2: the broken path is narrow (Bedrock + adaptive-only Claude + streaming + large thinking budgets), not the whole library or all Bedrock users. A painful subset impact (Claude Code ~32k thinking) does not meet P0/P1 (\u201cmost users\u201d / widely-used provider fully broken). Not a stated recent regression; no clean in-product workaround that preserves the requested path, so no modifier applies.\n\nneeds_human is true: two stacked failures (param translation vs stream-setup error swallowing), and a hang/no-log claim that a maintainer should confirm before routing."
+ },
+ "36553": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (crash/IndexError, no exploit). Not a question or docs issue: the author reports misbehaviour with traceback and repro. Code accesses `chunk.choices[0]` with no length check; empty-`choices` usage chunks from some OpenAI-format backends crash Anthropic `/v1/messages` streaming and drop `message_delta`/`message_stop`. That is a bug.\n\nUrgency is P2: broken streaming on a narrower path (`route_type=anthropic_messages` + backends that emit `choices: []`, e.g. GLM-5.1; MiniMax on the same proxy does not). Not most users, not a current-release-wide outage, and not framed as a regression. No stated workaround, so no down-mod. Related issues show the same unguarded pattern elsewhere but this report is one call site, not a shared-core/multi-provider raise.\n\nneeds_human is false: exact file/line, traceback, curl repro, and a concrete guard are enough to route without a product-direction or confirmation conversation."
+ },
+ "36493": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "Not security, a question, or a docs mismatch: the author reports that LiteLLM\u2019s `/v1/images/*` and `/v1/videos/*` routes diverge from the OpenAI SDK/spec (JSON vs always-multipart, videos/edits JSON-only and id-only, image edits dropping extra params). That is incorrect behaviour versus a reasonably expected OpenAI-compatible contract, so category is bug (even though some items also look like missing capabilities). Impact is a subset path (self-hosted OpenAI-compatible image/video backends), not most users or a widely used hosted provider; they already work around it with `pass_through_endpoints`. That is P2 (narrower path, subset, workaround). Not a stated recent regression, and not the shared core chat path, so no urgency bump. needs_human is true because the issue bundles four distinct defects and some items need a product/implementation judgement (e.g. FileTypes video edits)."
+ },
+ "36393": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The issue asks to add LiteLLM request-tag (and related attribution) propagation on the direct MCP gateway path (`tools/list` / `tools/call`), plus docs and a header-filtering constraint. That is new behaviour on this entry point, not a reported exploit, how-to question, or docs-only mismatch. It is therefore a feature.\n\nFeature requests default to P3. There is no evidenced demand (single requester, no maintainer signal or multi-user corroboration), it is not framed as a regression, and it is a specific MCP path rather than a shared-core/multi-provider outage. No modifiers apply.\n\nThe write-up is complete and implementable (headers, expected metadata, outbound filter, tests), so it can be queued without a maintainer conversation first. The \u201csecurity requirement\u201d is a design constraint (do not forward gateway-only headers), not a vulnerability report with a plausible exploit."
+ },
+ "36262": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security or a how-to: the author shows Anthropic native SSE and non-streaming LiteLLM both return tool_use, while stream=True drops it. That is a behavioural defect in Anthropic SSE \u2192 internal chunk conversion, so category is bug.\n\nBase urgency is P1: Anthropic is a widely-used provider and streaming tool calls are a major path; chunks have finish_reason=stop and zero tool_calls. Not P0: not most users, not data-loss/security, and non-streaming works. No clear recent-release regression (only an old 2024 issue). Stated workaround (stream=False) lowers one level. Single-provider adapter, not shared core, so no raise. Result: P2.\n\nneeds_human is false: one root cause, detailed repro and logs, can be routed to the Anthropic streaming transformer without a product call."
+ },
+ "35917": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Not security: no vulnerability or exploit path. Not a question as the primary ask: the author already established spend endpoints are read-only and wants a new ingestion API; an answer requires a code change, not a pointer to existing behaviour. Not docs or a bug: proxy-only spend writes are intended, not a contract violation. This is new behaviour (external usage ingestion into virtual-key/team spend). Feature requests default to P3; a single detailed write-up is not evidenced demand, so it stays P3. No regression or multi-provider breakage modifiers apply. needs_human is true because accepting an external spend-ingest API is a product-direction call, and the issue also asks whether a supported pattern already exists."
+ },
+ "35904": {
+  "category": "bug",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Incorrect cost/token accounting is explicitly a bug (\u201cProvider X returns the wrong price\u201d). Four Vertex MaaS rows in model_prices_and_context_window.json disagree with Google\u2019s catalog, so LiteLLM spend/budgets are wrong while the provider bills correctly. Not security, not a how-to, not docs-only, not a new feature.\n\nImpact is a subset of Vertex MaaS models (author says the other eleven are fine), not most users or the shared core path \u2192 P2. Stated workaround (override input_cost_per_token / output_cost_per_token in litellm_params) lowers one level \u2192 P3. Not a regression; not many providers.\n\nClear, single-topic report with keys, expected vs actual rates, repro, and logs \u2014 can be routed without a maintainer conversation first. needs_human false."
+ },
+ "35788": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Category is feature, not security: the report asks for new per-key/team/model config (`default_estimated_output_tokens*`) when `max_tokens` is absent. The \u201cTPM bypass / cost overrun\u201d framing is about quota fairness and a static estimate by design, not a vulnerability, credential leak, injection path, or auth bypass. It is not a question (they propose new behaviour), not docs, and not a bug (code matches the described static 1024 floor). Feature requests default to P3; there is only one requester and no evidenced demand, maintainer intent, or broken core path. A well-specified feature that can be queued does not need a maintainer first look."
+ },
+ "35765": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The author requests new behaviour: parse `x-litellm-tags` on MCP gateway routes (`/mcp`, `/{server_alias}/mcp`) and attach those tags to MCP spend logs, matching existing LLM-route handling. Nothing in the issue claims documented MCP behaviour is violated; they verified the MCP path never reads the header. That is missing functionality, not a crash, wrong output, or security issue, so category is feature (not security, question, docs, or bug).\n\nFeature requests default to P3. There is only one requester, no maintainer intent, and no evidence of broader demand. MCP gateway tagging is a narrower path, not a widely-used provider or the shared core LLM path. No regression or stated workaround modifiers apply.\n\nThe write-up is specific (files, proposed hook, expected spend-log shape) and can be queued to the proxy/MCP module without a prior conversation, so needs_human is false."
+ },
+ "35682": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The issue is not a vulnerability report, how-to question, docs complaint, bug, or feature request. It only pastes a blog URL and marketing stats (security/bug-fix counts, Autorouter V2). Per the rules, junk/unintelligible issues have no separate category and must be classified as question, with needs_human true because there is nothing to route. Urgency is P3 (typical for questions / non-actionable posts). No security exploit path, no claimed misbehavior, no reproduction."
+ },
+ "35664": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "Category is security because the report describes credential exposure in the UI auth cookie: a client-readable JWT carries reusable API key material (`key` claim), with a demonstrated replay path (copy cookie/JWT, decode, authenticate another session, reuse the key in Authorization). Security takes precedence over the \u201cBug\u201d framing.\n\nUrgency is P0: it is a security vulnerability with a plausible, step-by-step exploit (session theft / JWT copy \u2192 key extraction \u2192 authenticated access). No workaround is stated that removes the exposure while the token is valid.\n\nneeds_human is true because every security report, and every P0, requires maintainer judgement before routing."
+ },
+ "35648": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The author explicitly requests new first-class native DeepSeek Responses API routing (initially for deepseek-v4-flash), including a dedicated upstream `/responses` path, streaming events, tools, and gating. That is new provider-endpoint behaviour, not a claim that existing documented behaviour is wrong. Related issues are about a Chat Completions bridge and tool filtering, not this native route. Category is therefore feature.\n\nFeature requests default to P3. There is only one requester; a detailed write-up is not demand. Related tickets do not corroborate this specific native-API ask. The scope is one model on one provider, not the shared core path. No promotion to P2.\n\nThe request is complete and well-specified (expected URL, body contract, compatibility list, references) and can be queued to the DeepSeek/Responses module without a maintainer conversation first. Not security, not P0/P1, not insufficient information. needs_human is false."
+ },
+ "35541": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "Category is security because the report describes assigned CVEs (missing authentication for a critical function and insufficient session expiration) with claimed PoC exploits; security takes precedence over the [Bug] framing. Urgency is P0: a security vulnerability with a plausible exploit path on current 1.94\u20131.97 releases and no supported fix. needs_human is true because every security report and every P0 must be reviewed by a maintainer before routing."
+ },
+ "35535": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "The issue describes a cached PROXY_ADMIN early return in user_api_key_auth() that skips the blocked-key check, so a stale local cache on another worker can keep authenticating after the key is blocked. That is an auth-bypass / revocation failure with a concrete multi-worker reproduction and impact on management and model routes, so category is security (takes precedence). Urgency is P0 because it is a security vulnerability with a plausible exploit path and no reliable immediate revocation. needs_human is true because every security report and every P0 must be reviewed by a maintainer before routing."
+ },
+ "35529": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "Category is security because the report describes a fail-open authorization path: DB lookup errors in get_end_user_object() become None, which is treated as not-found, so _check_end_user_budget() is omitted. That is a policy/budget bypass with a plausible exploit (transient DB/repo failure). Security takes precedence over bug.\n\nUrgency is P0: it is a security vulnerability with a plausible exploit path and no stated workaround. Fail-open budget enforcement on the shared proxy auth path can let attributed traffic proceed until lookup succeeds. No regression or workaround modifiers apply; already at P0 so core-path raise does not go higher.\n\nneeds_human is true because every security report and every P0/P1 requires maintainer judgement before routing."
+ },
+ "35527": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "This is an auth-bypass / unsafe-default on `/health/drain`: when `enable_drain_endpoint` is true and no drain token is set, `_authorize_drain_request()` returns immediately and any reachable client can start process-wide shutdown. That is a vulnerability with a concrete exploit path (unauthenticated GET \u2192 `GracefulShutdownManager.start_shutdown()`), so category is security and it outranks bug/docs. P0 applies because the rules treat a security issue with a plausible exploit as P0; the workaround modifier does not lower P0. Feature-disabled-by-default limits blast radius but does not change the classification. Any security report requires maintainer review, so needs_human is true."
+ },
+ "35469": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The report is a support/how-to problem: the author followed an external Minecraft/Ollama tutorial, typed `litellm` with no arguments, and did not get the \u201copen\u201d behaviour they expected. There is no claim of a vulnerability, no documented contract being violated, and no request for new library behaviour. The likely resolution is pointing at existing CLI usage (start the proxy with the right flags/model), which matches the question rule. Impact is a single user\u2019s setup, so P3. The actual terminal output is only an image with no transcribed error, so routing would be a guess \u2014 needs_human true."
+ },
+ "35377": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The issue is empty of substance: title is just \u201cLITELLM\u201d, body is \u201cHello i have problem with LITELLM\u201d plus an image we cannot inspect. No claim of specific misbehavior, no reproduction, no question that can be answered from text. Per the rules, unintelligible/empty issues are category `question`, most questions are P3, and insufficient information requires `needs_human`. No security, bug, docs, or feature signal can be established from the provided text."
+ },
+ "35334": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no exploit, credential leak, or auth bypass) and not a question or docs issue. The report describes incorrect behaviour on the Anthropic `/v1/messages` websearch-interception follow-up: forced `tool_choice` is rewritten to `litellm_web_search` and not stripped, so a tool the client never declared is returned. Sibling chat-completions and Responses paths already drop `tool_choice`; this is a clear functional mismatch with expected/documented interception behaviour \u2192 bug.\n\nUrgency is P2: a narrower path (websearch interception + Anthropic messages + forced `tool_choice`), not the whole provider or shared core. Not P0 (not broadly broken / no data loss). Not P1 (major feature/provider not generally broken). No stated workaround. The note that v1.85.5 lacked this handling means new/buggy code on main, not a regression of previously working behaviour, so no +1. Only one path is affected, so no multi-provider +1.\n\nneeds_human is false: reproduction, expected vs actual, and the exact code site are given, so it can be routed to websearch interception / Anthropic passthrough without a prior conversation. Not security, not P0/P1."
+ },
+ "35312": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Category is applied in order. This is not a vulnerability or exploit path, so not security. The author is not asking how to use existing behaviour; they propose new response fields, so not a question. Docs are not claimed to be wrong relative to intended code behaviour. They do not claim /v1/models is misbehaving today. The request is new optional pricing metadata on GET /models and GET /v1/models (opt-in shape, aggregation rules, custom pricing from model_info). That is behaviour that does not exist yet \u2192 feature.\n\nUrgency: feature requests default to P3. Promote to P2 only with observable demand (multiple people, maintainer intent, or a widely-used provider / shared core path with evidenced demand). This is a single, well-argued requester; a detailed write-up is not demand. Related #14189 is explicitly a different request. No regression. No modifiers apply. Stay P3.\n\nneeds_human is false: the request is complete and well-specified (endpoints, example payload, access-key scoping, custom pricing, unknown-price handling, opt-in compatibility). It can be queued to the proxy/models endpoints without a prior conversation. It is not security, not P0/P1, and not an empty or unreproducible report."
+ },
+ "35056": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The issue asks to add Cloudflare Workers AI speech-to-text/transcription and text-to-speech support, including run-endpoint handling, LiteLLM audio API mapping, metadata, tests, and docs. That is new behaviour, not a claim that existing code is wrong, so category is feature (not security, question, docs, or bug). Feature requests default to P3; there is no observable demand (one author, no extra requesters or maintainer commitment in this issue), and Cloudflare audio is not a broken widely-used path, so urgency stays P3. The request is scoped and queueable to the cloudflare provider module, so needs_human is false."
+ },
+ "34932": {
+  "category": "bug",
+  "urgency": "P1",
+  "needs_human": true,
+  "rationale": "Not security (no vuln/exploit). Not a question (author claims misbehaviour with repro). Not docs (code/gates ignore per-deployment overrides and forward temperature, causing Azure 400s). This is a bug: Azure gpt-5 param mapping looks up capabilities on base_model, so model_info overrides never reach the gates; unset reasoning_effort is treated as none, so non-default temperature is sent and Azure rejects it.\n\nUrgency starts at P2 (Azure gpt-5.6 + temperature + base_model is a subset path, not the whole library). Regression from v1.89.1 (0 errors) to v1.93.0 (332 production 400s after registry entries flipped supports_none_reasoning_effort) raises one level to P1. Dropping base_model is explicitly not a real workaround; no stated workaround to lower. Not most users / not P0.\n\nneeds_human true: P1; two distinct defects in one issue; defect B is a product-semantics call."
+ },
+ "34927": {
+  "category": "bug",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Not security (no vuln/exploit). Not a question (author reports misbehaviour). Not docs (UI fails to render required config). Fits bug: Admin UI for Generic Guardrail API shows \u201cNo configuration fields available,\u201d so api_base/api_key/optional_params never appear; detailed repro and root cause given. Urgency starts at P2 (narrow UI path, subset of users). Stated workaround (config.yaml) lowers one level to P3. Not a regression, not shared-core/many-providers. needs_human false: clear repro, owning module (UI Dashboard / guardrails) is obvious, no security/P0/P1/product-direction call."
+ },
+ "34914": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no vuln/exploit). Not a question: the author reports misbehaviour with expected vs actual. Not docs: LiteLLM maps `service_tier` into the Vertex body and Vertex returns 400; the intended contract is that the param is translated or dropped, so this is a code-path failure. Category is bug.\n\nImpact is a single optional parameter on Vertex Gemini (`vertex_ai/`), not the whole provider or shared core. Chat still works without `service_tier`. Workaround is stated (duplicate models / `extra_headers`). Not a regression of previously working Vertex behaviour (feature landed for AI Studio; Vertex v1 never accepted it). That is P2 (narrower path, subset of users, workaround available). Do not raise to P1: the provider is not broken. Do not drop to P3: a 400 on a supported param is not cosmetic.\n\nneeds_human is false: one problem, detailed repro (curl, 400 payloads, code pointers), can be routed to the Vertex Gemini transform without a product-direction call. Not P0/P1/security."
+ },
+ "34905": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "Not security (no exploit, creds, injection, or auth bypass). Not a question or docs issue: the author reports incorrect SpendLogs behaviour with a concrete expected vs actual and a failing merge snippet. Category is bug: `get_litellm_metadata_from_kwargs()` prefers `litellm_metadata` and only copies `user_api_key*` keys from Router `metadata`, so `SpendLogsPayload.model_group` is empty while standard logging still has the group. Urgency is P2: spend aggregation by model group is wrong, but only on the Router + unified `pre_call` guardrail path (subset of proxy users), not a total outage or data-loss of spend rows. No stated recent-release regression, no stated workaround, and this is not a multi-provider outage. Clear repro (including a unit-test-style snippet) so it can be routed without a maintainer conversation first; not P0/P1/security, so needs_human is false."
+ },
+ "34895": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The issue title and body are empty of any actionable content (\u201cNOT WORKING LITELLM\u201d / \u201cPLESE HELP\u201d). Per the category rules, junk or unintelligible issues are classified as question. Most questions are P3. needs_human is true because the report is near-empty and unintelligible, so routing would be a guess."
+ },
+ "34846": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The issue asks for a new config flag so the proxy always overwrites client-supplied `user` with the authenticated `user_id`. Current behaviour is intentional (only fill `user` when absent) and the author describes it as correct for some deployments; they want an additional option for another pattern. That is new behaviour, not a vulnerability, misbehaving contract, docs error, or how-to question. Auth *feature* requests are `feature`. Feature requests default to P3; there is a single requester and no evidenced demand, maintainer intent, or promotion trigger. The write-up is complete and queueable (config name, code site, desired vs current behaviour), so it does not need a maintainer conversation first."
+ },
+ "34733": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": true,
+  "rationale": "This is incorrect spend accounting in RouterBudgetLimiting: concurrent `_handle_new_budget_window` calls use last-write-wins SET instead of accumulating cost, so the shared budget counter can drop costs at a window boundary. That matches bug (explicitly includes incorrect cost accounting), not security (no credential leak, injection, or auth bypass), not a question or docs issue, and not a missing feature.\n\nImpact is a race on a narrower path (expired-window reset under concurrency / multi-replica), not a total outage or data loss, so P2. No stated regression or workaround; it is not the shared completion path across providers.\n\nneeds_human is true: the report is detailed but bundles two distinct reliability problems (non-atomic window reset vs fire-and-forget Redis pipeline), and the race still needs maintainer confirmation of production impact."
+ },
+ "34710": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "The issue describes a credential-in-cleartext leak: `user_api_key_hash` is copied verbatim from input metadata into standard logging payloads (S3 and other sinks) without hashing, so a raw `sk-...` virtual key or JWT can be persisted. That is credential exposure with a plausible path (proxy `master_key is None`, SDK caller, or unhashed metadata), so category is security and it outranks bug. P0 because it is a security vulnerability with a plausible exploit path and durable log storage of secrets; no workaround is stated, and the shared logging path is involved (already at P0). needs_human is true because every security report and every P0 requires maintainer review."
+ },
+ "34705": {
+  "category": "security",
+  "urgency": "P0",
+  "needs_human": true,
+  "rationale": "Category is security because the first matching rule is a vulnerability with a plausible exploit: `print_verbose` writes caller payloads (including `api_key` / proxy keys / Bearer tokens) raw to stdout when `set_verbose=True`, and also passes unsanitized CR/LF/control characters (CWE-117). That is credential exposure and a log/terminal injection path, not a mere bug or docs issue. Urgency is P0: security with a demonstrated exploit (repro prints a secret and forges a log line); the \u201cstated workaround\u201d modifier does not lower P0. needs_human is true because every security report, and every P0, requires maintainer judgement before routing."
+ },
+ "34619": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Not security (no vuln/exploit). Not a question (author claims a gap and proposes work). Not docs (docs are only one suggested follow-up). Existing FAL image endpoints are implemented via hardcoded transformation classes; the ask is new model coverage, discovery, generic passthrough, and whole new modalities (video/audio/etc.). That is new behaviour / new model support \u2192 feature, not a behavioural regression of documented paths.\n\nFeature requests default to P3. There is one detailed write-up and no observable demand (no extra requesters, maintainer intent, or shared-core breakage). FAL is already partially supported; expanding the catalog is not a widely-used-provider outage. No regression or multi-provider modifier applies.\n\nneeds_human true: product-direction (auto-discover 200+ models vs incremental; whether to take on video/audio/3D/LLM) and several distinct problems in one issue."
+ },
+ "34461": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "The issue is explicitly a request to add Playground UI support for an existing `/v1/ocr` API: the endpoint type is missing from the dropdown and they want upload/request UI. That is new behaviour, not a security issue, how-to question, docs mismatch, or a claim that the OCR API itself misbehaves. Feature requests default to P3; there is only one requester and no evidenced demand, regression, or core-path breakage. The request is well-specified (UI Dashboard / Playground) and can be queued without maintainer triage."
+ },
+ "34328": {
+  "category": "bug",
+  "urgency": "P1",
+  "needs_human": true,
+  "rationale": "Not security: this is unbounded CPU/memory expansion on recursive JSON Schema `$ref` inlining, framed as an incomplete hang fix, not a vuln/auth/injection/credential issue. Not a question or docs issue \u2014 the author claims misbehaviour with a standalone repro. Category is bug: `unpack_defs()` expands without bound on recursive high-fan-in tool schemas, pegs CPU, never reaches the provider, and the proxy returns 502; Bedrock Converse and Vertex/Gemini callers omit `max_inlined_bytes` so the existing budget defaults to unbounded, and the path-only `ref_chain` guard misses diamond fan-out.\n\nUrgency starts at P2 (narrow path: recursive/high-fan-in tool schemas, subset of users). Raise one level because two widely used providers plus shared `unpack_defs` in core prompt templates are affected \u2192 P1. Not a stated user workaround; not a clear regression from a working recent release (incomplete prior fix). Not P0: not broken for most users on a current release.\n\nneeds_human true because every P1 requires maintainer judgement, even though the report includes a clear repro."
+ },
+ "34252": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Not a vulnerability report (no exploit path or unsafe-default claim)\u2014it asks to add Helm knobs. Not a question or docs issue. Title and body request new chart fields for parity with litellm-helm (securityContext, extraContainers, podLabels, lifecycle, Job volumes, independent Job SA). Missing configuration that exists on another chart is new behaviour \u2192 feature. Feature requests default to P3; no evidenced demand (single requester; issue refs are not corroboration), no regression of previously working behaviour, no workaround modifier. Several distinct additions plus a product-direction/queue call on what to port \u2192 needs_human true."
+ },
+ "34241": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "Not security: no vulnerability, credential leak, injection, or exploit path. Not a question: the author is not only asking how to stay compliant; they claim the tree does not match the LICENSE boundary and explicitly request physically-enforced separation, which needs a code/layout change. Not docs-only: LICENSE vs product gating is confusing, but the ask is to move/gate implementations, not just document them. Not a runtime bug: premium checks and MIT file placement are working as designed; file-level MIT is consistent with the LICENSE text. This is a feature/architecture request to separate Enterprise logic into `enterprise/`. Feature requests default to P3; a detailed single-reporter write-up is not evidenced demand, so no P2 promotion. needs_human is true because whether to restructure MIT vs Enterprise is a product-direction/legal call, not something to route without maintainer judgement."
+ },
+ "34205": {
+  "category": "question",
+  "urgency": "P3",
+  "needs_human": true,
+  "rationale": "The issue title and body are both just \u201cai dumb\u201d \u2014 empty/unintelligible junk. Per the rules, junk has no separate category and is classified as question, with needs_human true due to insufficient information. Most questions are P3; nothing here indicates security, a bug, docs, a feature, or higher impact."
+ },
+ "34096": {
+  "category": "bug",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "The Models + Endpoints UI fails to list models when access is granted via groups/tiers, while Playground, key-creation dropdowns, and actual requests work. That is incorrect UI behaviour versus reasonably expected (and vs other surfaces), so it is a bug, not a question, docs gap, or missing feature.\n\nImpact is a subset path (internal users with group-based model access, one dashboard page), not a security issue, data loss, or a widely broken core/provider. Base urgency is P2. It is not described as a regression, and it does not hit many providers or the shared core path. The \u201clist models individually\u201d note is the triggering condition, not a practical in-place workaround, so urgency is not lowered.\n\nReproduction and scope are clear enough to route to the UI Dashboard without a prior maintainer conversation. needs_human is false."
+ },
+ "34082": {
+  "category": "docs",
+  "urgency": "P2",
+  "needs_human": false,
+  "rationale": "The report is about the Headroom deploy guide: it pins `headroom-ai[proxy]==0.27.0` (a pre-fix version that can crash) and omits config needed so the documented `guardrail: headroom` / `mode: pre_call` setup actually compresses typical payloads. LiteLLM itself is not alleged to violate a contract; the crash and `tokens_saved: 0` come from Headroom defaults/upstream, and the author\u2019s expected fix is to correct the guide (version floor and undocumented knobs). That is docs, not security, a how-to question, a LiteLLM bug, or a feature.\n\nImpact is limited to users following that one integration guide (subset), with workarounds (newer Headroom, extra env/config) available \u2014 P2, not a core/outage P0/P1. Not a regression of LiteLLM and not shared-core, so no further urgency shift. The write-up is specific (page, pin, repro, logs) and can be routed as a docs change without maintainer triage first."
+ },
+ "34076": {
+  "category": "feature",
+  "urgency": "P3",
+  "needs_human": false,
+  "rationale": "Category is feature: the author requests new behaviour (`custom_ui_auth` in proxy config, mirroring existing `custom_auth`) so Admin UI login can call a user-supplied function. This is explicitly an auth *feature* request, not a vulnerability, question, docs issue, or bug.\n\nUrgency is P3: feature requests default to P3. There is only a single requester and a detailed write-up, which the rules say is not demand. No regression, no multi-person or maintainer signal, so no promotion to P2.\n\nneeds_human is false: the request is well-specified (config key, function signature, endpoints, motivation) and can be queued to the proxy module without a prior conversation. It is not a security report, not P0/P1, and not insufficiently specified."
+ }
+}

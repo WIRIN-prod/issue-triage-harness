@@ -788,6 +788,48 @@ problem was not only that the rubric inflated the base rate; it was that the met
 rate set field importance at all. Two fixes exist and only one was applied before this: fix the
 labels (rubric v2), and fix the metric (here).
 
+### D34 — Testing whether configs were fitting one gold set
+**Raised as a criticism:** every result was scored against labels from a single labeller under
+a single rubric. A config sharing that labeller's biases would score well for the wrong reason,
+and nothing in the config tables could reveal it. "Shared blind spot" had been listed as a
+limitation and never tested.
+
+**Test.** The full holdout (80 items) was labelled independently by `x-ai/grok-4.6` — a
+different lineage from the original labeller and from every config. The same committed runs
+were then rescored against both label sets. Rescoring is free: run records store predictions
+beside labels, so swapping the gold column costs nothing.
+
+**The labellers really do disagree.**
+
+| field | Cohen's κ |
+|---|---|
+| category | 0.963 |
+| urgency (weighted) | 0.676 |
+| needs_human | **0.515** |
+
+And the escalation base rate differs by **19 points — 71% (sonnet) against 52% (grok)**. This
+is not a rounding difference; it is the exact bias the criticism predicted.
+
+**The rankings are nevertheless stable.** Under both metrics and both label sets:
+
+| | $ flagship | balanced |
+|---|---|---|
+| order under sonnet labels | tier-mid, rule-off-v2, baseline | rule-off-v2, tier-mid, baseline |
+| order under grok labels | tier-mid, rule-off-v2, baseline | rule-off-v2, tier-mid, baseline |
+
+**No config is winning by fitting one labeller.**
+
+**But the magnitudes are label-dependent, and that matters.** Baseline scores 3.64 under sonnet
+and **2.19** under grok — because grok thinks fewer issues need a human, so baseline's weak
+escalation recall is punished less. `tier-mid` moves far less (1.90 → 1.71). Ordering survives;
+effect sizes do not. Any claim of the form "config A is 1.7 better than B" is a statement about
+a labelling as much as about the configs, and should be read that way.
+
+**What would make this stronger.** Two label sets detect whether an ordering moves; they cannot
+average out labeller noise. Three or four would allow a genuine consensus label and per-item
+disagreement flags. That was budget-limited here (~$0.70 per frontier pass over 80 items) and is
+the first thing worth buying with more.
+
 ---
 
 ## Still open
