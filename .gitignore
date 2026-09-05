@@ -231,3 +231,5 @@ data/cache/
 # local reference material, never committed
 *.docx
 *.pdf
+*.mp4
+*.mov

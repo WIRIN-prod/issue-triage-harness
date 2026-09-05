@@ -17,9 +17,10 @@ from statistics import mean
 
 from statistics import median
 
-from .metrics import (ERROR_UNIT_USD, Scored, breakeven_escalation_weight,
-                      breakeven_unit_usd, breakeven_usd_per_second,
-                      error_components, error_weight, score)
+from .metrics import (ERROR_UNIT_USD, Scored, balanced_error,
+                      breakeven_escalation_weight, breakeven_unit_usd,
+                      breakeven_usd_per_second, error_components, error_weight,
+                      field_errors, score)
 from .runner import ItemResult, RunRecord
 from .stats import (Comparison, Variance, dominated_by_noise, holm_bonferroni,
                     paired_bootstrap)
@@ -108,6 +109,9 @@ def _total_usd(unit: float):
 
 
 METRICS = [
+    # Reported first because it is the one whose field shares were chosen rather than
+    # inherited from a base rate. See metrics.balanced_error.
+    ("balanced error", lambda xs: balanced_error([(i.predicted, i.gold) for i in xs]), False),
     ("macro_f1 (category)", lambda xs: _score_items(xs).category["macro_f1"], True),
     ("urgency MAE", lambda xs: _score_items(xs).urgency["mae"], False),
     ("needs_human recall", lambda xs: _score_items(xs).needs_human["recall"], True),
@@ -145,7 +149,10 @@ class Report:
         ]
         if self.flagship:
             L += ["FLAGSHIP — total $/issue (LLM spend + error cost)",
-                  "  " + self.flagship.line(), ""]
+                  "  " + self.flagship.line(),
+                  "  note: this metric's field shares are inherited from the label base rate",
+                  "        (escalation ~54%, category ~15%). `balanced error` below weights",
+                  "        the three fields by a share that was chosen. Read both.", ""]
         L.append("diagnostics")
         L += ["  " + c.line() for c in self.comparisons]
         if self.noisy:

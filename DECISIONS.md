@@ -734,6 +734,60 @@ and self-consistency can be enforced for free once you measure that it is missin
 required per-field diagnostics, error analysis on stored per-item outputs, and free rescoring
 of completed runs — three things built for other reasons.
 
+### D33 — The flagship's field shares were never chosen, and that misattributed blame
+**Raised as a criticism of the harness, and it is correct.** The flagship collapses three
+fields into one dollar figure. The relative influence of those fields was never decided — it
+fell out of the label base rate times a per-error weight:
+
+| field | share of achievable error |
+|---|---|
+| escalation | **53.9%** |
+| urgency | 31.6% |
+| category | **14.5%** |
+
+The 10:1 weight was a claim about *one error against another* — a miss costs more than a false
+alarm. Combined with a 76% positive rate it silently became a claim about *one field against
+another*, handing escalation nearly four times category's influence. Nobody decided that.
+
+**The consequence is misattribution, not just distortion.** Under the dollar flagship,
+"escalate everything" (2.20) beats baseline (3.64) on the holdout. But per field:
+
+| | category err | urgency err | escalation err |
+|---|---|---|---|
+| escalate-everything | **0.525** | 0.263 | 0.091 |
+| baseline | **0.062** | **0.083** | 0.419 |
+
+**Baseline is 8x better at category and 3x better at urgency**, and the metric called it worse.
+A config that got two of three fields right was reported as the loser because of arithmetic
+nobody chose.
+
+**Fix: `balanced_error`.** Each field is normalised by its own worst case first, then weighted
+by a share that is stated openly (equal thirds by default, and changeable). The escalation
+asymmetry is kept — but as a ratio *within* the field, where it was always meant to live,
+rather than across fields. Under it the ranking on the holdout inverts where it should:
+
+| | $ flagship | balanced |
+|---|---|---|
+| escalate-everything | 2.20 | **0.293 (worst)** |
+| baseline | 3.64 (worst) | 0.188 |
+| tier-mid | 1.90 | 0.142 |
+| **rule-off-v2** | 1.94 | **0.123 (best)** |
+
+**Both metrics are now reported, and the compare output says why.** They answer different
+questions. The dollar flagship encodes a business claim about what errors cost and is the right
+number for a shipping decision *if you accept its weights*. The balanced view asks which config
+is better at the task, without a base rate deciding the answer.
+
+**The config verdicts survive both**, which is the reassuring part: `rule-off-v2` beats baseline
+under each (Δ=−1.700 and Δ=−0.065, both significant), and is indistinguishable from `tier-mid`
+under each. The shipping decision does not depend on the metric choice. **The floor comparison
+does** — and that is the one the earlier write-up got wrong.
+
+**What this says about D29.** The "degenerate optimum" finding was real but half-diagnosed. The
+problem was not only that the rubric inflated the base rate; it was that the metric let a base
+rate set field importance at all. Two fixes exist and only one was applied before this: fix the
+labels (rubric v2), and fix the metric (here).
+
 ---
 
 ## Still open

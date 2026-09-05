@@ -67,7 +67,16 @@ macro-F1, since accuracy scores 0.51 on a majority-class guesser where macro-F1 
 0.135. Urgency is ordinal → MAE, since P0-vs-P3 must cost more than P0-vs-P1.
 `needs_human` is binary with asymmetric costs → recall, guarded by precision.
 
-**One flagship number, in dollars.** `total cost per issue = LLM spend + expected error
+**Two headline numbers, reported together.** The dollar flagship below encodes a business
+claim about what errors cost. But its *field shares* were never chosen — they fell out of a 76%
+label base rate times a 10:1 per-error weight, giving escalation ~54% of achievable error and
+category ~15%. That misattributes: on the holdout it ranks "escalate everything" above the
+baseline service, which is **8x better at category and 3x better at urgency**. So a second
+metric, `balanced error`, normalises each field by its own worst case and weights them by a
+share that is stated openly. Config verdicts agree under both; the floor comparison does not.
+See DECISIONS.md D33.
+
+**The flagship, in dollars.** `total cost per issue = LLM spend + expected error
 cost`, with error weights stated explicitly (missed escalation 10, unnecessary escalation
 1, wrong category 2, urgency by distance). Because the dollar anchor for a weight unit is
 a guess, every comparison reports the **breakeven** — the anchor at which the two configs

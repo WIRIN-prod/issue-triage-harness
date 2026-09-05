@@ -222,6 +222,48 @@ def breakeven_usd_per_second(a: Scored, b: Scored,
     return v if v > 0 else None
 
 
+# --- balanced scoring ------------------------------------------------------
+#
+# The dollar flagship encodes a business claim and is the right number for a shipping
+# decision. But its *field shares* were never chosen: escalation ends up carrying ~54%
+# of achievable error and category ~15%, purely because 76% of items are positive and a
+# miss costs 10x. The 10:1 was a claim about one error against another, and it silently
+# became a claim about one field against another.
+#
+# So report a second view where the shares are declared. A config that is better at
+# category and urgency and worse at escalation should be visible as exactly that, rather
+# than collapsing into "worse" because of a base rate nobody picked.
+
+FIELD_SHARES = {"category": 1 / 3, "urgency": 1 / 3, "escalation": 1 / 3}
+
+
+def field_errors(pairs: list[tuple[TriageDecision, TriageDecision]]) -> dict[str, float]:
+    """Per-field error rate in [0,1], each normalised by what that field could lose."""
+    n = len(pairs) or 1
+    cat = sum(1 for p, g in pairs if p.category != g.category) / n
+    urg = sum(abs(URGENCY_RANK[p.urgency] - URGENCY_RANK[g.urgency]) for p, g in pairs) / (3 * n)
+    need = sum(1 for _, g in pairs if g.needs_human) or 1
+    not_need = sum(1 for _, g in pairs if not g.needs_human) or 1
+    missed = sum(1 for p, g in pairs if g.needs_human and not p.needs_human) / need
+    over = sum(1 for p, g in pairs if p.needs_human and not g.needs_human) / not_need
+    # keep the asymmetry, but as a ratio *within* the field rather than across fields
+    esc = (WEIGHTS["missed_escalation"] * missed + WEIGHTS["unnecessary_escalation"] * over) / (
+        WEIGHTS["missed_escalation"] + WEIGHTS["unnecessary_escalation"])
+    return {"category": cat, "urgency": urg, "escalation": esc}
+
+
+def balanced_error(pairs, shares: dict[str, float] | None = None) -> float:
+    """Weighted mean of per-field error rates, with the field shares stated openly.
+
+    Lower is better, 0 is perfect, 1 is maximally wrong. Unlike the dollar flagship this
+    cannot be dominated by a base rate: each field is normalised by its own worst case
+    first, then weighted by a share someone chose.
+    """
+    sh = shares or FIELD_SHARES
+    e = field_errors(pairs)
+    return sum(e[k] * sh[k] for k in sh)
+
+
 def breakeven_unit_usd(a: Scored, b: Scored) -> float | None:
     """At what value of a weight unit do these two configs cost the same?
 

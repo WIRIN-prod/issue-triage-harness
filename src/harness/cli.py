@@ -16,6 +16,7 @@ from triage.configs import CONFIGS, LABELLER, TIERS
 from . import agreement as agreement_mod
 from . import errors as errors_mod
 from . import ledger as ledger_mod
+from . import quality as quality_mod
 from . import baselines as baselines_mod
 from . import verify as verify_mod
 from . import github, labelling
@@ -313,6 +314,18 @@ def cmd_errors(args):
     print(errors_mod.render(RunRecord.load(Path(args.run))))
 
 
+def cmd_quality(args):
+    ds = Dataset.load(_dataset_path(args))
+    pool = None
+    if POOL.exists():
+        from collections import Counter
+        # candidate-pool categories are unknown (unlabelled), so only compare when a
+        # stratification pass exists; otherwise report balance without a reference.
+        pool = None
+    split = None if args.split == "all" else args.split
+    print(quality_mod.render(ds, split, pool))
+
+
 def cmd_ledger(args):
     entries = ledger_mod.collect()
     if not entries:
@@ -388,6 +401,10 @@ def main(argv=None):
     er = sub.add_parser("errors", help="where a run fails — free, reads a committed run record")
     er.add_argument("run")
     er.set_defaults(func=cmd_errors)
+
+    q = sub.add_parser("quality", help="evaluate the dataset itself, independent of any config")
+    q.add_argument("--split", default="all", choices=["dev", "holdout", "all"])
+    q.set_defaults(func=cmd_quality)
 
     lg = sub.add_parser("ledger", help="optimisation history + how often each split was looked at")
     lg.set_defaults(func=cmd_ledger)
