@@ -56,9 +56,15 @@ the definition of "correct" — and [docs/what-would-change.md](docs/what-would-
 the two-paragraph answer to "what would you change for a different task", which is the cheap
 proof that building narrowly was a decision rather than an omission.
 
-Full command list in [docs/configs.md](docs/configs.md). To rebuild from scratch:
-`python -m graph.build` (clones litellm at a pinned SHA, extracts the code graph), then
-`python -m harness.cli label` (two-stage labelling → frozen dataset).
+Full command list in [docs/configs.md](docs/configs.md).
+
+**On rebuilding.** `python -m graph.build` reproduces the code graph byte-identically from the
+pinned SHA. `python -m harness.cli label` does **not** reproduce the committed dataset, and is
+not meant to — it builds a *new* version. LLM labelling is not reproducible across time, and the
+labelling config's hash has since moved anyway. That is why the dataset is committed as a frozen,
+hashed artefact rather than treated as a build step: results are reproducible because the labels
+are in the repo, not because they could be regenerated. The raw label calls behind it are in
+`data/cache/` as the audit trail.
 
 ## What it does
 

@@ -271,6 +271,12 @@ the human verifier are given identical criteria. Without a shared rubric, disagr
 them is uninterpretable — you cannot tell whether one is wrong or they are answering different
 questions.
 
+**A frozen artefact, not a reproducible build.** LLM labelling cannot be regenerated
+identically — not across time, and not after the config schema changes (adding a field to
+`TriageConfig` moved the labelling config's hash without changing what it does). So the dataset
+is committed rather than rebuilt, and the raw label calls are kept in `data/cache/` as the audit
+trail. Results are reproducible because the labels are *in the repo*.
+
 **Frozen and hashed.** Once comparison begins the set does not change. Each run records the
 dataset content hash, and the harness **refuses to compare runs whose hashes differ.**
 Silently editing one label and re-running is the most common way eval results become lies.

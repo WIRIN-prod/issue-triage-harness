@@ -223,7 +223,6 @@ data/graphs/*.json
 !data/graphs/*.json.gz
 graphify-out/
 .cache/
-data/cache/
 
 # local-only working notes, never committed
 *.local.md
