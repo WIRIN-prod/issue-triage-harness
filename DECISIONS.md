@@ -906,6 +906,62 @@ still indistinguishable from `tier-mid` and far cheaper, which was already the c
 it changes is the *confidence language*: any claim finer than "clearly better than baseline"
 should be read as a statement about a labelling as much as about a config.
 
+### D36 — Was cost-conversion the right framing? Partly, and a constrained one is better
+**The question:** is converting every metric into dollars and pricing each error the right
+approach, or is there a better alternative?
+
+**What is right about it.** Pricing errors is the only way to compare quality against money at
+all, and the brief asked for exactly that trade-off. Writing the weights down makes them
+arguable, and reporting breakevens makes them falsifiable. That part stands.
+
+**What is wrong about it.** It prices errors *against each other* — a miss costs 10x a false
+alarm — when what triage actually has is a **service-level requirement**. You do not trade away
+missed escalations at some exchange rate; you set a floor and optimise beneath it. Pricing the
+constraint as if it were a preference is what let a base rate decide field importance (D33).
+
+**The better alternative: constrained optimisation.** *"Meet an escalation-recall floor, then
+maximise routing value."* That is how a triage SLA is actually written, and it needs no
+assertion about what a miss is worth relative to a false alarm — only a threshold someone can
+own.
+
+**Running it against the holdout produced a finding the dollar framing had hidden.** Under a
+recall floor, no config qualifies above 0.90 except "escalate everything" — which delivers
+recall 1.00 at zero cost and macro-F1 **0.129**. Useless at the routing that is the actual
+product. So recall is the constraint and *routing quality* is the objective, not cost.
+
+**Which suggests a hybrid nobody had tested:** keep the model's category and urgency, and
+escalate everything.
+
+| | nh recall | macro-F1 | balanced error | $/issue |
+|---|---|---|---|---|
+| baseline **+ always escalate** | 1.00 | 0.872 | **0.079** | $0.00032 |
+| rule-off-v2 + always escalate | 1.00 | 0.872 | 0.086 | $0.00026 |
+| tier-mid + always escalate | 1.00 | 0.928 | 0.112 | $0.00103 |
+| rule-off-v2 (shipped) | 0.81 | 0.872 | 0.123 | $0.00026 |
+| tier-mid | 0.86 | 0.928 | 0.142 | $0.00103 |
+
+**It beats every config that tries to decide escalation — and the cheapest model wins under it.**
+Once escalation is fixed at 1.00, configs differ only on category and urgency, where baseline's
+urgency (0.083) beats tier-mid's (0.208). **`tier-mid`'s whole advantage was escalation
+judgement.** Remove that as a decision and the expensive model is the worse one.
+
+**But this hinges on a product assumption we never tested.** SPEC §8 Q2 assumed triage
+*filters* — reduces human load. Under that reading escalation is the job and precision matters.
+If triage instead *routes* — gets each issue to the right queue quickly, with a human seeing
+everything — then escalation is not a decision at all and the model should only categorise. The
+hybrid is optimal under the second reading and unacceptable under the first, because it escalates
+100% and saves a maintainer nothing.
+
+**So the honest answer to the original question.** Cost-conversion is a reasonable framing and
+produced real results, but it answered "which config is better" while hiding "should the model be
+making this decision at all". A constrained formulation surfaces that question immediately,
+because writing down the constraint forces you to say what the service is *for*. **Given the
+project again, I would state the SLA first and price only what remains.**
+
+**Not implemented as a config**, deliberately: it would need the product question settled first,
+and settling it by picking whichever reading makes our numbers look better is precisely the
+failure this log exists to prevent.
+
 ---
 
 ## Still open

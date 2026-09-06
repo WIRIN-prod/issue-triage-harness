@@ -213,6 +213,26 @@ and faster*, and drops escalation recall from 0.51 to 0.13.
 
 ---
 
+## 5.5 Was this the right way to measure at all?
+
+Pricing errors is the only way to compare quality against money, so the framing is defensible.
+But it prices errors *against each other* when triage really has a **constraint**: never miss an
+escalation. You do not trade misses at an exchange rate; you set a floor and optimise beneath it.
+
+A constrained formulation — *"meet a recall floor, then maximise routing value"* — needs no claim
+about what a miss is worth relative to a false alarm, only a threshold someone can own. Run
+against the holdout it immediately surfaces a question the dollar framing hid: nothing clears a
+0.90 recall floor except "escalate everything", which has macro-F1 0.129 and is useless at the
+routing that is the actual product.
+
+That points at a hybrid nobody had tested — keep the model's category and urgency, escalate
+everything — which **beats every config that tries to decide escalation**, and under which the
+*cheapest* model wins, because `tier-mid`'s entire advantage was escalation judgement.
+
+Whether that hybrid is acceptable depends on a product question we assumed rather than asked: is
+triage *filtering* (reduce human load — escalation is the job) or *routing* (a human sees
+everything, the model says where it goes)? See DECISIONS.md D36.
+
 ## 6. What the loop could not fix
 
 Only one config beats the "escalate everything" floor. Broken down:
