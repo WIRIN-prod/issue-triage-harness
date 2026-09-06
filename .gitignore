@@ -232,3 +232,6 @@ graphify-out/
 *.pdf
 *.mp4
 *.mov
+
+# study material for personal use, never committed
+study/
