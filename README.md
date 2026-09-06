@@ -17,6 +17,28 @@ configurations, and the harness is willing to answer **"I can't tell"** — whic
 three of ten comparisons on dev and two of three on the holdout, including the one that
 decided what to ship.
 
+## Where to look
+
+The brief ranks *how you worked* above the code, so the reasoning is written down rather than
+left in the commits. In rough order of usefulness:
+
+| | |
+|---|---|
+| **[docs/method.md](docs/method.md)** | How each metric was chosen and what it rejected, then the two improvement loops. **Start here** if you read one thing. |
+| **[docs/improvement-log.md](docs/improvement-log.md)** | The loop run by run: what each measurement showed, what changed because of it, what happened next. Nine iterations, three of which changed no code. |
+| **[DECISIONS.md](DECISIONS.md)** | 36 entries, chronological, reversals kept. Opens with a "where to start" pointing at the five that matter. |
+| **[RESULTS.md](RESULTS.md)** | Every number with its caveats, including the results deliberately not claimed. |
+| **[SPEC.md](SPEC.md)** | The design, and §8 lists the open questions with the assumption taken for each. |
+
+**Everything can be checked without an API key.** The dataset, the code graph, three
+independent label sets and all run records are committed, so `harness baselines`,
+`harness ledger`, `harness errors` and `harness compare` reproduce the numbers below for free.
+
+Three things this found in itself, if you want a reason to read the log: a labelling run that
+silently kept a fifth of its data and hashed cleanly; a headline metric whose field weights
+nobody had chosen; and a conclusion about label stability that was published and then withdrawn
+when a third labeller disagreed.
+
 ## Quick start
 
 **From a release** — no clone needed to install, but you want the repo for the data:
