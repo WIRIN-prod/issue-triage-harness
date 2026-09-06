@@ -46,13 +46,19 @@ everything else the models do is swamped by it.
 
 Looked at once, for final candidates only.
 
-| config | macro-F1 | urg MAE | nh recall | err wt |
-|---|---|---|---|---|
-| **tier-mid** | 0.928 | 0.62 | 0.86 | **1.90** |
-| *floor* | *0.129* | *0.79* | *1.00* | *2.20* |
-| prompt-terse | 0.757 | 0.71 | 0.74 | 3.14 |
-| rationale-off | 0.872 | 0.31 | 0.61 | 3.23 |
-| baseline | 0.872 | 0.25 | 0.54 | 3.64 |
+| config | macro-F1 | nh recall | err wt | $/issue | p50 ms |
+|---|---|---|---|---|---|
+| **tier-mid** | 0.928 | 0.86 | **1.90** | $0.00103 | 1730 |
+| **rule-off-v2** | 0.872 | 0.81 | **1.94** | **$0.00026** | **1104** |
+| *floor — escalate everything* | *0.129* | *1.00* | *2.20* | *—* | *—* |
+| free-minimax `:free` | 0.899 | 0.75 | 2.24 | **$0.00000** | 4096 |
+| prompt-terse | 0.757 | 0.74 | 3.14 | $0.00022 | 1430 |
+| rationale-off | 0.872 | 0.61 | 3.23 | $0.00026 | 1061 |
+| baseline | 0.872 | 0.54 | 3.64 | $0.00032 | 1661 |
+
+`free-minimax` beat the floor on dev (1.93 vs 2.16) but lands just short on the holdout
+(2.24 vs 2.20) — a reminder that a dev result close to a threshold is not a holdout result.
+It remains the only genuinely free config in the table.
 
 | vs baseline | Δ flagship | 95% CI | verdict | breakeven escalation weight |
 |---|---|---|---|---|

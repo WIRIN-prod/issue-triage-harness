@@ -14,7 +14,8 @@ service exists to be a realistic subject of measurement, and is deliberately sma
 
 Not "what score did it get." The unit of work is a **comparison** between two
 configurations, and the harness is willing to answer **"I can't tell"** — which it did for
-four of six comparisons on the dev split.
+three of ten comparisons on dev and two of three on the holdout, including the one that
+decided what to ship.
 
 ## Quick start
 
