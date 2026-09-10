@@ -235,3 +235,4 @@ graphify-out/
 
 # study material for personal use, never committed
 study/
+.DS_Store
